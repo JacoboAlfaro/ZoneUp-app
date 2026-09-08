@@ -3,7 +3,7 @@
  * español del servidor y el inglés de la app.
  */
 
-import type { Role, User } from '../types';
+import type { Register, Role, User } from '../types';
 import { request } from './client';
 
 /** Forma EXACTA en que el backend devuelve un usuario. No cambiar a la ligera. */
@@ -41,10 +41,8 @@ export async function login(email: string, contrasena: string) {
 }
 
 /** POST /auth/registro -> el usuario creado (201). Ojo: NO devuelve token. */
-export async function register(name: string, email: string, contrasena: string): Promise<User> {
-  return toUser(
-    await request<UserResponse>('/auth/registro', { nombre: name, correo: email, clave: contrasena }),
-  );
+export async function register(dto: Register): Promise<User> {
+  return toUser(await request<UserResponse>('/auth/registro', dto));
 }
 
 /** GET /auth/perfil -> el usuario de la sesión actual. Requiere token. */

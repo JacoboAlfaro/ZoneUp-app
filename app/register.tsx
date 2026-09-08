@@ -4,19 +4,27 @@ import { ScrollView, Text } from 'react-native';
 import Button from '../src/components/Button';
 import Field from '../src/components/Field';
 import { useSession } from '../src/session/context';
+import type { Register } from '../src/types';
 
-type RegisterForm = { name: string; email: string; password: string; confirmation: string };
+type RegisterForm = Register & { confirmation: string };
 
 export default function Register() {
   const { signUp } = useSession();
   const { control, handleSubmit, setError, getValues, formState } = useForm<RegisterForm>({
-    defaultValues: { name: '', email: '', password: '', confirmation: '' },
+    defaultValues: {
+      documento_identidad: '',
+      nombres: '',
+      apellidos: '',
+      email: '',
+      contrasena: '',
+      celular: '',
+      confirmation: '',
+    },
   });
 
-  // `confirmation` no se envía: solo sirve para verificar que no hubo errata.
-  const submit = async ({ name, email, password }: RegisterForm) => {
+  const submit = async ({ confirmation: _, ...dto }: RegisterForm) => {
     try {
-      await signUp(name, email, password);
+      await signUp(dto);
     } catch (error) {
       setError('root', { message: (error as Error).message });
     }
@@ -28,15 +36,15 @@ export default function Register() {
       contentContainerClassName="gap-5 p-6"
       keyboardShouldPersistTaps="handled">
       <Text className="text-neutral-500">
-        Se creará una cuenta de solicitante para reportar y seguir tus casos.
+        Crea tu cuenta de conductor para reservar zonas de parqueo.
       </Text>
 
       <Field
         control={control}
-        name="name"
-        label="Nombre completo"
+        name="nombres"
+        label="Nombres"
         autoCapitalize="words"
-        placeholder="Ana María Restrepo"
+        placeholder="Juan"
         rules={{
           required: 'El nombre es obligatorio',
           minLength: { value: 2, message: 'Mínimo 2 caracteres' },
@@ -44,10 +52,43 @@ export default function Register() {
       />
       <Field
         control={control}
+        name="apellidos"
+        label="Apellidos"
+        autoCapitalize="words"
+        placeholder="Pérez Gómez"
+        rules={{
+          required: 'Los apellidos son obligatorios',
+          minLength: { value: 2, message: 'Mínimo 2 caracteres' },
+        }}
+      />
+      <Field
+        control={control}
+        name="documento_identidad"
+        label="Documento"
+        keyboardType="number-pad"
+        placeholder="1234567890"
+        rules={{
+          required: 'El documento de identidad es obligatorio',
+          minLength: { value: 6, message: 'Mínimo 6 caracteres' },
+        }}
+      />
+      <Field
+        control={control}
+        name="celular"
+        label="Celular"
+        keyboardType="phone-pad"
+        placeholder="3001234567"
+        rules={{
+          required: 'El celular es obligatorio',
+          minLength: { value: 10, message: 'Mínimo 10 dígitos' },
+        }}
+      />
+      <Field
+        control={control}
         name="email"
         label="Correo"
         keyboardType="email-address"
-        placeholder="nombre@autonoma.edu.co"
+        placeholder="nombre@correo.com"
         rules={{
           required: 'El correo es obligatorio',
           pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
@@ -55,14 +96,12 @@ export default function Register() {
       />
       <Field
         control={control}
-        name="password"
+        name="contrasena"
         label="Contraseña"
         secureTextEntry
         placeholder="••••••••"
         rules={{
           required: 'La contraseña es obligatoria',
-          // 8 caracteres es lo que exige el backend: si aquí se pide menos, el
-          // servidor rechazaría el registro y el usuario no sabría por qué.
           minLength: { value: 8, message: 'Mínimo 8 caracteres' },
         }}
       />
@@ -74,7 +113,7 @@ export default function Register() {
         placeholder="••••••••"
         rules={{
           required: 'Confirma la contraseña',
-          validate: (value) => value === getValues('password') || 'Las contraseñas no coinciden',
+          validate: (value) => value === getValues('contrasena') || 'Las contraseñas no coinciden',
         }}
       />
 

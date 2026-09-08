@@ -9,13 +9,13 @@
 import { createContext, use, useState, type PropsWithChildren } from 'react';
 import * as api from '../api/auth';
 import { setToken } from '../api/client';
-import type { User } from '../types';
+import type { Register, User } from '../types';
 
 interface Session {
   /** null = nadie ha entrado. El layout raíz usa esto para decidir qué mostrar. */
   user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (name: string, email: string, password: string) => Promise<void>;
+  signUp: (dto: Register) => Promise<void>;
   signOut: () => void;
 }
 
@@ -50,9 +50,18 @@ export function SessionProvider({ children }: PropsWithChildren) {
         // El registro NO devuelve token (solo crea el usuario), así que
         // enseguida iniciamos sesión con las mismas credenciales para que el
         // usuario entre de una vez y no tenga que escribirlas dos veces.
-        signUp: async (name, email, password) => {
-          await api.register(name.trim(), email.trim().toLowerCase(), password);
-          await signIn(email, password);
+        signUp: async (dto) => {
+          const payload: Register = {
+            ...dto,
+            documento_identidad: dto.documento_identidad.trim(),
+            nombres: dto.nombres.trim(),
+            apellidos: dto.apellidos.trim(),
+            email: dto.email.trim().toLowerCase(),
+            celular: dto.celular.trim(),
+            tipo_usuario: 'conductor',
+          };
+          await api.register(payload);
+          await signIn(payload.email, payload.contrasena);
         },
         signOut: () => {
           setToken(null);
