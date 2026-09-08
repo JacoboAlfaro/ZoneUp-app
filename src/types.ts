@@ -50,55 +50,17 @@ export interface RegisterDto {
 /** Usuario de la sesión. Nunca incluye la contraseña ni su hash. */
 export interface User {
   id: string;
+  documento_identidad: string;
+  primer_nombre: string;
+  segundo_nombre: string;
+  primer_apellido: string;
+  segundo_apellido: string;
   name: string;
   email: string;
-  role: Role;
-  active: boolean;
+  celular: string;
+  estado: EstadoUsuario;
+  tipo_usuario: TipoUsuario;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
 }
 
-// --- Tickets ---------------------------------------------------------------
-
-export const PRIORITIES = ['BAJA', 'MEDIA', 'ALTA', 'CRITICA'] as const;
-export type Priority = (typeof PRIORITIES)[number];
-
-export const STATUSES = [
-  'NUEVO',
-  'ASIGNADO',
-  'EN_PROCESO',
-  'ESPERA_INFORMACION',
-  'RESUELTO',
-  'CERRADO',
-] as const;
-export type TicketStatus = (typeof STATUSES)[number];
-
-/**
- * Catálogo de categorías (F03 del documento de visión): la categoría es la que
- * determina el SLA y el grupo de agentes competentes.
- *
- * Está quemado aquí porque el backend todavía no expone el catálogo. Cuando
- * exista F04 ("catálogo configurable"), esta lista se pedirá al servidor.
- */
-export const CATEGORIES = [
-  'RED',
-  'AULAS',
-  'CREDENCIALES',
-  'PLATAFORMA_ACADEMICA',
-  'OTRO',
-] as const;
-export type Category = (typeof CATEGORIES)[number];
-
-/** Lo que el usuario llena en el formulario de una nueva solicitud. */
-export interface NewTicket {
-  subject: string;
-  description: string;
-  category: Category;
-  priority: Priority;
-}
-
-/** Un ticket ya registrado en el servidor. */
-export interface Ticket extends NewTicket {
-  id: string;
-  status: TicketStatus;
-  requesterId: string;
-  agentId: string | null;
-}
