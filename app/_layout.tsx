@@ -1,34 +1,42 @@
-import { Map, User } from 'lucide-react-native';
-import { Tabs } from 'expo-router';
+/**
+ * Layout raíz: envuelve TODA la app.
+ *
+ * Hace dos cosas:
+ *  1. Pone el proveedor de sesión, para que cualquier pantalla pueda saber
+ *     quién entró.
+ *  2. Declara la navegación y decide, con `Stack.Protected`, qué pantallas
+ *     existen según haya sesión o no. Sin sesión, las rutas privadas ni
+ *     siquiera están registradas: no hay forma de llegar a ellas.
+ */
 
-require('../global.css');
+import { Stack } from 'expo-router';
+import '../global.css';
+import { SessionProvider, useSession } from '../src/session/context';
 
 export default function RootLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: '#000000',
-        headerShown: true,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Mapa',
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <Map size={32} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color }) => (
-            <User size={32} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <SessionProvider>
+      <Navigator />
+    </SessionProvider>
+  );
+}
+
+function Navigator() {
+  const { user } = useSession();
+
+  return (
+    <Stack screenOptions={{ headerTitleStyle: { fontWeight: '600' } }}>
+      {/* Con sesión iniciada */}
+      <Stack.Protected guard={!!user}>
+        <Stack.Screen name="index" options={{ title: 'HelpDesk UAM' }} />
+        <Stack.Screen name="tickets/new" options={{ title: 'Nueva solicitud' }} />
+      </Stack.Protected>
+
+      {/* Sin sesión */}
+      <Stack.Protected guard={!user}>
+        <Stack.Screen name="login" options={{ title: 'Iniciar sesión' }} />
+        <Stack.Screen name="register" options={{ title: 'Crear cuenta' }} />
+      </Stack.Protected>
+    </Stack>
   );
 }
