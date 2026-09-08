@@ -32,18 +32,18 @@ function toUser(data: UserResponse): User {
 }
 
 /** POST /auth/login -> token de sesión y usuario que entró. */
-export async function login(email: string, password: string) {
+export async function login(email: string, contrasena: string) {
   const session = await request<SessionResponse>('/auth/login', {
     correo: email,
-    clave: password,
+    clave: contrasena,
   });
   return { token: session.token, user: toUser(session.usuario) };
 }
 
 /** POST /auth/registro -> el usuario creado (201). Ojo: NO devuelve token. */
-export async function register(name: string, email: string, password: string): Promise<User> {
+export async function register(name: string, email: string, contrasena: string): Promise<User> {
   return toUser(
-    await request<UserResponse>('/auth/registro', { nombre: name, correo: email, clave: password }),
+    await request<UserResponse>('/auth/registro', { nombre: name, correo: email, clave: contrasena }),
   );
 }
 

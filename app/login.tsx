@@ -6,7 +6,7 @@ import Field from '../src/components/Field';
 import { useSession } from '../src/session/context';
 
 /** Los datos que captura este formulario. */
-type LoginForm = { email: string; password: string };
+type LoginForm = { email: string; contrasena: string };
 
 export default function Login() {
   const { signIn } = useSession();
@@ -14,12 +14,12 @@ export default function Login() {
   // `control` conecta los campos, `handleSubmit` valida antes de enviar y
   // `formState` trae los errores y si se está enviando en este momento.
   const { control, handleSubmit, setError, formState } = useForm<LoginForm>({
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: '', contrasena: '' },
   });
 
-  const submit = async ({ email, password }: LoginForm) => {
+  const submit = async ({ email, contrasena }: LoginForm) => {
     try {
-      await signIn(email, password);
+      await signIn(email, contrasena);
       // No hay que navegar: al cambiar la sesión, el layout raíz muestra las
       // pantallas privadas automáticamente.
     } catch (error) {
@@ -32,8 +32,8 @@ export default function Login() {
   return (
     <View className="flex-1 justify-center gap-5 bg-neutral-50 p-6">
       <View className="gap-1">
-        <Text className="text-2xl font-bold text-neutral-900">Mesa de ayuda</Text>
-        <Text className="text-neutral-500">Entra con tu cuenta institucional</Text>
+        <Text className="text-2xl font-bold text-neutral-900">Login ZoneUp</Text>
+        <Text className="text-neutral-500">Entra con tu cuenta de correo</Text>
       </View>
 
       <Field
@@ -49,7 +49,7 @@ export default function Login() {
       />
       <Field
         control={control}
-        name="password"
+        name="contrasena"
         label="Contraseña"
         secureTextEntry
         placeholder="••••••••"
