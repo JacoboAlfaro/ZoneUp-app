@@ -50,18 +50,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
         // El registro NO devuelve token (solo crea el usuario), así que
         // enseguida iniciamos sesión con las mismas credenciales para que el
         // usuario entre de una vez y no tenga que escribirlas dos veces.
-        signUp: async (dto) => {
-          const payload: Register = {
-            ...dto,
-            documento_identidad: dto.documento_identidad.trim(),
-            nombres: dto.nombres.trim(),
-            apellidos: dto.apellidos.trim(),
-            email: dto.email.trim().toLowerCase(),
-            celular: dto.celular.trim(),
-            tipo_usuario: 'conductor',
-          };
-          await api.register(payload);
-          await signIn(payload.email, payload.contrasena);
+        signUp: async (form) => {
+          // `api.register` normaliza los datos y parte nombres y apellidos.
+          await api.register({ ...form, tipo_usuario: 'conductor' });
+          await signIn(form.email, form.contrasena);
         },
         signOut: () => {
           setToken(null);

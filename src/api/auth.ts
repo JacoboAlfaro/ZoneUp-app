@@ -3,7 +3,7 @@
  * español del servidor y el inglés de la app.
  */
 
-import type { Register, Role, User } from '../types';
+import type { Register, RegisterDto, Role, User } from '../types';
 import { request } from './client';
 
 /** Forma EXACTA en que el backend devuelve un usuario. No cambiar a la ligera. */
@@ -40,9 +40,35 @@ export async function login(email: string, contrasena: string) {
   return { token: session.token, user: toUser(session.usuario) };
 }
 
-/** POST /auth/registro -> el usuario creado (201). Ojo: NO devuelve token. */
-export async function register(dto: Register): Promise<User> {
-  return toUser(await request<UserResponse>('/auth/registro', dto));
+function splitEnDos(value: string): [string, string?] {
+  const [primero = '', ...resto] = value.trim().split(/\s+/);
+  const segundo = resto.join(' ');
+
+  return segundo === '' ? [primero] : [primero, segundo];
+}
+
+/** Traduce el formulario al cuerpo que espera el backend. */
+export function toRegisterDto(form: Register): RegisterDto {
+  const [primer_nombre, segundo_nombre] = splitEnDos(form.nombres);
+  const [primer_apellido, segundo_apellido] = splitEnDos(form.apellidos);
+
+  return {
+    documento_identidad: form.documento_identidad.trim(),
+    primer_nombre,
+    ...(segundo_nombre ? { segundo_nombre } : {}),
+    primer_apellido,
+    ...(segundo_apellido ? { segundo_apellido } : {}),
+    email: form.email.trim().toLowerCase(),
+    contrasena: form.contrasena,
+    celular: form.celular.trim(),
+    ...(form.estado ? { estado: form.estado } : {}),
+    ...(form.tipo_usuario ? { tipo_usuario: form.tipo_usuario } : {}),
+  };
+}
+
+/** POST /auth/register -> el usuario creado (201). Ojo: NO devuelve token. */
+export async function register(form: Register): Promise<User> {
+  return toUser(await request<UserResponse>('/auth/register', toRegisterDto(form)));
 }
 
 /** GET /auth/perfil -> el usuario de la sesión actual. Requiere token. */

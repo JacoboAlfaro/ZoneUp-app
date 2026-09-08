@@ -19,11 +19,27 @@ export type EstadoUsuario = (typeof ESTADOS_USUARIO)[number];
 export const TIPOS_USUARIO = ['conductor', 'controlador'] as const;
 export type TipoUsuario = (typeof TIPOS_USUARIO)[number];
 
-/** Cuerpo de POST de registro. Los nombres coinciden con el backend. */
+/**
+ * Lo que el usuario escribe en el formulario: un solo campo para los nombres y
+ * otro para los apellidos. `src/api/auth.ts` los parte antes de enviarlos.
+ */
 export interface Register {
   documento_identidad: string;
   nombres: string;
   apellidos: string;
+  email: string;
+  contrasena: string;
+  celular: string;
+  estado?: EstadoUsuario;
+  tipo_usuario?: TipoUsuario;
+}
+
+export interface RegisterDto {
+  documento_identidad: string;
+  primer_nombre: string;
+  segundo_nombre?: string;
+  primer_apellido: string;
+  segundo_apellido?: string;
   email: string;
   contrasena: string;
   celular: string;
