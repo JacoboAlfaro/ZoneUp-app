@@ -1,23 +1,29 @@
 /**
- * Endpoints de autenticación (prefijo /api/auth) y la traducción entre el
- * español del servidor y el inglés de la app.
+ * Auth (auth-service): entrar y registrarse.
+ *
+ * Endpoints reales (públicos, sin token):
+ * - POST /auth/login    -> { user, access_token } | 401 "Credenciales invalidas"
+ * - POST /auth/register -> { user, access_token } | 400 faltan campos | 409 ya existe
+ *
+ * El backend NO tiene GET /auth/perfil: para leer un usuario usa
+ * `getUserByEmail` de `./users` (requiere token de ADMIN).
  */
 
-import type { Register, RegisterDto, EstadoUsuario, TipoUsuario, User } from '../types';
+import type { AuthSession, EstadoUsuario, Register, RegisterDto, TipoUsuario, User } from '../types';
 import { request } from './client';
 
-/** Forma EXACTA en que el backend devuelve un usuario. No cambiar a la ligera. */
-interface UserResponse {
+/** Usuario tal como lo manda el servidor (sin `name`: se deriva aquí). */
+export interface UserResponse {
   id: string;
   documento_identidad: string;
   primer_nombre: string;
-  segundo_nombre: string;
+  segundo_nombre: string | null;
   primer_apellido: string;
-  segundo_apellido: string;
+  segundo_apellido: string | null;
   email: string;
   celular: string;
   estado: EstadoUsuario;
-  tipo_usuario: TipoUsuario;
+  tipo_usuario: TipoUsuario | null;
   fecha_creacion: string;
   fecha_actualizacion: string;
 }
@@ -28,7 +34,7 @@ interface SessionResponse {
 }
 
 /** El único lugar donde se convierte la respuesta del servidor al tipo de la app. */
-function toUser(data: UserResponse): User {
+export function toUser(data: UserResponse): User {
   return {
     id: data.id,
     documento_identidad: data.documento_identidad,
@@ -36,12 +42,7 @@ function toUser(data: UserResponse): User {
     segundo_nombre: data.segundo_nombre,
     primer_apellido: data.primer_apellido,
     segundo_apellido: data.segundo_apellido,
-    name: [
-      data.primer_nombre,
-      data.segundo_nombre,
-      data.primer_apellido,
-      data.segundo_apellido,
-    ]
+    name: [data.primer_nombre, data.segundo_nombre, data.primer_apellido, data.segundo_apellido]
       .filter(Boolean)
       .join(' '),
     email: data.email,
@@ -54,9 +55,9 @@ function toUser(data: UserResponse): User {
 }
 
 /** POST /auth/login -> token de sesión y usuario que entró. */
-export async function login(email: string, contrasena: string) {
+export async function login(email: string, contrasena: string): Promise<AuthSession> {
   const session = await request<SessionResponse>('/auth/login', {
-    email: email,
+    email: email.trim().toLowerCase(),
     contrasena: contrasena,
   });
   return { token: session.access_token, user: toUser(session.user) };
@@ -88,12 +89,12 @@ export function toRegisterDto(form: Register): RegisterDto {
   };
 }
 
-/** POST /auth/register -> el usuario creado (201). Ojo: NO devuelve token. */
-export async function register(form: Register): Promise<User> {
-  return toUser(await request<UserResponse>('/auth/register', toRegisterDto(form)));
-}
-
-/** GET /auth/perfil -> el usuario de la sesión actual. Requiere token. */
-export async function profile(): Promise<User> {
-  return toUser(await request<UserResponse>('/auth/perfil'));
+/**
+ * POST /auth/register -> sesión completa (usuario + token).
+ * El servidor firma el JWT al crear la cuenta, así que NO hace falta un login
+ * extra después: el contexto de sesión entra directo con lo devuelto aquí.
+ */
+export async function register(form: Register): Promise<AuthSession> {
+  const session = await request<SessionResponse>('/auth/register', toRegisterDto(form));
+  return { token: session.access_token, user: toUser(session.user) };
 }

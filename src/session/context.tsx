@@ -47,13 +47,13 @@ export function SessionProvider({ children }: PropsWithChildren) {
       value={{
         user,
         signIn,
-        // El registro NO devuelve token (solo crea el usuario), así que
-        // enseguida iniciamos sesión con las mismas credenciales para que el
-        // usuario entre de una vez y no tenga que escribirlas dos veces.
+        // `api.register` devuelve la sesión completa (el backend firma el JWT
+        // al crear la cuenta), así que se entra directo sin un login extra.
         signUp: async (form) => {
           // `api.register` normaliza los datos y parte nombres y apellidos.
-          await api.register({ ...form, tipo_usuario: 'conductor' });
-          await signIn(form.email, form.contrasena);
+          const session = await api.register({ ...form, tipo_usuario: 'conductor' });
+          setToken(session.token);
+          setUser(session.user);
         },
         signOut: () => {
           setToken(null);
