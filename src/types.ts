@@ -102,7 +102,7 @@ export interface UpdateUserDto {
   contrasena?: string;
   celular?: string;
   estado?: EstadoUsuario;
-  tipo_usuario?: 'conductor' | 'controlador';
+  tipo_usuario?: TipoUsuario;
 }
 
 /** Fila de `vehiculos` (PK `placa`, cada uno cuelga de un conductor). */

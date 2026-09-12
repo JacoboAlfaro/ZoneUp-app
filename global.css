@@ -1,2 +1,18 @@
 @import 'tailwindcss';
 @import 'uniwind';
+
+@theme {
+  --color-zu-navy: #1e3a5f;
+  --color-zu-sky-top: #6bb8e8;
+  --color-zu-sky-mid: #9fd4f0;
+  --color-zu-sky-bottom: #d4ecf8;
+  --color-zu-sky-fade: #eef8fc;
+  --color-zu-slogan: #4a8ec4;
+  --color-zu-accent: #7ec8e3;
+  --color-zu-slate: #6b8698;
+  --color-zu-border: #c5d5e0;
+  --color-zu-white: #ffffff;
+  --color-zu-card: rgba(255, 255, 255, 0.9);
+  --color-zu-card-cyan: rgba(200, 235, 245, 0.82);
+  --color-zu-skyline: #7a93a8;
+}

@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import { useForm } from 'react-hook-form';
-import { Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Button from '../src/components/Button';
 import Field from '../src/components/Field';
 import { useSession } from '../src/session/context';
@@ -30,47 +30,73 @@ export default function Login() {
   };
 
   return (
-    <View className="flex-1 justify-center gap-5 bg-neutral-50 p-6">
-      <View className="gap-1">
-        <Text className="text-2xl font-bold text-neutral-900">Login ZoneUp</Text>
-        <Text className="text-neutral-500">Entra con tu cuenta de correo</Text>
-      </View>
+    <KeyboardAvoidingView
+      className="flex-1 bg-zu-sky-bottom"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="flex-grow justify-center px-5 py-10"
+        keyboardShouldPersistTaps="handled">
+        <View className="absolute -right-20 top-12 h-56 w-56 rounded-full bg-zu-sky-mid" />
+        <View className="absolute -left-24 bottom-8 h-64 w-64 rounded-full bg-zu-sky-fade" />
 
-      <Field
-        control={control}
-        name="email"
-        label="Correo"
-        keyboardType="email-address"
-        placeholder="nombre@autonoma.edu.co"
-        rules={{
-          required: 'El correo es obligatorio',
-          pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
-        }}
-      />
-      <Field
-        control={control}
-        name="contrasena"
-        label="Contraseña"
-        secureTextEntry
-        placeholder="••••••••"
-        rules={{ required: 'La contraseña es obligatoria' }}
-      />
+        <View className="gap-6 rounded-3xl border border-zu-white/70 bg-zu-white/65 p-6 shadow-md">
+          <View className="items-center gap-2">
+            <View className="mb-1 h-1 w-10 rounded-full bg-zu-accent" />
+            <Text className="text-xs font-semibold uppercase tracking-[3px] text-zu-slogan">
+              Inicio de sesión
+            </Text>
+            <Text className="text-3xl font-bold text-zu-navy">Accede</Text>
+            <Text className="text-center text-sm text-zu-slate">
+              Ingresa tus datos para continuar en ZoneUp
+            </Text>
+          </View>
 
-      {!!formState.errors.root && (
-        <Text className="rounded-lg bg-red-50 p-3 text-center text-red-700">
-          {formState.errors.root.message}
+          <View className="gap-3">
+            <Field
+              control={control}
+              name="email"
+              label="Correo electrónico"
+              keyboardType="email-address"
+              autoComplete="email"
+              placeholder="tu@correo.com"
+              rules={{
+                required: 'El correo es obligatorio',
+                pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
+              }}
+            />
+            <Field
+              control={control}
+              name="contrasena"
+              label="Contraseña"
+              secureTextEntry
+              autoComplete="current-password"
+              placeholder="Contraseña"
+              rules={{ required: 'La contraseña es obligatoria' }}
+            />
+          </View>
+
+          {!!formState.errors.root && (
+            <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
+              {formState.errors.root.message}
+            </Text>
+          )}
+
+          <Button
+            text={formState.isSubmitting ? 'Ingresando…' : 'Ingresar'}
+            onPress={handleSubmit(submit)}
+            disabled={formState.isSubmitting}
+            className="rounded-2xl bg-zu-navy"
+          />
+        </View>
+
+        <Text className="mt-6 text-center text-sm text-zu-slate">
+          ¿Sin cuenta?{' '}
+          <Link href="/register" className="font-bold text-zu-navy underline">
+            Crea una cuenta
+          </Link>
         </Text>
-      )}
-
-      <Button
-        text={formState.isSubmitting ? 'Entrando…' : 'Entrar'}
-        onPress={handleSubmit(submit)}
-        disabled={formState.isSubmitting}
-      />
-
-      <Link href="/register" className="text-center text-blue-600">
-        ¿No tienes cuenta? Regístrate
-      </Link>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

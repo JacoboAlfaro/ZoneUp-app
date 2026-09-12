@@ -26,15 +26,18 @@ function Navigator() {
 
   return (
     <Stack screenOptions={{ headerTitleStyle: { fontWeight: '600' } }}>
-      {/* Con sesión iniciada */}
-      <Stack.Protected guard={!!user}>
-        <Stack.Screen name="index" options={{ title: 'HelpDesk UAM' }} />
+      <Stack.Protected guard={!!user && user.tipo_usuario !== 'admin'}>
+        <Stack.Screen name="index" options={{ title: 'ZoneUp' }} />
+      </Stack.Protected>
+
+      <Stack.Protected guard={user?.tipo_usuario === 'admin'}>
+        <Stack.Screen name="admin" options={{ headerShown: false }} />
       </Stack.Protected>
 
       {/* Sin sesión */}
       <Stack.Protected guard={!user}>
-        <Stack.Screen name="login" options={{ title: 'Iniciar sesión' }} />
-        <Stack.Screen name="register" options={{ title: 'Crear cuenta' }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} />
       </Stack.Protected>
     </Stack>
   );
