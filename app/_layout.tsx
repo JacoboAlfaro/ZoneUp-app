@@ -27,7 +27,8 @@ function Navigator() {
   return (
     <Stack screenOptions={{ headerTitleStyle: { fontWeight: '600' } }}>
       <Stack.Protected guard={!!user && user.tipo_usuario !== 'admin'}>
-        <Stack.Screen name="index" options={{ title: 'ZoneUp' }} />
+        <Stack.Screen name="conductor" options={{ headerShown: false }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack.Protected>
 
       <Stack.Protected guard={user?.tipo_usuario === 'admin'}>
