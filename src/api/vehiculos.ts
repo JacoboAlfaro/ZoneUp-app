@@ -8,7 +8,7 @@
  *   | 404 si el documento no existe (un no-conductor devuelve [])
  */
 
-import type { AddVehiculoDto, UserWithVehiculos, Vehiculo } from '../types';
+import type { AddVehiculoDto, UpdateVehiculoDto, UserWithVehiculos, Vehiculo } from '../types';
 import { toUser } from './auth';
 import type { UserResponse } from './auth';
 import { request } from './client';
@@ -60,4 +60,20 @@ export async function addVehiculo(documento: string, dto: AddVehiculoDto): Promi
   };
   const data = await request<UserWithVehiculosResponse>(path, body);
   return { ...toUser(data), vehiculos: data.vehiculos.map(toVehiculo) };
+}
+
+export async function updateVehiculo(documento: string, placa: string, dto: UpdateVehiculoDto): Promise<UserWithVehiculos> {
+  const path = `/users/${encodeURIComponent(documento.trim())}/vehiculo/${encodeURIComponent(placa.trim().toUpperCase())}`;
+  const body = {
+    marca: dto.marca?.trim(),
+    color: dto.color?.trim(),
+  };
+  const data = await request<UserWithVehiculosResponse>(path, body, { method: 'PATCH' });
+  return { ...toUser(data), vehiculos: data.vehiculos.map(toVehiculo) };
+}
+
+export async function deleteVehiculo(documento: string, placa: string): Promise<any> {
+  const path = `/users/${encodeURIComponent(documento.trim())}/vehiculo/${encodeURIComponent(placa.trim().toUpperCase())}`;
+  const data = await request<UserWithVehiculosResponse>(path, undefined, { method: 'DELETE' });
+  return { data };
 }

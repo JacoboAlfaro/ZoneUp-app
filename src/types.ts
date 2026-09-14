@@ -120,6 +120,11 @@ export interface AddVehiculoDto {
   color: string;
 }
 
+export interface UpdateVehiculoDto {
+  marca?: string;
+  color?: string;
+}
+
 /** Usuario más sus vehículos: lo que devuelve POST /users/:documento/vehiculo. */
 export interface UserWithVehiculos extends User {
   vehiculos: Vehiculo[];
