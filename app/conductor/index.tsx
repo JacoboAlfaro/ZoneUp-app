@@ -21,6 +21,10 @@ export default function Home() {
           onPress={() => router.push('/conductor/(usuarios)')}
         />
         <Button
+          text="Mis vehículos"
+          onPress={() => router.push('/conductor/(vehiculos)')}
+        />
+        <Button
           text="Cerrar sesión"
           onPress={signOut}
           secondary
