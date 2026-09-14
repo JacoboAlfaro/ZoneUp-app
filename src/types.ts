@@ -95,9 +95,9 @@ export type CreateUserDto = RegisterDto;
 /** Cuerpo de PATCH /users/:documento. Todo opcional; `contrasena` se hashea. */
 export interface UpdateUserDto {
   primer_nombre?: string;
-  segundo_nombre?: string;
+  segundo_nombre?: string | null;
   primer_apellido?: string;
-  segundo_apellido?: string;
+  segundo_apellido?: string | null;
   email?: string;
   contrasena?: string;
   celular?: string;

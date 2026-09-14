@@ -16,7 +16,7 @@ type EditarUsuarioForm = {
 };
 
 export default function EditarUsuario() {
-  const { user } = useSession();
+  const { user, updateCurrentUser } = useSession();
 
   const {
     control,
@@ -45,14 +45,16 @@ export default function EditarUsuario() {
 
   const guardarCambios = async (datos: EditarUsuarioForm) => {
     try {
-      await updateUser(user.documento_identidad, {
+      const usuarioActualizado = await updateUser(user.documento_identidad, {
         primer_nombre: datos.primer_nombre,
-        segundo_nombre: datos.segundo_nombre || undefined,
+        segundo_nombre: datos.segundo_nombre.trim() || null,
         primer_apellido: datos.primer_apellido,
-        segundo_apellido: datos.segundo_apellido || undefined,
+        segundo_apellido: datos.segundo_apellido.trim() || null,
         email: datos.email,
         celular: datos.celular,
       });
+
+      updateCurrentUser(usuarioActualizado);
 
       Alert.alert(
         'Perfil actualizado',
@@ -60,7 +62,7 @@ export default function EditarUsuario() {
         [
           {
             text: 'Aceptar',
-            onPress: () => router.replace('/conductor/(usuarios)'),
+            onPress: () => router.back(),
           },
         ],
       );

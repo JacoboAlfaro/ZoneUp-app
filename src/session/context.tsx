@@ -16,6 +16,7 @@ interface Session {
   user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (dto: Register) => Promise<void>;
+  updateCurrentUser: (user: User) => void;
   signOut: () => void;
 }
 
@@ -55,6 +56,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
           setToken(session.token);
           setUser(session.user);
         },
+        updateCurrentUser: setUser,
         signOut: () => {
           setToken(null);
           setUser(null);

@@ -13,7 +13,6 @@ type Props<T extends FieldValues> = {
   control: Control<T>;
   name: Path<T>;
   label: string;
-  /** Valores posibles. Se muestran cambiando los "_" por espacios. */
   options: readonly string[];
 };
 

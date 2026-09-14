@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getUserByEmail, updateUser } from '../../../../src/api/users';
 import {
   ESTADOS_USUARIO,
+  TIPOS_USUARIO,
   type EstadoUsuario,
   type TipoUsuario,
   type User,
@@ -18,7 +19,7 @@ const estadoLabel: Record<EstadoUsuario, string> = {
   eliminado: 'Eliminado',
 };
 
-const tiposEditables = ['conductor', 'controlador', 'admin'] as const;
+const tiposEditables = TIPOS_USUARIO;
 
 const tipoLabel: Record<TipoUsuario, string> = {
   conductor: 'Conductor',
