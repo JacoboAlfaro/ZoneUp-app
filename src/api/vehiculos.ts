@@ -8,10 +8,15 @@
  *   | 404 si el documento no existe (un no-conductor devuelve [])
  */
 
-import type { AddVehiculoDto, UpdateVehiculoDto, UserWithVehiculos, Vehiculo } from '../types';
-import { toUser } from './auth';
-import type { UserResponse } from './auth';
-import { request } from './client';
+import type {
+  AddVehiculoDto,
+  UpdateVehiculoDto,
+  UserWithVehiculos,
+  Vehiculo,
+} from "../types";
+import type { UserResponse } from "./auth";
+import { toUser } from "./auth";
+import { request } from "./client";
 
 /** Vehículo tal como lo manda el servidor (marca/color pueden ser null). */
 export interface VehiculoResponse {
@@ -51,7 +56,10 @@ export async function getVehiculos(documento: string): Promise<Vehiculo[]> {
  * La placa se normaliza a mayúsculas sin espacios, como en una tarjeta de
  * propiedad (el servidor la recorta a 10 caracteres).
  */
-export async function addVehiculo(documento: string, dto: AddVehiculoDto): Promise<UserWithVehiculos> {
+export async function addVehiculo(
+  documento: string,
+  dto: AddVehiculoDto,
+): Promise<UserWithVehiculos> {
   const path = `/users/${encodeURIComponent(documento.trim())}/vehiculo`;
   const body = {
     placa: dto.placa.trim().toUpperCase(),
@@ -62,18 +70,27 @@ export async function addVehiculo(documento: string, dto: AddVehiculoDto): Promi
   return { ...toUser(data), vehiculos: data.vehiculos.map(toVehiculo) };
 }
 
-export async function updateVehiculo(documento: string, placa: string, dto: UpdateVehiculoDto): Promise<UserWithVehiculos> {
+export async function updateVehiculo(
+  documento: string,
+  placa: string,
+  dto: UpdateVehiculoDto,
+): Promise<Vehiculo> {
   const path = `/users/${encodeURIComponent(documento.trim())}/vehiculo/${encodeURIComponent(placa.trim().toUpperCase())}`;
   const body = {
     marca: dto.marca?.trim(),
     color: dto.color?.trim(),
   };
-  const data = await request<UserWithVehiculosResponse>(path, body, { method: 'PATCH' });
-  return { ...toUser(data), vehiculos: data.vehiculos.map(toVehiculo) };
+  const data = await request<VehiculoResponse>(path, body, { method: "PATCH" });
+  return toVehiculo(data);
 }
 
-export async function deleteVehiculo(documento: string, placa: string): Promise<any> {
+export async function deleteVehiculo(
+  documento: string,
+  placa: string,
+): Promise<any> {
   const path = `/users/${encodeURIComponent(documento.trim())}/vehiculo/${encodeURIComponent(placa.trim().toUpperCase())}`;
-  const data = await request<UserWithVehiculosResponse>(path, undefined, { method: 'DELETE' });
+  const data = await request<UserWithVehiculosResponse>(path, undefined, {
+    method: "DELETE",
+  });
   return { data };
 }
