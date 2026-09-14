@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Button from '../src/components/Button';
 import Field from '../src/components/Field';
+import FormError from '../src/components/FormError';
 import { useSession } from '../src/session/context';
 import type { Register } from '../src/types';
 
@@ -57,9 +58,11 @@ export default function Register() {
               label="Nombre(s)"
               autoCapitalize="words"
               placeholder="Nombre(s) del usuario"
+              maxLength={100}
               rules={{
                 required: 'El nombre es obligatorio',
                 minLength: { value: 2, message: 'Mínimo 2 caracteres' },
+                maxLength: { value: 100, message: 'Máximo 100 caracteres' },
               }}
             />
             <Field
@@ -68,9 +71,11 @@ export default function Register() {
               label="Apellidos"
               autoCapitalize="words"
               placeholder="Apellidos del usuario"
+              maxLength={100}
               rules={{
                 required: 'Los apellidos son obligatorios',
                 minLength: { value: 2, message: 'Mínimo 2 caracteres' },
+                maxLength: { value: 100, message: 'Máximo 100 caracteres' },
               }}
             />
             <Field
@@ -79,9 +84,11 @@ export default function Register() {
               label="Documento"
               keyboardType="number-pad"
               placeholder="Número de documento"
+              maxLength={20}
               rules={{
                 required: 'El documento de identidad es obligatorio',
                 minLength: { value: 6, message: 'Mínimo 6 caracteres' },
+                maxLength: { value: 20, message: 'Máximo 20 caracteres' },
               }}
             />
             <Field
@@ -90,9 +97,11 @@ export default function Register() {
               label="Celular"
               keyboardType="phone-pad"
               placeholder="Número de celular (10 dígitos)"
+              maxLength={13}
               rules={{
                 required: 'El celular es obligatorio',
                 minLength: { value: 10, message: 'Mínimo 10 dígitos' },
+                maxLength: { value: 13, message: 'Máximo 13 dígitos' },
               }}
             />
             <Field
@@ -102,9 +111,11 @@ export default function Register() {
               keyboardType="email-address"
               autoComplete="email"
               placeholder="tu@correo.com"
+              maxLength={254}
               rules={{
                 required: 'El correo es obligatorio',
                 pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
+                maxLength: { value: 254, message: 'Máximo 254 caracteres' },
               }}
             />
             <Field
@@ -114,9 +125,11 @@ export default function Register() {
               secureTextEntry
               autoComplete="new-password"
               placeholder="Contraseña"
+              maxLength={128}
               rules={{
                 required: 'La contraseña es obligatoria',
                 minLength: { value: 8, message: 'Mínimo 8 caracteres' },
+                maxLength: { value: 128, message: 'Máximo 128 caracteres' },
               }}
             />
             <Field
@@ -126,19 +139,17 @@ export default function Register() {
               secureTextEntry
               autoComplete="new-password"
               placeholder="Repite tu contraseña"
+              maxLength={128}
               rules={{
                 required: 'Confirma la contraseña',
+                maxLength: { value: 128, message: 'Máximo 128 caracteres' },
                 validate: (value) =>
                   value === getValues('contrasena') || 'Las contraseñas no coinciden',
               }}
             />
           </View>
 
-          {!!formState.errors.root && (
-            <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
-              {formState.errors.root.message}
-            </Text>
-          )}
+          <FormError message={formState.errors.root?.message} />
 
           <Button
             text={formState.isSubmitting ? 'Creando…' : 'Regístrate'}

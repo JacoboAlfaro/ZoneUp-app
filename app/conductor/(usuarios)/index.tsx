@@ -1,19 +1,14 @@
 import { router } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 import Button from '../../../src/components/Button';
+import NoSessionState from '../../../src/components/NoSessionState';
 import { useSession } from '../../../src/session/context';
 
 export default function Usuario() {
   const { user } = useSession();
 
   if (!user) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50 p-6">
-        <Text className="text-base text-red-600">
-          No hay un usuario iniciado.
-        </Text>
-      </View>
-    );
+    return <NoSessionState />;
   }
 
   return (

@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { deleteZona, getZona, updateZona } from '../../../../src/api/zonas';
 import Button from '../../../../src/components/Button';
 import Field from '../../../../src/components/Field';
+import FormError from '../../../../src/components/FormError';
 import type { ZonaAzul } from '../../../../src/types';
 
 /** Los datos que captura este formulario. Todo entra como texto y se convierte al guardar. */
@@ -277,15 +278,8 @@ export default function AdminZonaDetalle() {
             }}
           />
 
-          {formState.errors.root ? (
-            <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
-              {formState.errors.root.message}
-            </Text>
-          ) : null}
-
-          {cargaError ? (
-            <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">{cargaError}</Text>
-          ) : null}
+          <FormError message={formState.errors.root?.message} />
+          <FormError message={cargaError ?? undefined} />
 
           <Button
             text={formState.isSubmitting ? 'Guardando…' : 'Guardar cambios'}

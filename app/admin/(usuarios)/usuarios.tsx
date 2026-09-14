@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { listUsers } from '../../../src/api/users';
+import Button from '../../../src/components/Button';
 import DashboardStat from '../../../src/components/admin/DashboardStat';
 import type { EstadoUsuario, TipoUsuario, User } from '../../../src/types';
 
@@ -101,14 +102,12 @@ export default function AdminUsuarios() {
           Consulta los usuarios registrados y administra sus cuentas.
         </Text>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Agregar usuario"
+        <Button
+          text="Agregar usuario"
+          icon={Plus}
           onPress={() => router.push('/admin/nuevo-usuario')}
-          className="mt-5 flex-row items-center justify-center gap-2 rounded-2xl bg-zu-navy px-5 py-4 active:opacity-80">
-          <Plus size={21} color="#FFFFFF" />
-          <Text className="text-base font-bold text-white">Agregar usuario</Text>
-        </Pressable>
+          className="mt-5 rounded-2xl bg-zu-navy"
+        />
 
         <View className="mt-5 flex-row gap-3">
           <DashboardStat value={usuarios.length} label="Total registrados" />

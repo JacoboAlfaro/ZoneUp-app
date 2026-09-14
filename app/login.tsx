@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Button from '../src/components/Button';
 import Field from '../src/components/Field';
+import FormError from '../src/components/FormError';
 import { useSession } from '../src/session/context';
 
 /** Los datos que captura este formulario. */
@@ -60,9 +61,11 @@ export default function Login() {
               keyboardType="email-address"
               autoComplete="email"
               placeholder="tu@correo.com"
+              maxLength={254}
               rules={{
                 required: 'El correo es obligatorio',
                 pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
+                maxLength: { value: 254, message: 'Máximo 254 caracteres' },
               }}
             />
             <Field
@@ -72,15 +75,15 @@ export default function Login() {
               secureTextEntry
               autoComplete="current-password"
               placeholder="Contraseña"
-              rules={{ required: 'La contraseña es obligatoria' }}
+              maxLength={128}
+              rules={{
+                required: 'La contraseña es obligatoria',
+                maxLength: { value: 128, message: 'Máximo 128 caracteres' },
+              }}
             />
           </View>
 
-          {!!formState.errors.root && (
-            <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
-              {formState.errors.root.message}
-            </Text>
-          )}
+          <FormError message={formState.errors.root?.message} />
 
           <Button
             text={formState.isSubmitting ? 'Ingresando…' : 'Ingresar'}

@@ -5,6 +5,8 @@ import { Alert, ScrollView, Text, View } from "react-native";
 import { addVehiculo } from "../../../src/api/vehiculos";
 import Button from "../../../src/components/Button";
 import Field from "../../../src/components/Field";
+import FormError from "../../../src/components/FormError";
+import NoSessionState from "../../../src/components/NoSessionState";
 import { useSession } from "../../../src/session/context";
 
 type NuevoVehiculoForm = {
@@ -26,13 +28,7 @@ export default function NuevoVehiculo() {
     });
 
   if (!user) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50 p-6">
-        <Text className="text-base text-red-600">
-          No hay un usuario iniciado.
-        </Text>
-      </View>
-    );
+    return <NoSessionState />;
   }
 
   const guardar = async (form: NuevoVehiculoForm) => {
@@ -126,11 +122,7 @@ export default function NuevoVehiculo() {
           />
         </View>
 
-        {formState.errors.root ? (
-          <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
-            {formState.errors.root.message}
-          </Text>
-        ) : null}
+        <FormError message={formState.errors.root?.message} />
 
         <Button
           text={formState.isSubmitting ? "Guardando…" : "Registrar vehículo"}

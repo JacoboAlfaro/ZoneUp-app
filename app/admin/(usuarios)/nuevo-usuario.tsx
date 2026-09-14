@@ -7,6 +7,7 @@ import { toRegisterDto } from '../../../src/api/auth';
 import { createUser } from '../../../src/api/users';
 import Button from '../../../src/components/Button';
 import Field from '../../../src/components/Field';
+import FormError from '../../../src/components/FormError';
 import Select from '../../../src/components/Select';
 import type { Register } from '../../../src/types';
 
@@ -133,11 +134,7 @@ export default function NuevoUsuario() {
           <Select control={control} name="tipo_usuario" label="Tipo de usuario" options={tipos} />
           <Select control={control} name="estado" label="Estado inicial" options={estados} />
 
-          {formState.errors.root ? (
-            <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
-              {formState.errors.root.message}
-            </Text>
-          ) : null}
+          <FormError message={formState.errors.root?.message} />
 
           <Button
             text={formState.isSubmitting ? 'Guardando…' : 'Guardar usuario'}

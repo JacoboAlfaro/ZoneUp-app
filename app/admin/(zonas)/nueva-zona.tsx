@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { createZona } from '../../../src/api/zonas';
 import Button from '../../../src/components/Button';
 import Field from '../../../src/components/Field';
+import FormError from '../../../src/components/FormError';
 
 /** Los datos que captura este formulario. Todo entra como texto y se convierte al guardar. */
 type NuevaZonaForm = {
@@ -164,11 +165,7 @@ export default function NuevaZona() {
             }}
           />
 
-          {formState.errors.root ? (
-            <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
-              {formState.errors.root.message}
-            </Text>
-          ) : null}
+          <FormError message={formState.errors.root?.message} />
 
           <Button
             text={formState.isSubmitting ? 'Guardando…' : 'Crear zona'}

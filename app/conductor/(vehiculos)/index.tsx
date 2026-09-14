@@ -12,6 +12,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getVehiculos } from "../../../src/api/vehiculos";
+import Button from "../../../src/components/Button";
+import NoSessionState from "../../../src/components/NoSessionState";
 import { useSession } from "../../../src/session/context";
 import type { Vehiculo } from "../../../src/types";
 
@@ -49,13 +51,7 @@ export default function MisVehiculos() {
   );
 
   if (!user) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50 p-6">
-        <Text className="text-base text-red-600">
-          No hay un usuario iniciado.
-        </Text>
-      </View>
-    );
+    return <NoSessionState />;
   }
 
   return (
@@ -78,17 +74,12 @@ export default function MisVehiculos() {
           Consulta, agrega y edita los vehículos registrados a tu nombre.
         </Text>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Agregar vehículo"
+        <Button
+          text="Agregar vehículo"
+          icon={Plus}
           onPress={() => router.push("/conductor/(vehiculos)/nuevo-vehiculo")}
-          className="mt-5 flex-row items-center justify-center gap-2 rounded-2xl bg-zu-navy px-5 py-4 active:opacity-80"
-        >
-          <Plus size={21} color="#FFFFFF" />
-          <Text className="text-base font-bold text-white">
-            Agregar vehículo
-          </Text>
-        </Pressable>
+          className="mt-5 rounded-2xl bg-zu-navy"
+        />
 
         <View className="mt-5 flex-row gap-3">
           <View className="min-h-28 flex-1 justify-between rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm">

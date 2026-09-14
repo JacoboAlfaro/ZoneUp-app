@@ -10,6 +10,8 @@ import {
 } from "../../../../src/api/vehiculos";
 import Button from "../../../../src/components/Button";
 import Field from "../../../../src/components/Field";
+import FormError from "../../../../src/components/FormError";
+import NoSessionState from "../../../../src/components/NoSessionState";
 import { useSession } from "../../../../src/session/context";
 import type { Vehiculo } from "../../../../src/types";
 
@@ -70,13 +72,7 @@ export default function DetalleVehiculo() {
   }, [navigation, vehiculo]);
 
   if (!user) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50 p-6">
-        <Text className="text-base text-red-600">
-          No hay un usuario iniciado.
-        </Text>
-      </View>
-    );
+    return <NoSessionState />;
   }
 
   const guardar = async (form: VehiculoForm) => {
@@ -200,17 +196,8 @@ export default function DetalleVehiculo() {
           />
         </View>
 
-        {formState.errors.root ? (
-          <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
-            {formState.errors.root.message}
-          </Text>
-        ) : null}
-
-        {cargaError ? (
-          <Text className="rounded-xl bg-red-50 p-3 text-center text-red-700">
-            {cargaError}
-          </Text>
-        ) : null}
+        <FormError message={formState.errors.root?.message} />
+        <FormError message={cargaError ?? undefined} />
 
         <Button
           text={formState.isSubmitting ? "Guardando…" : "Guardar cambios"}

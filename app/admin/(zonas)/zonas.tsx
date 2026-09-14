@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { listZonas } from '../../../src/api/zonas';
+import Button from '../../../src/components/Button';
 import DashboardStat from '../../../src/components/admin/DashboardStat';
 import type { ZonaAzul } from '../../../src/types';
 
@@ -99,14 +100,12 @@ export default function AdminZonas() {
           Ubicación y referencias van en indicaciones. Toca una zona para verla y editarla.
         </Text>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Nueva zona azul"
+        <Button
+          text="Nueva zona azul"
+          icon={Plus}
           onPress={() => router.push('/admin/nueva-zona')}
-          className="mt-5 flex-row items-center justify-center gap-2 rounded-2xl bg-zu-navy px-5 py-4 active:opacity-80">
-          <Plus size={21} color="#FFFFFF" />
-          <Text className="text-base font-bold text-white">Nueva zona azul</Text>
-        </Pressable>
+          className="mt-5 rounded-2xl bg-zu-navy"
+        />
 
         <View className="mt-5 flex-row gap-3">
           <DashboardStat value={zonas.length} label="Zonas registradas" />

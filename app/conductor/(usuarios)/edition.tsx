@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import Button from '../../../src/components/Button';
 import Field from '../../../src/components/Field';
+import NoSessionState from '../../../src/components/NoSessionState';
 import { updateUser } from '../../../src/api/users';
 import { useSession } from '../../../src/session/context';
 
@@ -34,13 +35,7 @@ export default function EditarUsuario() {
   });
 
   if (!user) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50 p-6">
-        <Text className="text-base text-red-600">
-          No hay un usuario iniciado.
-        </Text>
-      </View>
-    );
+    return <NoSessionState />;
   }
 
   const guardarCambios = async (datos: EditarUsuarioForm) => {
