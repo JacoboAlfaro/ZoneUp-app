@@ -18,6 +18,22 @@ export default function AdminLayout() {
         name="(vehiculos)/vehiculo/[placa]"
         options={{ title: "Detalle del vehículo" }}
       />
+      <Stack.Screen
+        name="(reservas)/reservas"
+        options={{ title: "Mis reservas" }}
+      />
+      <Stack.Screen
+        name="(reservas)/zonas"
+        options={{ title: "Reservar zona azul" }}
+      />
+      <Stack.Screen
+        name="(reservas)/nueva-reserva"
+        options={{ title: "Nueva reserva" }}
+      />
+      <Stack.Screen
+        name="(reservas)/reserva/[id]"
+        options={{ title: "Detalle de la reserva" }}
+      />
     </Stack>
   );
 }

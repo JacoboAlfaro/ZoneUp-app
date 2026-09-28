@@ -10,6 +10,9 @@
  *                  (ver src/api/users.ts y src/api/vehiculos.ts)
  * - zonas :3002 -> POST /zonas, GET /zonas, GET /zonas/:id, PATCH /zonas/:id,
  *                  DELETE /zonas/:id (ver src/api/zonas.ts)
+ * - reservas :3004 -> POST /reservas, GET /reservas/:id, GET /reservas/user/:id,
+ *                  GET /reservas/zona/:idZona, PUT /reservas/:id/state,
+ *                  PATCH /reservas/:id/extend (ver src/api/reservas.ts)
  */
 
 /**
@@ -162,6 +165,73 @@ export interface UpdateZonaDto {
 /** Lo que devuelve DELETE /zonas/:id cuando borra. */
 export interface DeleteZonaResponse {
   message: string;
+}
+
+/**
+ * Estados de `estado_reserva` en Postgres. Toda reserva nace `pendiente`; el
+ * encargado la pasa a `activa` (acepta) o `cancelada` (rechaza), y a
+ * `completada` cuando verifica la placa en la zona.
+ */
+export const ESTADOS_RESERVA = ['pendiente', 'activa', 'cancelada', 'completada'] as const;
+export type EstadoReserva = (typeof ESTADOS_RESERVA)[number];
+
+/** Fila de `reservas`. En la app `precio` es número y las fechas texto ISO. */
+export interface Reserva {
+  id: number;
+  /** Id (uuid) del conductor que reservó. */
+  id_conductor: string | null;
+  id_zona: number | null;
+  /** Placa del vehículo (FK a `vehiculos.placa`). null si el vehículo se borró. */
+  id_vehiculo: string | null;
+  /** Inicio de la ventana. El servidor lo reinicia cuando el encargado acepta. */
+  fecha_real_inicio: string;
+  /** Fin de la ventana de parqueo. */
+  fecha_fin: string | null;
+  /** COP, calculado en el servidor: horas × 3.500 + 5.000. */
+  precio: number;
+  estado: EstadoReserva;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+}
+
+/** Conductor que hizo una reserva, tal como lo ve el encargado de la zona. */
+export interface ConductorDeReserva {
+  id: string;
+  documento_identidad: string;
+  /** Nombre completo, derivado en `src/api/` uniendo las 4 partes. */
+  name: string;
+  email: string;
+  celular: string;
+}
+
+/** Fila de GET /reservas/zona/:idZona: la reserva con su conductor y su vehículo. */
+export interface ReservaDeZona {
+  reserva: Reserva;
+  /** null si la reserva quedó sin conductor. */
+  conductor: ConductorDeReserva | null;
+  /** null si el vehículo se borró después de reservar. */
+  vehiculo: Vehiculo | null;
+}
+
+/** Cuerpo de PUT /reservas/:id/state. */
+export interface UpdateReservaEstadoDto {
+  estado: EstadoReserva;
+  /**
+   * ISO 8601. Si no se manda al completar o cancelar, el servidor pone "ahora"
+   * como fin de la reserva.
+   */
+  fecha_fin?: string;
+}
+
+/** Cuerpo de POST /reservas. El servidor pone el inicio (ahora) y el precio. */
+export interface CreateReservaDto {
+  /** Id (uuid) del conductor: el `id` del usuario en sesión. */
+  id_conductor: string;
+  id_zona: number;
+  /** Placa de un vehículo registrado a nombre del conductor (máx. 10). */
+  id_vehiculo: string;
+  /** ISO 8601, posterior a ahora. */
+  fecha_fin: string;
 }
 
 /**
