@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "zone-up-app",
-    "slug": "zone-up-app",
+    "slug": "zoneup-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -37,6 +37,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b3b426c4-3549-47e9-972e-30775744d4a7"
+      }
+    },
+    "owner": "jacoboalfaros-team"
   }
 }
