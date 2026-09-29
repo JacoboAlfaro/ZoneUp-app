@@ -2,7 +2,7 @@
 
 App móvil con **Expo + React Native** para gestionar el estacionamiento en **zonas azules** (caso inicial: Manizales).
 
-- Los **conductores** se registran, gestionan su perfil y sus vehículos.
+- Los **conductores** se registran, gestionan su perfil y sus vehículos, y reservan cupos en zonas azules.
 - Los **administradores** gestionan usuarios y zonas azules (ubicación, indicaciones y cupos).
 - Se conecta a un backend de **3 microservicios NestJS** a través de un único gateway HTTP.
 
@@ -31,15 +31,26 @@ La app no tiene backend propio. Habla con diferentes microservicios NestJS, detr
 - `src/session/context.tsx`: `SessionProvider` con `user, signIn, signUp, updateCurrentUser, signOut`. El JWT vive **solo en memoria** (`src/api/client.ts`); al cerrar la app hay que volver a entrar.
 - `app/_layout.tsx`: usa `Stack.Protected`:
   - sin `user` → solo `login` / `register` existen como rutas;
-  - `user` no-admin → `conductor` + `index`;
-  - `user.tipo_usuario === 'admin'` → `admin`.
+  - `user` conductor (o sin tipo) → `conductor` + `index`;
+  - `user.tipo_usuario === 'admin'` → `admin`;
+  - `user.tipo_usuario === 'controlador'` → `controlador`.
 
 ### Panel conductor (`app/conductor/`)
-- `index.tsx`: bienvenida + accesos a perfil, vehículos y cerrar sesión.
+- `index.tsx`: bienvenida + accesos a reservar, mis reservas, perfil, vehículos y cerrar sesión.
 - `(usuarios)/index.tsx` + `(usuarios)/edition.tsx`: ver y editar mi perfil.
 - `(vehiculos)/index.tsx`: listar mis vehículos (`GET /users/:documento/vehiculos`).
 - `(vehiculos)/nuevo-vehiculo.tsx`: agregar vehículo (placa normalizada a mayúsculas).
 - `(vehiculos)/vehiculo/[placa].tsx`: detalle / edición del vehículo.
+- `(reservas)/zonas.tsx`: zonas azules con su disponibilidad (con cupos / pocos / sin cupo) para elegir dónde reservar.
+- `(reservas)/nueva-reserva.tsx`: reservar en una zona (`POST /reservas`): vehículo, horas (1 a 24), resumen de costos (`horas × $3.500 + $5.000`). Bloquea si la zona no tiene cupo o si hay otra reserva dentro de sus 15 minutos para llegar.
+- `(reservas)/reservas.tsx`: historial (`GET /reservas/user/:id`) con el contador de 15 minutos de la reserva en curso.
+- `(reservas)/reserva/[id].tsx`: detalle, estado y extensión de horas (`PATCH /reservas/:id/extend`).
+
+### Panel encargado (`app/controlador/`)
+Para los controladores (encargados de zona azul). El backend no dice qué zonas tiene asignadas cada uno, así que se consultan las reservas de todas las zonas (`GET /reservas/zona/:idZona`, una petición por zona).
+- `index.tsx`: saludo, contadores (por revisar, aceptadas, total) y acceso a la gestión de reservas.
+- `(reservas)/reservas.tsx`: todas las reservas, primero las pendientes; buscador por placa, conductor o zona; filtro por estado; **Aceptar / Rechazar** en la misma tarjeta (con confirmación).
+- `(reservas)/reserva/[id].tsx`: detalle con placa, conductor, vehículo y ventana. Pendiente: aceptar o rechazar. Activa: verificar placa (**Sí, coincide** → `completada`; **No, es otra placa** → indicaciones) o cancelar si el vehículo no llega. Todo por `PUT /reservas/:id/state`.
 
 ### Panel admin (`app/admin/`)
 - `index.tsx`: dashboard con contadores (`listUsers`, `listZonas`) y tarjetas a Usuarios y Zonas azules.
@@ -57,10 +68,12 @@ app/                    # Ruteo por archivos (expo-router)
   _layout.tsx           # SessionProvider + Stack.Protected por rol
   index.tsx
   login.tsx / register.tsx
-  conductor/_layout.tsx # Stack: index, (usuarios), (vehiculos)
-  conductor/(usuarios)/ conductor/(vehiculos)/
+  conductor/_layout.tsx # Stack: index, (usuarios), (vehiculos), (reservas)
+  conductor/(usuarios)/ conductor/(vehiculos)/ conductor/(reservas)/
   admin/_layout.tsx     # Stack: index, (usuarios)/..., (zonas)/...
   admin/(usuarios)/ admin/(zonas)/
+  controlador/_layout.tsx # Stack: index, (reservas)/reservas, (reservas)/reserva/[id]
+  controlador/(reservas)/
 src/
   api/
     client.ts           # Único fetch, selección de base por prefijo, ApiError
@@ -68,14 +81,18 @@ src/
     users.ts            # CRUD usuarios
     vehiculos.ts        # GET/POST (+PATCH/DELETE) vehículos
     zonas.ts            # CRUD zonas, toZona (decimal string -> number)
+    reservas.ts         # Reservas del conductor y del encargado, tarifas y regla de 15 min
     index.ts            # Barrel público
   session/context.tsx   # Estado global de sesión
-  types.ts              # Vocabulario: User, ZonaAzul, Vehiculo, DTOs
+  types.ts              # Vocabulario: User, ZonaAzul, Vehiculo, Reserva, DTOs
+  formato.ts            # Pesos, horas y títulos de zona para pantalla
   components/
     Button.tsx Field.tsx FormError.tsx Select.tsx
     ParkingMap.tsx      # MapView centrado en Manizales
     NoSessionState.tsx TabOne.tsx TabTwo.tsx
     admin/              # DashboardStat, DashboardNavTile
+    reservas/           # EstadoReservaBadge, DisponibilidadBadge, ContadorLlegada,
+                        # accionesReserva (confirmar y cambiar estado)
 global.css              # Tokens Tailwind: zu-navy, zu-sky-*, zu-slogan, ...
 app.json                # Expo: slug zone-up-app, scheme zoneupapp, splash, router
 ```
@@ -88,7 +105,8 @@ Variables leídas con `process.env.EXPO_PUBLIC_*` (ver `src/api/client.ts`):
 
 | Variable |  Uso |
 |---|---|
-| `EXPO_PUBLIC_API_URL` | Gateway que reenvía `/auth`, `/users`, `/zonas` |
+| `EXPO_PUBLIC_API_URL` | Gateway que reenvía `/auth`, `/users`, `/zonas`, `/reservas` |
+| `EXPO_PUBLIC_RESERVAS_URL` | Opcional: servicio de reservas sin pasar por el gateway |
 
 
 ## Puesta en marcha

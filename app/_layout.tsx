@@ -26,13 +26,19 @@ function Navigator() {
 
   return (
     <Stack screenOptions={{ headerTitleStyle: { fontWeight: '600' } }}>
-      <Stack.Protected guard={!!user && user.tipo_usuario !== 'admin'}>
+      <Stack.Protected
+        guard={!!user && user.tipo_usuario !== 'admin' && user.tipo_usuario !== 'controlador'}>
         <Stack.Screen name="conductor" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack.Protected>
 
       <Stack.Protected guard={user?.tipo_usuario === 'admin'}>
         <Stack.Screen name="admin" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      {/* Encargados de zona azul */}
+      <Stack.Protected guard={user?.tipo_usuario === 'controlador'}>
+        <Stack.Screen name="controlador" options={{ headerShown: false }} />
       </Stack.Protected>
 
       {/* Sin sesión */}

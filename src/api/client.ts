@@ -5,12 +5,15 @@
  * negocio en `src/api/*.ts`. Si mañana cambia la forma de hablar con el
  * servidor, se cambia aquí y nada más.
  *
- * El backend son 3 microservicios NestJS sin prefijo global:
+ * El backend son microservicios NestJS sin prefijo global:
  * - auth  (puerto 3000) -> POST /auth/register, POST /auth/login
  * - users (puerto 3001) -> POST /users, GET /users, GET /users/:email,
  *                          POST /users/:documento/vehiculo, PATCH /users/:documento
  * - zonas (puerto 3002) -> POST /zonas, GET /zonas, GET /zonas/:id,
  *                          PATCH /zonas/:id, DELETE /zonas/:id
+ * - reservas (puerto 3004) -> POST /reservas, GET /reservas/:id,
+ *                          GET /reservas/user/:id, GET /reservas/zona/:idZona,
+ *                          PUT /reservas/:id/state, PATCH /reservas/:id/extend
  *
  * En el dispositivo se habla con UN gateway (ver `.env`: EXPO_PUBLIC_API_URL,
  * puerto 3003) que reenvía cada prefijo a su servicio. Sin gateway, define las
@@ -33,20 +36,23 @@ const GATEWAY_URL = baseDeEnv(process.env.EXPO_PUBLIC_API_URL, 'http://localhost
 const AUTH_URL = baseDeEnv(process.env.EXPO_PUBLIC_AUTH_URL, GATEWAY_URL);
 const USERS_URL = baseDeEnv(process.env.EXPO_PUBLIC_USERS_URL, GATEWAY_URL);
 const ZONAS_URL = baseDeEnv(process.env.EXPO_PUBLIC_ZONAS_URL, GATEWAY_URL);
+const RESERVAS_URL = baseDeEnv(process.env.EXPO_PUBLIC_RESERVAS_URL, GATEWAY_URL);
 
 /** A qué servicio pertenece cada llamada. Se infiere del prefijo del path. */
-export type ApiBase = 'auth' | 'users' | 'zonas';
+export type ApiBase = 'auth' | 'users' | 'zonas' | 'reservas';
 
 /** Base efectiva para un servicio (útil para depurar a dónde apunta la app). */
 export function getBaseUrl(base: ApiBase = 'auth'): string {
   if (base === 'users') return USERS_URL;
   if (base === 'zonas') return ZONAS_URL;
+  if (base === 'reservas') return RESERVAS_URL;
   return AUTH_URL;
 }
 
 function baseDeRuta(path: string): ApiBase {
   if (path === '/users' || path.startsWith('/users/')) return 'users';
   if (path === '/zonas' || path.startsWith('/zonas/')) return 'zonas';
+  if (path === '/reservas' || path.startsWith('/reservas/')) return 'reservas';
   return 'auth';
 }
 
@@ -89,7 +95,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export interface RequestOptions {
   /** Por defecto: GET sin `body`, POST con `body`. PATCH/DELETE hay que pedirlos. */
   method?: HttpMethod;
-  /** Por defecto se infiere del prefijo del path (/auth, /users, /zonas). */
+  /** Por defecto se infiere del prefijo del path (/auth, /users, /zonas, /reservas). */
   base?: ApiBase;
 }
 

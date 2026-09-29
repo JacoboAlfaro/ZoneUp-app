@@ -17,6 +17,14 @@ export default function Home() {
       </View>
       <View className="gap-3">
         <Button
+          text="Reservar zona azul"
+          onPress={() => router.push('/conductor/(reservas)/zonas')}
+        />
+        <Button
+          text="Mis reservas"
+          onPress={() => router.push('/conductor/(reservas)/reservas')}
+        />
+        <Button
           text="Mi perfil"
           onPress={() => router.push('/conductor/(usuarios)')}
         />

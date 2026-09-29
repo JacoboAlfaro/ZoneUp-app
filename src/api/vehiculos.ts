@@ -30,7 +30,7 @@ interface UserWithVehiculosResponse extends UserResponse {
   vehiculos: VehiculoResponse[];
 }
 
-function toVehiculo(data: VehiculoResponse): Vehiculo {
+export function toVehiculo(data: VehiculoResponse): Vehiculo {
   return {
     placa: data.placa,
     id_conductor: data.id_conductor,
