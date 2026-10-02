@@ -1,0 +1,45 @@
+import { router } from 'expo-router';
+import { Text, View } from 'react-native';
+import Button from '../Button';
+import { useSession } from '../../session/context';
+
+const ConductorIndexScreen = function() {
+  const { user, signOut } = useSession();
+  return (
+    <View className="flex-1 justify-center gap-8 bg-neutral-50 p-6">
+      <View className="gap-2">
+        <Text className="text-3xl font-bold text-neutral-900">
+          Bienvenido, {user?.name}
+        </Text>
+        <Text className="text-neutral-500">
+          {user?.email}
+        </Text>
+      </View>
+      <View className="gap-3">
+        <Button
+          text="Reservar zona azul"
+          onPress={() => router.push('/conductor/(reservas)/zonas')}
+        />
+        <Button
+          text="Mis reservas"
+          onPress={() => router.push('/conductor/(reservas)/reservas')}
+        />
+        <Button
+          text="Mi perfil"
+          onPress={() => router.push('/conductor/(usuarios)')}
+        />
+        <Button
+          text="Mis vehículos"
+          onPress={() => router.push('/conductor/(vehiculos)')}
+        />
+        <Button
+          text="Cerrar sesión"
+          onPress={signOut}
+          secondary
+        />
+      </View>
+    </View>
+  );
+}
+
+export default ConductorIndexScreen;
