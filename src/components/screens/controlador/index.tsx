@@ -4,14 +4,14 @@ import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listReservasDeZonas } from '../../api/reservas';
-import { listZonas } from '../../api/zonas';
-import Button from '../Button';
-import FormError from '../FormError';
+import { listReservasDeZonas } from '../../../api/reservas';
+import { listZonas } from '../../../api/zonas';
+import { useSession } from '../../../session/context';
+import type { ReservaDeZona } from '../../../types';
+import Button from '../../Button';
+import FormError from '../../FormError';
 import DashboardNavTile from '../admin/DashboardNavTile';
 import DashboardStat from '../admin/DashboardStat';
-import { useSession } from '../../session/context';
-import type { ReservaDeZona } from '../../types';
 
 const ControladorPanelScreen = function() {
   const { user, signOut } = useSession();

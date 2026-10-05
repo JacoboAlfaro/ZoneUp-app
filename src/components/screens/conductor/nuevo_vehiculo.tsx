@@ -2,12 +2,12 @@ import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 
-import { addVehiculo } from "../../api/vehiculos";
-import Button from "../Button";
-import Field from "../Field";
-import FormError from "../FormError";
-import NoSessionState from "../NoSessionState";
-import { useSession } from "../../session/context";
+import { addVehiculo } from "../../../api/vehiculos";
+import { useSession } from "../../../session/context";
+import Button from "../../Button";
+import Field from "../../Field";
+import FormError from "../../FormError";
+import NoSessionState from "../../NoSessionState";
 
 type NuevoVehiculoForm = {
   placa: string;

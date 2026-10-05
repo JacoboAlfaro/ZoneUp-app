@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
-import Button from '../Button';
-import NoSessionState from '../NoSessionState';
-import { useSession } from '../../session/context';
+import { useSession } from '../../../session/context';
+import Button from '../../Button';
+import NoSessionState from '../../NoSessionState';
 
 const PerfilScreen = function() {
   const { user } = useSession();

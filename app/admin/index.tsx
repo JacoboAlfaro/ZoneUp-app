@@ -1,4 +1,4 @@
-import AdminIndexScreen from "@/src/components/admin";
+import AdminIndexScreen from "@/src/components/screens/admin";
 
 export default function AdminPanel() {
   return <AdminIndexScreen />;

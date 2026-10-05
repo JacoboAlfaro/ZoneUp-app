@@ -2,20 +2,20 @@ import { router, useFocusEffect } from 'expo-router';
 import { MapPin, Plus, RefreshCw, Search, X } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { listZonas } from '../../../src/api/zonas';
 import Button from '../../../src/components/Button';
-import DashboardStat from '../../../src/components/admin/DashboardStat';
 import type { ZonaAzul } from '../../../src/types';
+import DashboardStat from '../screens/admin/DashboardStat';
 
 /**
  * Título y detalle derivados de `indicaciones`, igual que en la parte visual

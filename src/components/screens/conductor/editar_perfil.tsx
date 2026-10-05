@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import Button from '../Button';
-import Field from '../Field';
-import NoSessionState from '../NoSessionState';
-import { updateUser } from '../../api/users';
-import { useSession } from '../../session/context';
+import { updateUser } from '../../../api/users';
+import { useSession } from '../../../session/context';
+import Button from '../../Button';
+import Field from '../../Field';
+import NoSessionState from '../../NoSessionState';
 
 type EditarUsuarioForm = {
   primer_nombre: string;

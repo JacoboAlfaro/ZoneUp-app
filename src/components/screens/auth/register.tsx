@@ -1,35 +1,13 @@
+import { useRegister } from '@/src/hooks/auth/useRegister';
 import { Link } from 'expo-router';
-import { useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import { useSession } from '../../session/context';
-import type { Register } from '../../types';
-import Button from '../Button';
-import Field from '../Field';
-import FormError from '../FormError';
+import Button from '../../Button';
+import Field from '../../Field';
+import FormError from '../../FormError';
 
-type RegisterForm = Register & { confirmation: string };
 
 const RegisterScreen = () => {
-  const { signUp } = useSession();
-  const { control, handleSubmit, setError, getValues, formState } = useForm<RegisterForm>({
-    defaultValues: {
-      documento_identidad: '',
-      nombres: '',
-      apellidos: '',
-      email: '',
-      contrasena: '',
-      celular: '',
-      confirmation: '',
-    },
-  });
-
-  const submit = async ({ confirmation: _, ...dto }: RegisterForm) => {
-    try {
-      await signUp(dto);
-    } catch (error) {
-      setError('root', { message: (error as Error).message });
-    }
-  };
+  const {control, handleSubmit, getValues, formState, submit} = useRegister(); 
 
   return (
     <KeyboardAvoidingView

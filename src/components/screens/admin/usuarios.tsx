@@ -1,21 +1,21 @@
-import { Plus, RefreshCw, Search, Users, X } from 'lucide-react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { Plus, RefreshCw, Search, Users, X } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listUsers } from '../../api/users';
-import Button from '../Button';
-import DashboardStat from '../admin/DashboardStat';
-import type { EstadoUsuario, TipoUsuario, User } from '../../types';
+import { listUsers } from '../../../api/users';
+import type { EstadoUsuario, TipoUsuario, User } from '../../../types';
+import Button from '../../Button';
+import DashboardStat from './DashboardStat';
 
 const estadoLabel: Record<EstadoUsuario, string> = {
   activo: 'Activo',

@@ -3,13 +3,13 @@ import { useForm } from 'react-hook-form';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { toRegisterDto } from '../../api/auth';
-import { createUser } from '../../api/users';
-import Button from '../Button';
-import Field from '../Field';
-import FormError from '../FormError';
-import Select from '../Select';
-import type { Register } from '../../types';
+import { toRegisterDto } from '../../../api/auth';
+import { createUser } from '../../../api/users';
+import type { Register } from '../../../types';
+import Button from '../../Button';
+import Field from '../../Field';
+import FormError from '../../FormError';
+import Select from '../../Select';
 
 type CreateUserForm = Register & { confirmation: string };
 

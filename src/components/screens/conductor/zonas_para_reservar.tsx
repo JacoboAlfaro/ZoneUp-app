@@ -2,21 +2,21 @@ import { router, useFocusEffect } from 'expo-router';
 import { CalendarPlus, MapPin, RefreshCw, Search, X } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listZonas } from '../../api/zonas';
+import { listZonas } from '../../../api/zonas';
+import { detalleZona, tituloZona } from '../../../formato';
+import type { ZonaAzul } from '../../../types';
+import DisponibilidadBadge from '../../reservas/DisponibilidadBadge';
 import DashboardStat from '../admin/DashboardStat';
-import DisponibilidadBadge from '../reservas/DisponibilidadBadge';
-import { detalleZona, tituloZona } from '../../formato';
-import type { ZonaAzul } from '../../types';
 
 function normalizarBusqueda(value: string): string {
   return value

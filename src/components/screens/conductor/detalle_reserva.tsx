@@ -1,43 +1,43 @@
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-  CARGO_RESERVA,
-  estaEnCamino,
-  extendReserva,
-  getReserva,
-  HORAS_MAX,
-  horasEntre,
-  precioEstimado,
-  TARIFA_HORA,
-} from '../../api/reservas';
-import { getZona } from '../../api/zonas';
-import Button from '../Button';
-import FormError from '../FormError';
-import NoSessionState from '../NoSessionState';
-import ContadorLlegada from '../reservas/ContadorLlegada';
-import EstadoReservaBadge from '../reservas/EstadoReservaBadge';
+    CARGO_RESERVA,
+    estaEnCamino,
+    extendReserva,
+    getReserva,
+    HORAS_MAX,
+    horasEntre,
+    precioEstimado,
+    TARIFA_HORA,
+} from '../../../api/reservas';
+import { getZona } from '../../../api/zonas';
 import {
-  detalleZona,
-  formatFechaHora,
-  formatHoras,
-  formatMomento,
-  formatPesos,
-  formatVentana,
-  tituloZona,
-} from '../../formato';
-import { useSession } from '../../session/context';
-import type { EstadoReserva, Reserva, ZonaAzul } from '../../types';
+    detalleZona,
+    formatFechaHora,
+    formatHoras,
+    formatMomento,
+    formatPesos,
+    formatVentana,
+    tituloZona,
+} from '../../../formato';
+import { useSession } from '../../../session/context';
+import type { EstadoReserva, Reserva, ZonaAzul } from '../../../types';
+import Button from '../../Button';
+import FormError from '../../FormError';
+import NoSessionState from '../../NoSessionState';
+import ContadorLlegada from '../../reservas/ContadorLlegada';
+import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 
 const descripcionEstado: Record<EstadoReserva, string> = {
   pendiente: 'Esperando a que el encargado de la zona acepte tu solicitud.',

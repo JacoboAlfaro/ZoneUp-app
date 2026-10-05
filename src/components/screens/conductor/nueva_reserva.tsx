@@ -3,39 +3,39 @@ import { CalendarPlus, Car, Info, TriangleAlert } from 'lucide-react-native';
 import { useCallback, useState, type ComponentType, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-  CARGO_RESERVA,
-  createReserva,
-  estaEnCamino,
-  HORAS_MAX,
-  HORAS_MIN,
-  limiteLlegada,
-  listReservasConductor,
-  MINUTOS_PARA_LLEGAR,
-  precioEstimado,
-  TARIFA_HORA,
-} from '../../api/reservas';
-import { getVehiculos } from '../../api/vehiculos';
-import { getZona } from '../../api/zonas';
-import Button from '../Button';
-import Field from '../Field';
-import FormError from '../FormError';
-import NoSessionState from '../NoSessionState';
-import DisponibilidadBadge from '../reservas/DisponibilidadBadge';
-import { detalleZona, formatHora, formatMomento, formatPesos, tituloZona } from '../../formato';
-import { useSession } from '../../session/context';
-import type { Reserva, Vehiculo, ZonaAzul } from '../../types';
+    CARGO_RESERVA,
+    createReserva,
+    estaEnCamino,
+    HORAS_MAX,
+    HORAS_MIN,
+    limiteLlegada,
+    listReservasConductor,
+    MINUTOS_PARA_LLEGAR,
+    precioEstimado,
+    TARIFA_HORA,
+} from '../../../api/reservas';
+import { getVehiculos } from '../../../api/vehiculos';
+import { getZona } from '../../../api/zonas';
+import { detalleZona, formatHora, formatMomento, formatPesos, tituloZona } from '../../../formato';
+import { useSession } from '../../../session/context';
+import type { Reserva, Vehiculo, ZonaAzul } from '../../../types';
+import Button from '../../Button';
+import Field from '../../Field';
+import FormError from '../../FormError';
+import NoSessionState from '../../NoSessionState';
+import DisponibilidadBadge from '../../reservas/DisponibilidadBadge';
 
 /** Los datos que captura este formulario. Las horas entran como texto y se convierten al guardar. */
 type NuevaReservaForm = {

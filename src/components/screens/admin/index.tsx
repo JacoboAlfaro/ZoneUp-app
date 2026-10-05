@@ -4,12 +4,12 @@ import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listUsers } from '../../api/users';
-import { listZonas } from '../../api/zonas';
-import Button from '../Button';
+import { listUsers } from '../../../api/users';
+import { listZonas } from '../../../api/zonas';
+import { useSession } from '../../../session/context';
+import Button from '../../Button';
 import DashboardNavTile from './DashboardNavTile';
 import DashboardStat from './DashboardStat';
-import { useSession } from '../../session/context';
 
 const AdminIndexScreen = () => {
   const { user, signOut } = useSession();

@@ -3,14 +3,14 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getUserByEmail, updateUser } from '../../api/users';
+import { getUserByEmail, updateUser } from '../../../api/users';
 import {
-  ESTADOS_USUARIO,
-  TIPOS_USUARIO,
-  type EstadoUsuario,
-  type TipoUsuario,
-  type User,
-} from '../../types';
+    ESTADOS_USUARIO,
+    TIPOS_USUARIO,
+    type EstadoUsuario,
+    type TipoUsuario,
+    type User,
+} from '../../../types';
 
 const estadoLabel: Record<EstadoUsuario, string> = {
   activo: 'Activo',

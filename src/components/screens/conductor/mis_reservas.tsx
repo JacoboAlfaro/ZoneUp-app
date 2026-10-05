@@ -2,25 +2,25 @@ import { router, useFocusEffect } from 'expo-router';
 import { CalendarClock, Plus, RefreshCw, Ticket } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
+    ActivityIndicator,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { estaEnCamino, horasEntre, listReservasConductor } from '../../api/reservas';
-import { listZonas } from '../../api/zonas';
-import Button from '../Button';
-import NoSessionState from '../NoSessionState';
+import { estaEnCamino, horasEntre, listReservasConductor } from '../../../api/reservas';
+import { listZonas } from '../../../api/zonas';
+import { formatHoras, formatPesos, formatVentana, tituloZona } from '../../../formato';
+import { useSession } from '../../../session/context';
+import type { Reserva, ZonaAzul } from '../../../types';
+import Button from '../../Button';
+import NoSessionState from '../../NoSessionState';
+import ContadorLlegada from '../../reservas/ContadorLlegada';
+import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 import DashboardStat from '../admin/DashboardStat';
-import ContadorLlegada from '../reservas/ContadorLlegada';
-import EstadoReservaBadge from '../reservas/EstadoReservaBadge';
-import { formatHoras, formatPesos, formatVentana, tituloZona } from '../../formato';
-import { useSession } from '../../session/context';
-import type { Reserva, ZonaAzul } from '../../types';
 
 const MisReservasScreen = function() {
   const { user } = useSession();

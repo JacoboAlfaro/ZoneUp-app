@@ -1,4 +1,4 @@
-import EditarPerfilScreen from "@/src/components/conductor/editar_perfil";
+import EditarPerfilScreen from "@/src/components/screens/conductor/editar_perfil";
 
 export default function EditarPerfil() {
   return <EditarPerfilScreen />;

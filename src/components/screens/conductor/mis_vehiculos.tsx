@@ -2,20 +2,20 @@ import { router, useFocusEffect } from "expo-router";
 import { Car, Plus, RefreshCw } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
+    ActivityIndicator,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getVehiculos } from "../../api/vehiculos";
-import Button from "../Button";
-import NoSessionState from "../NoSessionState";
-import { useSession } from "../../session/context";
-import type { Vehiculo } from "../../types";
+import { getVehiculos } from "../../../api/vehiculos";
+import { useSession } from "../../../session/context";
+import type { Vehiculo } from "../../../types";
+import Button from "../../Button";
+import NoSessionState from "../../NoSessionState";
 
 const MisVehiculosScreen = function() {
   const { user } = useSession();

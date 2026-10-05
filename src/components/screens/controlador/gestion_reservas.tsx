@@ -1,36 +1,36 @@
 import { router, useFocusEffect } from 'expo-router';
 import {
-  Check,
-  ClipboardCheck,
-  RefreshCw,
-  Search,
-  ShieldCheck,
-  Ticket,
-  Timer,
-  X,
+    Check,
+    ClipboardCheck,
+    RefreshCw,
+    Search,
+    ShieldCheck,
+    Ticket,
+    Timer,
+    X,
 } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { estaEnCamino, limiteLlegada, listReservasDeZonas } from '../../api/reservas';
-import { listZonas } from '../../api/zonas';
-import EstadoReservaBadge from '../reservas/EstadoReservaBadge';
+import { estaEnCamino, limiteLlegada, listReservasDeZonas } from '../../../api/reservas';
+import { listZonas } from '../../../api/zonas';
+import { formatHora, formatVentana, tituloZona } from '../../../formato';
+import type { EstadoReserva, ReservaDeZona, ZonaAzul } from '../../../types';
+import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 import {
-  ejecutarAccionReserva,
-  type AccionReserva,
-} from '../reservas/accionesReserva';
-import { formatHora, formatVentana, tituloZona } from '../../formato';
-import type { EstadoReserva, ReservaDeZona, ZonaAzul } from '../../types';
+    ejecutarAccionReserva,
+    type AccionReserva,
+} from '../../reservas/accionesReserva';
 
 type Filtro = 'todas' | EstadoReserva;
 

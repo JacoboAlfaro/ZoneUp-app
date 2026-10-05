@@ -1,34 +1,13 @@
+import { useLogin } from '@/src/hooks/auth/useLogin';
 import { Link } from 'expo-router';
-import { useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import Button from '../Button';
-import Field from '../Field';
-import FormError from '../FormError';
-import { useSession } from '../../session/context';
+import Button from '../../Button';
+import Field from '../../Field';
+import FormError from '../../FormError';
 
-/** Los datos que captura este formulario. */
-type LoginForm = { email: string; contrasena: string };
 
 const LoginScreen = () => {
-const { signIn } = useSession();
-
-  // `control` conecta los campos, `handleSubmit` valida antes de enviar y
-  // `formState` trae los errores y si se está enviando en este momento.
-  const { control, handleSubmit, setError, formState } = useForm<LoginForm>({
-    defaultValues: { email: '', contrasena: '' },
-  });
-
-  const submit = async ({ email, contrasena }: LoginForm) => {
-    try {
-      await signIn(email, contrasena);
-      // No hay que navegar: al cambiar la sesión, el layout raíz muestra las
-      // pantallas privadas automáticamente.
-    } catch (error) {
-      // `root` es el error del formulario completo (credenciales malas, servidor
-      // caído...), a diferencia del error de un campo concreto.
-      setError('root', { message: (error as Error).message });
-    }
-  };
+  const {control, handleSubmit, formState, submit} = useLogin();
 
   return (
     <KeyboardAvoidingView

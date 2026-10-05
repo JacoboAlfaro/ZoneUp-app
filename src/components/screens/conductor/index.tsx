@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { Text, View } from 'react-native';
-import Button from '../Button';
-import { useSession } from '../../session/context';
+import { useSession } from '../../../session/context';
+import Button from '../../Button';
 
 const ConductorIndexScreen = function() {
   const { user, signOut } = useSession();
