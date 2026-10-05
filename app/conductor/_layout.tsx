@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 
-export default function AdminLayout() {
+export default function ConductorLayout() {
   return (
     <Stack screenOptions={{ headerTitleStyle: { fontWeight: "600" } }}>
       <Stack.Screen name="index" options={{ title: "Panel Conductor" }} />

@@ -26,10 +26,10 @@ function Navigator() {
 
   return (
     <Stack screenOptions={{ headerTitleStyle: { fontWeight: '600' } }}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Protected
         guard={!!user && user.tipo_usuario !== 'admin' && user.tipo_usuario !== 'controlador'}>
         <Stack.Screen name="conductor" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack.Protected>
 
       <Stack.Protected guard={user?.tipo_usuario === 'admin'}>
@@ -43,8 +43,7 @@ function Navigator() {
 
       {/* Sin sesión */}
       <Stack.Protected guard={!user}>
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       </Stack.Protected>
     </Stack>
   );
