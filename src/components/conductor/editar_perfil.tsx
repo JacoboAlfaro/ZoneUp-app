@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useForm } from 'react-hook-form';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Button from '../Button';
 import Field from '../Field';
 import NoSessionState from '../NoSessionState';
@@ -71,7 +71,7 @@ const EditarPerfilScreen = function() {
   };
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <KeyboardAvoidingView className="flex-1 bg-neutral-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-4 p-6"
@@ -159,7 +159,7 @@ const EditarPerfilScreen = function() {
         />
 
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

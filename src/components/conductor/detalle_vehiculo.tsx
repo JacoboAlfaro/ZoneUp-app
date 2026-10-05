@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 
 import {
     deleteVehiculo,
@@ -152,7 +152,7 @@ const DetalleVehiculoScreen = function() {
   }
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <KeyboardAvoidingView className="flex-1 bg-neutral-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-4 p-6"
@@ -213,7 +213,7 @@ const DetalleVehiculoScreen = function() {
           className="border-red-300 bg-red-50"
         />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

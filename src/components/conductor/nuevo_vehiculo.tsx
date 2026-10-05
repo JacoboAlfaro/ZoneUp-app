@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 
 import { addVehiculo } from "../../api/vehiculos";
 import Button from "../Button";
@@ -55,7 +55,7 @@ const NuevoVehiculoScreen = function() {
   };
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <KeyboardAvoidingView className="flex-1 bg-neutral-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-4 p-6"
@@ -130,7 +130,7 @@ const NuevoVehiculoScreen = function() {
           disabled={formState.isSubmitting}
         />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
