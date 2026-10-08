@@ -1,8 +1,5 @@
-import { router } from "expo-router";
-import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,7 +9,7 @@ import {
 
 import { useDetalleVehiculo } from "@/src/hooks/vehiculos/useDetalleVehiculo";
 import { useEditarVehiculo } from "@/src/hooks/vehiculos/useEditarVehiculo";
-import { deleteVehiculo } from "../../../api/vehiculos";
+import { useEliminarVehiculo } from "@/src/hooks/vehiculos/useEliminarVehiculo";
 import Button from "../../Button";
 import Field from "../../Field";
 import FormError from "../../FormError";
@@ -23,49 +20,11 @@ const DetalleVehiculoScreen = function () {
     useDetalleVehiculo();
   const { control, reglas, errorGeneral, guardando, guardarCambios } =
     useEditarVehiculo(vehiculo, setVehiculo);
-
-  const [deleting, setDeleting] = useState(false);
-  const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
+  const { eliminando, errorEliminar, eliminar } = useEliminarVehiculo(vehiculo);
 
   if (!user) {
     return <NoSessionState />;
   }
-
-  const eliminar = () => {
-    if (!vehiculo || deleting) return;
-
-    Alert.alert(
-      "Eliminar vehículo",
-      `La placa ${vehiculo.placa} se eliminará de forma permanente.`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: async () => {
-            setDeleting(true);
-            setErrorEliminar(null);
-            try {
-              await deleteVehiculo(user.documento_identidad, vehiculo.placa);
-              Alert.alert(
-                "Vehículo eliminado",
-                "El vehículo fue eliminado correctamente.",
-                [
-                  {
-                    text: "Aceptar",
-                    onPress: () => router.replace("/conductor/(vehiculos)"),
-                  },
-                ],
-              );
-            } catch (cause) {
-              setErrorEliminar((cause as Error).message);
-              setDeleting(false);
-            }
-          },
-        },
-      ],
-    );
-  };
 
   if (loading) {
     return (
@@ -135,13 +94,13 @@ const DetalleVehiculoScreen = function () {
         <Button
           text={guardando ? "Guardando…" : "Guardar cambios"}
           onPress={guardarCambios}
-          disabled={guardando || deleting}
+          disabled={guardando || eliminando}
         />
 
         <Button
-          text={deleting ? "Eliminando…" : "Eliminar vehículo"}
+          text={eliminando ? "Eliminando…" : "Eliminar vehículo"}
           onPress={eliminar}
-          disabled={guardando || deleting}
+          disabled={guardando || eliminando}
           secondary
           className="border-red-300 bg-red-50"
         />
