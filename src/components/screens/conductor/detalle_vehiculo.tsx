@@ -1,6 +1,5 @@
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,65 +11,25 @@ import {
 } from "react-native";
 
 import { useDetalleVehiculo } from "@/src/hooks/vehiculos/useDetalleVehiculo";
-import { deleteVehiculo, updateVehiculo } from "../../../api/vehiculos";
-import type { Vehiculo } from "../../../types";
+import { useEditarVehiculo } from "@/src/hooks/vehiculos/useEditarVehiculo";
+import { deleteVehiculo } from "../../../api/vehiculos";
 import Button from "../../Button";
 import Field from "../../Field";
 import FormError from "../../FormError";
 import NoSessionState from "../../NoSessionState";
 
-type VehiculoForm = {
-  marca: string;
-  color: string;
-};
-
-function vehiculoAForm(vehiculo: Vehiculo): VehiculoForm {
-  return {
-    marca: vehiculo.marca ?? "",
-    color: vehiculo.color ?? "",
-  };
-}
-
 const DetalleVehiculoScreen = function () {
   const { user, vehiculo, setVehiculo, loading, cargaError } =
     useDetalleVehiculo();
+  const { control, reglas, errorGeneral, guardando, guardarCambios } =
+    useEditarVehiculo(vehiculo, setVehiculo);
+
   const [deleting, setDeleting] = useState(false);
-
-  const { control, handleSubmit, reset, setError, formState } =
-    useForm<VehiculoForm>({
-      defaultValues: { marca: "", color: "" },
-    });
-
-  // Cuando el vehículo llega (o se actualiza), se copian sus datos al formulario.
-  useEffect(() => {
-    if (vehiculo) reset(vehiculoAForm(vehiculo));
-  }, [vehiculo, reset]);
+  const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
 
   if (!user) {
     return <NoSessionState />;
   }
-
-  const guardar = async (form: VehiculoForm) => {
-    if (!vehiculo || formState.isSubmitting) return;
-
-    try {
-      const actualizado = await updateVehiculo(
-        user.documento_identidad,
-        vehiculo.placa,
-        {
-          marca: form.marca,
-          color: form.color,
-        },
-      );
-      setVehiculo(actualizado);
-      Alert.alert(
-        "Vehículo actualizado",
-        "Los cambios fueron guardados correctamente.",
-      );
-    } catch (cause) {
-      setError("root", { message: (cause as Error).message });
-    }
-  };
 
   const eliminar = () => {
     if (!vehiculo || deleting) return;
@@ -85,6 +44,7 @@ const DetalleVehiculoScreen = function () {
           style: "destructive",
           onPress: async () => {
             setDeleting(true);
+            setErrorEliminar(null);
             try {
               await deleteVehiculo(user.documento_identidad, vehiculo.placa);
               Alert.alert(
@@ -98,7 +58,7 @@ const DetalleVehiculoScreen = function () {
                 ],
               );
             } catch (cause) {
-              setError("root", { message: (cause as Error).message });
+              setErrorEliminar((cause as Error).message);
               setDeleting(false);
             }
           },
@@ -155,10 +115,7 @@ const DetalleVehiculoScreen = function () {
             label="Marca"
             placeholder="Chevrolet, Mazda, Renault…"
             autoCapitalize="words"
-            rules={{
-              required: "La marca es obligatoria",
-              minLength: { value: 2, message: "Escribe al menos 2 caracteres" },
-            }}
+            rules={reglas.marca}
           />
 
           <Field
@@ -167,26 +124,24 @@ const DetalleVehiculoScreen = function () {
             label="Color"
             placeholder="Blanco, negro, gris…"
             autoCapitalize="words"
-            rules={{
-              required: "El color es obligatorio",
-              minLength: { value: 3, message: "Escribe al menos 3 caracteres" },
-            }}
+            rules={reglas.color}
           />
         </View>
 
-        <FormError message={formState.errors.root?.message} />
+        <FormError message={errorGeneral} />
+        <FormError message={errorEliminar ?? undefined} />
         <FormError message={cargaError ?? undefined} />
 
         <Button
-          text={formState.isSubmitting ? "Guardando…" : "Guardar cambios"}
-          onPress={handleSubmit(guardar)}
-          disabled={formState.isSubmitting || deleting}
+          text={guardando ? "Guardando…" : "Guardar cambios"}
+          onPress={guardarCambios}
+          disabled={guardando || deleting}
         />
 
         <Button
           text={deleting ? "Eliminando…" : "Eliminar vehículo"}
           onPress={eliminar}
-          disabled={formState.isSubmitting || deleting}
+          disabled={guardando || deleting}
           secondary
           className="border-red-300 bg-red-50"
         />
