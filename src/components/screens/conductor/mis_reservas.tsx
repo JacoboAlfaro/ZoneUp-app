@@ -17,10 +17,10 @@ import { formatHoras, formatPesos, formatVentana, tituloZona } from '../../../fo
 import { useSession } from '../../../session/context';
 import type { Reserva, ZonaAzul } from '../../../types';
 import Button from '../../Button';
+import DashboardStat from '../../DashboardStat';
 import NoSessionState from '../../NoSessionState';
 import ContadorLlegada from '../../reservas/ContadorLlegada';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
-import DashboardStat from '../admin/DashboardStat';
 
 const MisReservasScreen = function() {
   const { user } = useSession();

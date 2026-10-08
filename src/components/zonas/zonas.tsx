@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { listZonas } from '../../../src/api/zonas';
 import Button from '../../../src/components/Button';
 import type { ZonaAzul } from '../../../src/types';
-import DashboardStat from '../screens/admin/DashboardStat';
+import DashboardStat from '../DashboardStat';
 
 /**
  * Título y detalle derivados de `indicaciones`, igual que en la parte visual

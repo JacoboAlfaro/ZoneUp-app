@@ -9,9 +9,9 @@ import { listZonas } from '../../../api/zonas';
 import { useSession } from '../../../session/context';
 import type { ReservaDeZona } from '../../../types';
 import Button from '../../Button';
+import DashboardNavTile from '../../DashboardNavTile';
+import DashboardStat from '../../DashboardStat';
 import FormError from '../../FormError';
-import DashboardNavTile from '../admin/DashboardNavTile';
-import DashboardStat from '../admin/DashboardStat';
 
 const ControladorPanelScreen = function() {
   const { user, signOut } = useSession();

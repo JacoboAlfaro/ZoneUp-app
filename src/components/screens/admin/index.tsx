@@ -1,46 +1,15 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { MapPin, Users } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listUsers } from '../../../api/users';
-import { listZonas } from '../../../api/zonas';
-import { useSession } from '../../../session/context';
 import Button from '../../Button';
-import DashboardNavTile from './DashboardNavTile';
-import DashboardStat from './DashboardStat';
+import DashboardNavTile from '../../DashboardNavTile';
+import DashboardStat from '../../DashboardStat';
+import { useAdminIndex } from '@/src/hooks/admin/useAdminIndex';
 
 const AdminIndexScreen = () => {
-  const { user, signOut } = useSession();
-  const [totalUsuarios, setTotalUsuarios] = useState<number | null>(null);
-  const [totalZonas, setTotalZonas] = useState<number | null>(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-
-      listUsers()
-        .then((users) => {
-          if (active) setTotalUsuarios(users.length);
-        })
-        .catch(() => {
-          if (active) setTotalUsuarios(null);
-        });
-
-      listZonas()
-        .then((zonas) => {
-          if (active) setTotalZonas(zonas.length);
-        })
-        .catch(() => {
-          if (active) setTotalZonas(null);
-        });
-
-      return () => {
-        active = false;
-      };
-    }, []),
-  );
+  const { user, signOut, totalUsuarios, totalZonas } = useAdminIndex();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>

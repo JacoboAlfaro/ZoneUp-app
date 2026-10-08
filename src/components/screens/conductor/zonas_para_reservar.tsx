@@ -15,8 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { listZonas } from '../../../api/zonas';
 import { detalleZona, tituloZona } from '../../../formato';
 import type { ZonaAzul } from '../../../types';
+import DashboardStat from '../../DashboardStat';
 import DisponibilidadBadge from '../../reservas/DisponibilidadBadge';
-import DashboardStat from '../admin/DashboardStat';
 
 function normalizarBusqueda(value: string): string {
   return value

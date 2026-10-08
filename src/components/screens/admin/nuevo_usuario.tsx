@@ -1,46 +1,14 @@
-import { router } from 'expo-router';
-import { useForm } from 'react-hook-form';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { toRegisterDto } from '../../../api/auth';
-import { createUser } from '../../../api/users';
-import type { Register } from '../../../types';
+import { useNuevo_usuario } from '@/src/hooks/admin/useNuevo_usuario';
 import Button from '../../Button';
 import Field from '../../Field';
 import FormError from '../../FormError';
 import Select from '../../Select';
 
-type CreateUserForm = Register & { confirmation: string };
-
-const tipos = ['conductor', 'controlador'] as const;
-const estados = ['activo', 'no_verificado', 'inactivo'] as const;
-
 const NuevoUsuarioScreen = function() {
-  const { control, getValues, handleSubmit, setError, formState } = useForm<CreateUserForm>({
-    defaultValues: {
-      documento_identidad: '',
-      nombres: '',
-      apellidos: '',
-      email: '',
-      contrasena: '',
-      celular: '',
-      tipo_usuario: 'conductor',
-      estado: 'inactivo',
-      confirmation: '',
-    },
-  });
-
-  const guardar = async ({ confirmation: _, ...form }: CreateUserForm) => {
-    try {
-      await createUser(toRegisterDto(form));
-      Alert.alert('Usuario creado', 'El usuario fue registrado correctamente.', [
-        { text: 'Aceptar', onPress: () => router.back() },
-      ]);
-    } catch (cause) {
-      setError('root', { message: (cause as Error).message });
-    }
-  };
+  const { tipos, estados, control, getValues, handleSubmit, formState, guardar } = useNuevo_usuario();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
