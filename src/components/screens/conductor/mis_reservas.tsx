@@ -1,6 +1,5 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { CalendarClock, Plus, RefreshCw, Ticket } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
     Pressable,
@@ -11,11 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { estaEnCamino, horasEntre, listReservasConductor } from '../../../api/reservas';
-import { listZonas } from '../../../api/zonas';
-import { formatHoras, formatPesos, formatVentana, tituloZona } from '../../../formato';
-import { useSession } from '../../../session/context';
-import type { Reserva, ZonaAzul } from '../../../types';
+import { useMisReservas } from '@/src/hooks/reservas/useMisReservas';
+import { horasEntre } from '../../../api/reservas';
+import { formatHoras, formatPesos, formatVentana } from '../../../formato';
 import Button from '../../Button';
 import NoSessionState from '../../NoSessionState';
 import ContadorLlegada from '../../reservas/ContadorLlegada';
@@ -23,69 +20,23 @@ import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 import DashboardStat from '../admin/DashboardStat';
 
 const MisReservasScreen = function() {
-  const { user } = useSession();
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [zonas, setZonas] = useState<Map<number, ZonaAzul>>(new Map());
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // Referencia de "ahora" para saber qué reserva sigue en camino; se renueva al
-  // cargar y cuando el contador llega a 0:00.
-  const [ahora, setAhora] = useState(() => new Date());
-
-  const cargarReservas = useCallback(
-    async (refresh = false) => {
-      if (!user) return;
-
-      if (refresh) setRefreshing(true);
-      else setLoading(true);
-      setError(null);
-
-      try {
-        // Las zonas solo se usan para mostrar el nombre de cada una.
-        const [misReservas, todasLasZonas] = await Promise.all([
-          listReservasConductor(user.id),
-          listZonas(),
-        ]);
-        setReservas(misReservas);
-        setZonas(new Map(todasLasZonas.map((zona) => [zona.id, zona])));
-        setAhora(new Date());
-      } catch (cause) {
-        setError((cause as Error).message);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [user],
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      void cargarReservas();
-    }, [cargarReservas]),
-  );
-
-  const alTerminarLlegada = useCallback(() => setAhora(new Date()), []);
+  const {
+    user,
+    reservas,
+    loading,
+    refreshing,
+    error,
+    cargarReservas,
+    alTerminarLlegada,
+    tituloDe,
+    abrirDetalle,
+    enCamino,
+    completadas,
+  } = useMisReservas();
 
   if (!user) {
     return <NoSessionState />;
   }
-
-  const tituloDe = (reserva: Reserva) =>
-    tituloZona(
-      reserva.id_zona === null ? null : zonas.get(reserva.id_zona)?.indicaciones,
-      reserva.id_zona,
-    );
-
-  const abrirDetalle = (reserva: Reserva) =>
-    router.push({
-      pathname: '/conductor/(reservas)/reserva/[id]',
-      params: { id: String(reserva.id) },
-    });
-
-  const enCamino = reservas.find((reserva) => estaEnCamino(reserva, ahora)) ?? null;
-  const completadas = reservas.filter((reserva) => reserva.estado === 'completada').length;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>

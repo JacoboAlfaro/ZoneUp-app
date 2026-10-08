@@ -1,74 +1,15 @@
-import { router } from 'expo-router';
-import { useForm } from 'react-hook-form';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import { updateUser } from '../../../api/users';
-import { useSession } from '../../../session/context';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { useEditarPerfil } from '@/src/hooks/usuarios/useEditarPerfil';
 import Button from '../../Button';
 import Field from '../../Field';
 import NoSessionState from '../../NoSessionState';
 
-type EditarUsuarioForm = {
-  primer_nombre: string;
-  segundo_nombre: string;
-  primer_apellido: string;
-  segundo_apellido: string;
-  email: string;
-  celular: string;
-};
-
 const EditarPerfilScreen = function() {
-  const { user, updateCurrentUser } = useSession();
-
-  const {
-    control,
-    handleSubmit,
-    formState,
-  } = useForm<EditarUsuarioForm>({
-    defaultValues: {
-      primer_nombre: user?.primer_nombre ?? '',
-      segundo_nombre: user?.segundo_nombre ?? '',
-      primer_apellido: user?.primer_apellido ?? '',
-      segundo_apellido: user?.segundo_apellido ?? '',
-      email: user?.email ?? '',
-      celular: user?.celular ?? '',
-    },
-  });
+  const { user, control, reglas, guardando, guardarCambios } = useEditarPerfil();
 
   if (!user) {
     return <NoSessionState />;
   }
-
-  const guardarCambios = async (datos: EditarUsuarioForm) => {
-    try {
-      const usuarioActualizado = await updateUser(user.documento_identidad, {
-        primer_nombre: datos.primer_nombre,
-        segundo_nombre: datos.segundo_nombre.trim() || null,
-        primer_apellido: datos.primer_apellido,
-        segundo_apellido: datos.segundo_apellido.trim() || null,
-        email: datos.email,
-        celular: datos.celular,
-      });
-
-      updateCurrentUser(usuarioActualizado);
-
-      Alert.alert(
-        'Perfil actualizado',
-        'Tus datos se actualizaron correctamente.',
-        [
-          {
-            text: 'Aceptar',
-            onPress: () => router.back(),
-          },
-        ],
-      );
-    } catch (error) {
-      console.log("Error:", error)
-      Alert.alert(
-        'Error',
-        (error as Error).message,
-      );
-    }
-  };
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-neutral-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
@@ -94,9 +35,7 @@ const EditarPerfilScreen = function() {
             name="primer_nombre"
             label="Primer nombre"
             placeholder="Primer nombre"
-            rules={{
-              required: 'El primer nombre es obligatorio',
-            }}
+            rules={reglas.primer_nombre}
           />
 
           <Field
@@ -111,9 +50,7 @@ const EditarPerfilScreen = function() {
             name="primer_apellido"
             label="Primer apellido"
             placeholder="Primer apellido"
-            rules={{
-              required: 'El primer apellido es obligatorio',
-            }}
+            rules={reglas.primer_apellido}
           />
 
           <Field
@@ -130,13 +67,7 @@ const EditarPerfilScreen = function() {
             keyboardType="email-address"
             autoComplete="email"
             placeholder="correo@ejemplo.com"
-            rules={{
-              required: 'El correo es obligatorio',
-              pattern: {
-                value: /^\S+@\S+\.\S+$/,
-                message: 'Correo inválido',
-              },
-            }}
+            rules={reglas.email}
           />
 
           <Field
@@ -145,17 +76,15 @@ const EditarPerfilScreen = function() {
             label="Celular"
             keyboardType="phone-pad"
             placeholder="Celular"
-            rules={{
-              required: 'El celular es obligatorio',
-            }}
+            rules={reglas.celular}
           />
 
         </View>
 
         <Button
-          text={formState.isSubmitting ? 'Guardando…' : 'Guardar cambios'}
-          onPress={handleSubmit(guardarCambios)}
-          disabled={formState.isSubmitting}
+          text={guardando ? 'Guardando…' : 'Guardar cambios'}
+          onPress={guardarCambios}
+          disabled={guardando}
         />
 
       </ScrollView>
