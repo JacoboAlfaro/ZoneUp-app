@@ -1,14 +1,18 @@
-import { router, useLocalSearchParams, useNavigation } from "expo-router";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
-
 import {
-    deleteVehiculo,
-    getVehiculos,
-    updateVehiculo,
-} from "../../../api/vehiculos";
-import { useSession } from "../../../session/context";
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+
+import { useDetalleVehiculo } from "@/src/hooks/vehiculos/useDetalleVehiculo";
+import { deleteVehiculo, updateVehiculo } from "../../../api/vehiculos";
 import type { Vehiculo } from "../../../types";
 import Button from "../../Button";
 import Field from "../../Field";
@@ -27,68 +31,38 @@ function vehiculoAForm(vehiculo: Vehiculo): VehiculoForm {
   };
 }
 
-const DetalleVehiculoScreen = function() {
-  const { placa } = useLocalSearchParams<{ placa: string }>();
-  const navigation = useNavigation();
-  const { user } = useSession();
-
-  const [vehiculo, setVehiculo] = useState<Vehiculo | null>(null);
-  const [loading, setLoading] = useState(true);
+const DetalleVehiculoScreen = function () {
+  const { user, vehiculo, setVehiculo, loading, cargaError } =
+    useDetalleVehiculo();
   const [deleting, setDeleting] = useState(false);
-  const [cargaError, setCargaError] = useState<string | null>(null);
 
   const { control, handleSubmit, reset, setError, formState } =
     useForm<VehiculoForm>({
       defaultValues: { marca: "", color: "" },
     });
 
+  // Cuando el vehículo llega (o se actualiza), se copian sus datos al formulario.
   useEffect(() => {
-    if (!user || !placa) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setCargaError(null);
-
-    getVehiculos(user.documento_identidad)
-      .then((vehiculos) => {
-        const encontrado = vehiculos.find((v) => v.placa === placa);
-        if (!encontrado) {
-          setCargaError("No se encontró el vehículo.");
-          return;
-        }
-        setVehiculo(encontrado);
-        reset(vehiculoAForm(encontrado));
-      })
-      .catch((cause) => setCargaError((cause as Error).message))
-      .finally(() => setLoading(false));
-  }, [placa, user, reset]);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: vehiculo ? vehiculo.placa : "Detalle del vehículo",
-    });
-  }, [navigation, vehiculo]);
+    if (vehiculo) reset(vehiculoAForm(vehiculo));
+  }, [vehiculo, reset]);
 
   if (!user) {
     return <NoSessionState />;
   }
 
   const guardar = async (form: VehiculoForm) => {
-    if (!vehiculo || !placa || formState.isSubmitting) return;
+    if (!vehiculo || formState.isSubmitting) return;
 
     try {
       const actualizado = await updateVehiculo(
         user.documento_identidad,
-        placa,
+        vehiculo.placa,
         {
           marca: form.marca,
           color: form.color,
         },
       );
       setVehiculo(actualizado);
-      reset(vehiculoAForm(actualizado));
       Alert.alert(
         "Vehículo actualizado",
         "Los cambios fueron guardados correctamente.",
@@ -99,7 +73,7 @@ const DetalleVehiculoScreen = function() {
   };
 
   const eliminar = () => {
-    if (!vehiculo || !placa || deleting) return;
+    if (!vehiculo || deleting) return;
 
     Alert.alert(
       "Eliminar vehículo",
@@ -112,7 +86,7 @@ const DetalleVehiculoScreen = function() {
           onPress: async () => {
             setDeleting(true);
             try {
-              await deleteVehiculo(user.documento_identidad, placa);
+              await deleteVehiculo(user.documento_identidad, vehiculo.placa);
               Alert.alert(
                 "Vehículo eliminado",
                 "El vehículo fue eliminado correctamente.",
@@ -152,7 +126,11 @@ const DetalleVehiculoScreen = function() {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-neutral-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
+    <KeyboardAvoidingView
+      className="flex-1 bg-neutral-50"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={100}
+    >
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-4 p-6"
@@ -215,6 +193,6 @@ const DetalleVehiculoScreen = function() {
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
+};
 
 export default DetalleVehiculoScreen;
