@@ -1,61 +1,31 @@
-import { router } from "expo-router";
-import { useForm } from "react-hook-form";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
-import { addVehiculo } from "../../../api/vehiculos";
-import { useSession } from "../../../session/context";
+import { useNuevoVehiculo } from "@/src/hooks/vehiculos/useNuevoVehiculo";
 import Button from "../../Button";
 import Field from "../../Field";
 import FormError from "../../FormError";
 import NoSessionState from "../../NoSessionState";
 
-type NuevoVehiculoForm = {
-  placa: string;
-  marca: string;
-  color: string;
-};
-
-const NuevoVehiculoScreen = function() {
-  const { user } = useSession();
-
-  const { control, handleSubmit, setError, formState } =
-    useForm<NuevoVehiculoForm>({
-      defaultValues: {
-        placa: "",
-        marca: "",
-        color: "",
-      },
-    });
+const NuevoVehiculoScreen = function () {
+  const { user, control, reglas, errorGeneral, guardando, registrar } =
+    useNuevoVehiculo();
 
   if (!user) {
     return <NoSessionState />;
   }
 
-  const guardar = async (form: NuevoVehiculoForm) => {
-    try {
-      await addVehiculo(user.documento_identidad, {
-        placa: form.placa,
-        marca: form.marca,
-        color: form.color,
-      });
-
-      Alert.alert(
-        "Vehículo registrado",
-        "El vehículo fue agregado correctamente.",
-        [
-          {
-            text: "Aceptar",
-            onPress: () => router.replace("/conductor/(vehiculos)"),
-          },
-        ],
-      );
-    } catch (cause) {
-      setError("root", { message: (cause as Error).message });
-    }
-  };
-
   return (
-    <KeyboardAvoidingView className="flex-1 bg-neutral-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100}>
+    <KeyboardAvoidingView
+      className="flex-1 bg-neutral-50"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={100}
+    >
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-4 p-6"
@@ -80,21 +50,7 @@ const NuevoVehiculoScreen = function() {
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={10}
-            rules={{
-              required: "La placa es obligatoria",
-              minLength: {
-                value: 5,
-                message: "La placa debe tener al menos 5 caracteres",
-              },
-              maxLength: {
-                value: 10,
-                message: "La placa no puede superar 10 caracteres",
-              },
-              pattern: {
-                value: /^[A-Za-z0-9]+$/,
-                message: "Solo letras y números, sin espacios",
-              },
-            }}
+            rules={reglas.placa}
           />
 
           <Field
@@ -103,10 +59,7 @@ const NuevoVehiculoScreen = function() {
             label="Marca"
             placeholder="Chevrolet, Mazda, Renault…"
             autoCapitalize="words"
-            rules={{
-              required: "La marca es obligatoria",
-              minLength: { value: 2, message: "Escribe al menos 2 caracteres" },
-            }}
+            rules={reglas.marca}
           />
 
           <Field
@@ -115,23 +68,20 @@ const NuevoVehiculoScreen = function() {
             label="Color"
             placeholder="Blanco, negro, gris…"
             autoCapitalize="words"
-            rules={{
-              required: "El color es obligatorio",
-              minLength: { value: 3, message: "Escribe al menos 3 caracteres" },
-            }}
+            rules={reglas.color}
           />
         </View>
 
-        <FormError message={formState.errors.root?.message} />
+        <FormError message={errorGeneral} />
 
         <Button
-          text={formState.isSubmitting ? "Guardando…" : "Registrar vehículo"}
-          onPress={handleSubmit(guardar)}
-          disabled={formState.isSubmitting}
+          text={guardando ? "Guardando…" : "Registrar vehículo"}
+          onPress={registrar}
+          disabled={guardando}
         />
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
+};
 
 export default NuevoVehiculoScreen;
