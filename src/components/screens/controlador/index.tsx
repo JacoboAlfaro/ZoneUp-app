@@ -1,47 +1,16 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { ClipboardCheck } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listReservasDeZonas } from '../../../api/reservas';
-import { listZonas } from '../../../api/zonas';
-import { useSession } from '../../../session/context';
-import type { ReservaDeZona } from '../../../types';
+import { useControladorIndex } from '@/src/hooks/controlador/useControladorIndex';
 import Button from '../../Button';
 import DashboardNavTile from '../../DashboardNavTile';
 import DashboardStat from '../../DashboardStat';
 import FormError from '../../FormError';
 
 const ControladorPanelScreen = function() {
-  const { user, signOut } = useSession();
-  const [items, setItems] = useState<ReservaDeZona[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      setError(null);
-
-      // No hay lista global de reservas: se consultan todas las zonas.
-      listZonas()
-        .then((zonas) => listReservasDeZonas(zonas.map((zona) => zona.id)))
-        .then((reservas) => {
-          if (active) setItems(reservas);
-        })
-        .catch((cause) => {
-          if (active) setError((cause as Error).message);
-        });
-
-      return () => {
-        active = false;
-      };
-    }, []),
-  );
-
-  const contar = (estado: ReservaDeZona['reserva']['estado']) =>
-    items ? items.filter((item) => item.reserva.estado === estado).length : '…';
-  const porRevisar = contar('pendiente');
+  const { user, items, error, porRevisar, contar, signOut } = useControladorIndex();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>

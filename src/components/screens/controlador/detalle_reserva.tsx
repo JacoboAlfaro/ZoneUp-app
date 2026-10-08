@@ -1,7 +1,8 @@
 import { Check, ShieldCheck, Timer, X } from 'lucide-react-native';
-import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import useDetalle_reserva from '@/src/hooks/controlador/useDetalle_reserva';
 import { limiteLlegada } from '../../../api/reservas';
 import {
   formatFechaHora,
@@ -14,7 +15,6 @@ import type { EstadoReserva } from '../../../types';
 import Button from '../../Button';
 import FormError from '../../FormError';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
-import useDetalle_reserva from '@/src/hooks/controlador/useDetalle_reserva';
 
 const descripcionEstado: Record<EstadoReserva, string> = {
   pendiente: 'Llegó una nueva solicitud. Acéptala o recházala.',
