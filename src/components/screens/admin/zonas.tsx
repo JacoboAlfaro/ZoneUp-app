@@ -1,87 +1,15 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { MapPin, Plus, RefreshCw, Search, X } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
-import {
-    ActivityIndicator,
-    Pressable,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TextInput,
-    View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Button from '../../Button';
+import DashboardStat from '../../DashboardStat';
 
-import { listZonas } from '../../../src/api/zonas';
-import Button from '../../../src/components/Button';
-import type { ZonaAzul } from '../../../src/types';
-import DashboardStat from '../DashboardStat';
-
-/**
- * Título y detalle derivados de `indicaciones`, igual que en la parte visual
- * de referencia: la primera línea es el título, el resto es el detalle.
- */
-function tituloDesdeIndicaciones(indicaciones: string | null, id: number): string {
-  const linea = indicaciones?.trim().split('\n')[0]?.trim();
-  return linea && linea.length > 0 ? linea : `Zona #${id}`;
-}
-
-function detalleDesdeIndicaciones(indicaciones: string | null): string | null {
-  const lineas = (indicaciones ?? '')
-    .split('\n')
-    .map((linea) => linea.trim())
-    .filter(Boolean);
-  if (lineas.length <= 1) return null;
-  return lineas.slice(1).join('\n');
-}
-
-function normalizarBusqueda(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-}
+import { useZonas } from '@/src/hooks/admin/useZonas';
 
 const ZonasScreen = () => {
-  const [zonas, setZonas] = useState<ZonaAzul[]>([]);
-  const [busqueda, setBusqueda] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const cargarZonas = useCallback(async (refresh = false) => {
-    if (refresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-
-    try {
-      setZonas(await listZonas());
-    } catch (cause) {
-      setError((cause as Error).message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      void cargarZonas();
-    }, [cargarZonas]),
-  );
-
-  const cuposDisponibles = zonas.reduce((total, zona) => total + zona.capacidad, 0);
-  const zonasFiltradas = useMemo(() => {
-    const termino = normalizarBusqueda(busqueda.trim());
-    if (!termino) return zonas;
-
-    return zonas.filter((zona) =>
-      [`Zona ${zona.id}`, `#${zona.id}`, zona.indicaciones ?? ''].some((value) =>
-        normalizarBusqueda(value).includes(termino),
-      ),
-    );
-  }, [busqueda, zonas]);
-
+  
+  const { zonas, busqueda, setBusqueda, loading, refreshing, error, cuposDisponibles, zonasFiltradas, cargarZonas, tituloDesdeIndicaciones, detalleDesdeIndicaciones } = useZonas();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
       <ScrollView

@@ -1,68 +1,14 @@
-import { router } from 'expo-router';
-import { useForm } from 'react-hook-form';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { createZona } from '../../../src/api/zonas';
-import Button from '../../../src/components/Button';
-import Field from '../../../src/components/Field';
-import FormError from '../../../src/components/FormError';
-
-/** Los datos que captura este formulario. Todo entra como texto y se convierte al guardar. */
-type NuevaZonaForm = {
-  indicaciones: string;
-  latitud: string;
-  longitud: string;
-  capacidad: string;
-  capacidad_total: string;
-};
-
-function aNumero(value: string): number {
-  return Number(value.replace(',', '.').trim());
-}
-
-function aEntero(value: string): number {
-  return Number.parseInt(value.trim(), 10);
-}
+import Button from '../../Button';
+import Field from '../../Field';
+import FormError from '../../FormError';
+import { useNuevo_zona } from '@/src/hooks/admin/useNuevo_zona';
 
 const NuevaZonaScreen = () => {
-  const { control, getValues, handleSubmit, setError, formState } = useForm<NuevaZonaForm>({
-    defaultValues: {
-      indicaciones: '',
-      latitud: '5.0704',
-      longitud: '-75.5178',
-      capacidad: '0',
-      capacidad_total: '10',
-    },
-  });
-
-  const guardar = async (form: NuevaZonaForm) => {
-    const capacidad = aEntero(form.capacidad);
-    const capacidad_total = aEntero(form.capacidad_total);
-
-    if (capacidad > capacidad_total) {
-      setError('capacidad', {
-        message: 'Los cupos disponibles no pueden superar la capacidad total',
-      });
-      return;
-    }
-
-    try {
-      await createZona({
-        indicaciones: form.indicaciones.trim(),
-        latitud: aNumero(form.latitud),
-        longitud: aNumero(form.longitud),
-        capacidad,
-        capacidad_total,
-      });
-      Alert.alert('Zona creada', 'La zona azul fue registrada correctamente.', [
-        { text: 'Aceptar', onPress: () => router.back() },
-      ]);
-    } catch (cause) {
-      setError('root', { message: (cause as Error).message });
-    }
-  };
-
+  
+  const { control, getValues, handleSubmit, formState, guardar, aNumero, aEntero } = useNuevo_zona();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
       <KeyboardAvoidingView
@@ -87,7 +33,7 @@ const NuevaZonaScreen = () => {
             numberOfLines={6}
             textAlignVertical="top"
             autoCapitalize="sentences"
-            className="min-h-[140px] py-3"
+            className="min-h-35 py-3"
             rules={{
               required: 'Las indicaciones son obligatorias',
               minLength: { value: 8, message: 'Escribe al menos 8 caracteres' },
