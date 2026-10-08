@@ -1,75 +1,34 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { CalendarPlus, MapPin, RefreshCw, Search, X } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    Pressable,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listZonas } from '../../../api/zonas';
+import { useZonasParaReservar } from '@/src/hooks/reservas/useZonasParaReservar';
 import { detalleZona, tituloZona } from '../../../formato';
-import type { ZonaAzul } from '../../../types';
 import DashboardStat from '../../DashboardStat';
 import DisponibilidadBadge from '../../reservas/DisponibilidadBadge';
 
-function normalizarBusqueda(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase();
-}
-
 const ReservarZonaScreen = function() {
-  const [zonas, setZonas] = useState<ZonaAzul[]>([]);
-  const [busqueda, setBusqueda] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const cargarZonas = useCallback(async (refresh = false) => {
-    if (refresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-
-    try {
-      setZonas(await listZonas());
-    } catch (cause) {
-      setError((cause as Error).message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  // Al volver de una reserva los cupos cambiaron: se recargan al enfocar.
-  useFocusEffect(
-    useCallback(() => {
-      void cargarZonas();
-    }, [cargarZonas]),
-  );
-
-  const zonasConCupo = zonas.filter((zona) => zona.capacidad > 0).length;
-  const cuposDisponibles = zonas.reduce((total, zona) => total + Math.max(0, zona.capacidad), 0);
-
-  // Primero las zonas con cupo: son las únicas donde se puede reservar.
-  const zonasFiltradas = useMemo(() => {
-    const termino = normalizarBusqueda(busqueda.trim());
-    const filtradas = termino
-      ? zonas.filter((zona) =>
-          [`Zona ${zona.id}`, `#${zona.id}`, zona.indicaciones ?? ''].some((value) =>
-            normalizarBusqueda(value).includes(termino),
-          ),
-        )
-      : zonas;
-
-    return [...filtradas].sort((a, b) => Number(b.capacidad > 0) - Number(a.capacidad > 0));
-  }, [busqueda, zonas]);
+  const {
+    zonas,
+    busqueda,
+    setBusqueda,
+    loading,
+    refreshing,
+    error,
+    cargarZonas,
+    zonasConCupo,
+    cuposDisponibles,
+    zonasFiltradas,
+  } = useZonasParaReservar();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
