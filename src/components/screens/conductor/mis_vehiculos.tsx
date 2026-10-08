@@ -1,54 +1,22 @@
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { Car, Plus, RefreshCw } from "lucide-react-native";
-import { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    Pressable,
-    RefreshControl,
-    ScrollView,
-    Text,
-    View,
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getVehiculos } from "../../../api/vehiculos";
-import { useSession } from "../../../session/context";
-import type { Vehiculo } from "../../../types";
+import { useVehiculos } from "@/src/hooks/vehiculos/useVehiculos";
 import Button from "../../Button";
 import NoSessionState from "../../NoSessionState";
 
-const MisVehiculosScreen = function() {
-  const { user } = useSession();
-  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const cargarVehiculos = useCallback(
-    async (refresh = false) => {
-      if (!user) return;
-
-      if (refresh) setRefreshing(true);
-      else setLoading(true);
-      setError(null);
-
-      try {
-        setVehiculos(await getVehiculos(user.documento_identidad));
-      } catch (cause) {
-        setError((cause as Error).message);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [user],
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      void cargarVehiculos();
-    }, [cargarVehiculos]),
-  );
+const MisVehiculosScreen = function () {
+  const { user, vehiculos, loading, refreshing, error, cargarVehiculos } =
+    useVehiculos();
 
   if (!user) {
     return <NoSessionState />;
@@ -173,6 +141,6 @@ const MisVehiculosScreen = function() {
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 export default MisVehiculosScreen;
