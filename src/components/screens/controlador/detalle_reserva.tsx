@@ -13,7 +13,6 @@ import {
 } from '../../../formato';
 import type { EstadoReserva } from '../../../types';
 import Button from '../../Button';
-import FormError from '../../FormError';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 
 const descripcionEstado: Record<EstadoReserva, string> = {
@@ -192,8 +191,6 @@ const ControladorReservaDetalleScreen = function() {
             {formatFechaHora(reserva.fecha_creacion)}
           </Text>
         </View>
-
-        <FormError message={error ?? undefined} />
 
         {reserva.estado === 'pendiente' ? (
           <>

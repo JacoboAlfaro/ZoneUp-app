@@ -1,6 +1,5 @@
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { Alert } from 'react-native';
 
 import {
   estaEnCamino,
@@ -11,6 +10,7 @@ import {
   precioEstimado,
 } from '@/src/api/reservas';
 import { getZona } from '@/src/api/zonas';
+import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { detalleZona, formatMomento, formatPesos, tituloZona } from '@/src/formato';
 import { useSession } from '@/src/session/context';
 import type { Reserva, ZonaAzul } from '@/src/types';
@@ -27,12 +27,14 @@ export function useDetalleReserva() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
   const { user } = useSession();
+  const alerta = useAlerta();
   const [reserva, setReserva] = useState<Reserva | null>(null);
   const [zona, setZona] = useState<ZonaAzul | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [extendiendo, setExtendiendo] = useState(false);
   const [horasExtra, setHorasExtra] = useState<number | null>(null);
+  /** Error al cargar la reserva. Los demás errores se muestran en una alerta. */
   const [error, setError] = useState<string | null>(null);
   // Referencia de "ahora" para el contador; se renueva al cargar y cuando llega a 0:00.
   const [ahora, setAhora] = useState(() => new Date());
@@ -60,13 +62,19 @@ export function useDetalleReserva() {
           setZona(await getZona(data.id_zona).catch(() => null));
         }
       } catch (cause) {
-        setError((cause as Error).message);
+        const mensaje = (cause as Error).message;
+        // Al recargar, la reserva ya está en pantalla y el error no se vería: se avisa.
+        if (refresh) {
+          void alerta.mostrar({ tipo: 'error', titulo: 'No se pudo actualizar la reserva', mensaje });
+        } else {
+          setError(mensaje);
+        }
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [idNumerico],
+    [idNumerico, alerta],
   );
 
   useEffect(() => {
@@ -102,36 +110,35 @@ export function useDetalleReserva() {
   const nuevoPrecio =
     reserva && nuevoFin ? precioEstimado(horasEntre(reserva.fecha_real_inicio, nuevoFin)) : null;
 
-  const extender = () => {
+  const extender = async () => {
     if (!reserva || !nuevoFin || nuevoPrecio === null || extendiendo) return;
 
-    Alert.alert(
-      'Extender reserva',
-      `Nuevo fin: ${formatMomento(nuevoFin)}.\nNuevo total estimado: ${formatPesos(nuevoPrecio)}.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Extender',
-          onPress: async () => {
-            setExtendiendo(true);
-            setError(null);
-            try {
-              const actualizada = await extendReserva(reserva.id, nuevoFin.toISOString());
-              setReserva(actualizada);
-              setHorasExtra(null);
-              Alert.alert(
-                'Reserva extendida',
-                `Nuevo fin: ${formatMomento(actualizada.fecha_fin ?? nuevoFin)}.`,
-              );
-            } catch (cause) {
-              setError((cause as Error).message);
-            } finally {
-              setExtendiendo(false);
-            }
-          },
-        },
-      ],
-    );
+    const confirmado = await alerta.confirmar({
+      titulo: 'Extender reserva',
+      mensaje: `Nuevo fin: ${formatMomento(nuevoFin)}.\nNuevo total estimado: ${formatPesos(nuevoPrecio)}.`,
+      textoConfirmar: 'Extender',
+    });
+    if (!confirmado) return;
+
+    setExtendiendo(true);
+    try {
+      const actualizada = await extendReserva(reserva.id, nuevoFin.toISOString());
+      setReserva(actualizada);
+      setHorasExtra(null);
+      void alerta.mostrar({
+        tipo: 'exito',
+        titulo: 'Reserva extendida',
+        mensaje: `Nuevo fin: ${formatMomento(actualizada.fecha_fin ?? nuevoFin)}.`,
+      });
+    } catch (cause) {
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo extender la reserva',
+        mensaje: (cause as Error).message,
+      });
+    } finally {
+      setExtendiendo(false);
+    }
   };
 
   return {

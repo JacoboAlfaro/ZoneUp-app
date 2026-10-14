@@ -12,15 +12,16 @@ import { useEditarVehiculo } from "@/src/hooks/vehiculos/useEditarVehiculo";
 import { useEliminarVehiculo } from "@/src/hooks/vehiculos/useEliminarVehiculo";
 import Button from "../../Button";
 import Field from "../../Field";
-import FormError from "../../FormError";
 import NoSessionState from "../../NoSessionState";
 
 const DetalleVehiculoScreen = function () {
   const { user, vehiculo, setVehiculo, loading, cargaError } =
     useDetalleVehiculo();
-  const { control, reglas, errorGeneral, guardando, guardarCambios } =
-    useEditarVehiculo(vehiculo, setVehiculo);
-  const { eliminando, errorEliminar, eliminar } = useEliminarVehiculo(vehiculo);
+  const { control, reglas, guardando, guardarCambios } = useEditarVehiculo(
+    vehiculo,
+    setVehiculo,
+  );
+  const { eliminando, eliminar } = useEliminarVehiculo(vehiculo);
 
   if (!user) {
     return <NoSessionState />;
@@ -87,10 +88,6 @@ const DetalleVehiculoScreen = function () {
           />
         </View>
 
-        <FormError message={errorGeneral} />
-        <FormError message={errorEliminar ?? undefined} />
-        <FormError message={cargaError ?? undefined} />
-
         <Button
           text={guardando ? "Guardando…" : "Guardar cambios"}
           onPress={guardarCambios}
@@ -99,7 +96,7 @@ const DetalleVehiculoScreen = function () {
 
         <Button
           text={eliminando ? "Eliminando…" : "Eliminar vehículo"}
-          onPress={eliminar}
+          onPress={() => void eliminar()}
           disabled={guardando || eliminando}
           secondary
           className="border-red-300 bg-red-50"

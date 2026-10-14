@@ -1,19 +1,21 @@
-import { Alert } from 'react-native'
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { ReservaDeZona, ZonaAzul } from '@/src/types';
 import { estaEnCamino, getZona, horasEntre, listReservasZona } from '@/src/api';
 import { detalleZona, tituloZona } from '@/src/formato';
+import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { AccionReserva, ejecutarAccionReserva } from '@/src/components/reservas/accionesReserva';
 
 export default function useDetalle_reserva() {
   const { id, idZona } = useLocalSearchParams<{ id: string; idZona: string }>();
   const navigation = useNavigation();
+  const alerta = useAlerta();
   const [item, setItem] = useState<ReservaDeZona | null>(null);
   const [zona, setZona] = useState<ZonaAzul | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [procesando, setProcesando] = useState(false);
+  /** Error al cargar la reserva. Los demás errores se muestran en una alerta. */
   const [error, setError] = useState<string | null>(null);
 
   const idNumerico = id ? Number(id) : NaN;
@@ -43,13 +45,19 @@ export default function useDetalle_reserva() {
         setZona(zonaActual);
         if (!encontrada) setError('No se encontró la reserva.');
       } catch (cause) {
-        setError((cause as Error).message);
+        const mensaje = (cause as Error).message;
+        // Al recargar, la reserva ya está en pantalla y el error no se vería: se avisa.
+        if (refresh) {
+          void alerta.mostrar({ tipo: 'error', titulo: 'No se pudo actualizar la reserva', mensaje });
+        } else {
+          setError(mensaje);
+        }
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [idNumerico, idZonaNumerico],
+    [idNumerico, idZonaNumerico, alerta],
   );
 
   useEffect(() => {
@@ -79,23 +87,29 @@ export default function useDetalle_reserva() {
   const ejecutar = async (accion: AccionReserva) => {
     if (procesando) return;
     setProcesando(true);
-    setError(null);
 
     try {
-      const actualizada = await ejecutarAccionReserva(accion, reserva);
+      const actualizada = await ejecutarAccionReserva(accion, reserva, alerta);
       if (actualizada) setItem({ ...item, reserva: actualizada });
     } catch (cause) {
-      setError((cause as Error).message);
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo actualizar la reserva',
+        mensaje: (cause as Error).message,
+      });
     } finally {
       setProcesando(false);
     }
   };
 
   const placaNoCoincide = () =>
-    Alert.alert(
-      'La placa no coincide',
-      'No confirmes la llegada. Habla con el conductor y atiende el caso según las normas de operación. Si el vehículo de la reserva no se presenta, puedes cancelar la reserva para liberar el cupo.',
-    );
+    void alerta.mostrar({
+      tipo: 'advertencia',
+      titulo: 'La placa no coincide',
+      mensaje:
+        'No confirmes la llegada. Habla con el conductor y atiende el caso según las normas de operación. Si el vehículo de la reserva no se presenta, puedes cancelar la reserva para liberar el cupo.',
+      textoBoton: 'Entendido',
+    });
   return {
     item, setZona, loading, refreshing, procesando, error, cargar,
     reserva, conductor, vehiculo, placa, titulo, extra, porAtender, enCamino, duracion, ejecutar, placaNoCoincide

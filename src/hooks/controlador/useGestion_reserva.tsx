@@ -1,10 +1,10 @@
 import { listReservasDeZonas, listZonas } from "@/src/api";
+import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { AccionReserva, ejecutarAccionReserva } from "@/src/components/reservas/accionesReserva";
 import { tituloZona } from "@/src/formato";
 import { EstadoReserva, ReservaDeZona, ZonaAzul } from "@/src/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Alert } from "react-native";
 
 type Filtro = 'todas' | EstadoReserva;
 
@@ -32,6 +32,7 @@ function normalizarBusqueda(value: string): string {
 }
 
 export function useGestion_reserva() {
+  const alerta = useAlerta();
   const [items, setItems] = useState<ReservaDeZona[]>([]);
   const [zonas, setZonas] = useState<Map<number, ZonaAzul>>(new Map());
   const [busqueda, setBusqueda] = useState('');
@@ -106,7 +107,7 @@ export function useGestion_reserva() {
     setProcesando(item.reserva.id);
 
     try {
-      const actualizada = await ejecutarAccionReserva(accion, item.reserva);
+      const actualizada = await ejecutarAccionReserva(accion, item.reserva, alerta);
       if (actualizada) {
         setItems((actuales) =>
           actuales.map((actual) =>
@@ -115,7 +116,11 @@ export function useGestion_reserva() {
         );
       }
     } catch (cause) {
-      Alert.alert('No se pudo actualizar la reserva', (cause as Error).message);
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo actualizar la reserva',
+        mensaje: (cause as Error).message,
+      });
     } finally {
       setProcesando(null);
     }

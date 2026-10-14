@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { useForm, type RegisterOptions } from 'react-hook-form';
-import { Alert } from 'react-native';
 
 import { updateUser } from '@/src/api/users';
+import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { useSession } from '@/src/session/context';
 
 /** Los datos que captura el formulario de edición del perfil. */
@@ -35,6 +35,7 @@ const reglas: Partial<Record<keyof EditarUsuarioForm, RegisterOptions<EditarUsua
  */
 export function useEditarPerfil() {
   const { user, updateCurrentUser } = useSession();
+  const alerta = useAlerta();
 
   const { control, handleSubmit, formState } = useForm<EditarUsuarioForm>({
     defaultValues: {
@@ -62,22 +63,18 @@ export function useEditarPerfil() {
 
       updateCurrentUser(usuarioActualizado);
 
-      Alert.alert(
-        'Perfil actualizado',
-        'Tus datos se actualizaron correctamente.',
-        [
-          {
-            text: 'Aceptar',
-            onPress: () => router.back(),
-          },
-        ],
-      );
+      await alerta.mostrar({
+        tipo: 'exito',
+        titulo: 'Perfil actualizado',
+        mensaje: 'Tus datos se actualizaron correctamente.',
+      });
+      router.back();
     } catch (error) {
-      console.log("Error:", error)
-      Alert.alert(
-        'Error',
-        (error as Error).message,
-      );
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo actualizar el perfil',
+        mensaje: (error as Error).message,
+      });
     }
   };
 

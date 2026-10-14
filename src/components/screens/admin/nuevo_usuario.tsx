@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNuevo_usuario } from '@/src/hooks/admin/useNuevo_usuario';
 import Button from '../../Button';
 import Field from '../../Field';
-import FormError from '../../FormError';
 import Select from '../../Select';
 
 const NuevoUsuarioScreen = function() {
@@ -101,8 +100,6 @@ const NuevoUsuarioScreen = function() {
 
           <Select control={control} name="tipo_usuario" label="Tipo de usuario" options={tipos} />
           <Select control={control} name="estado" label="Estado inicial" options={estados} />
-
-          <FormError message={formState.errors.root?.message} />
 
           <Button
             text={formState.isSubmitting ? 'Guardando…' : 'Guardar usuario'}

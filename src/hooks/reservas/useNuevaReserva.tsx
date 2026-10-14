@@ -1,7 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useForm, type RegisterOptions } from 'react-hook-form';
-import { Alert } from 'react-native';
 
 import {
   createReserva,
@@ -13,6 +12,7 @@ import {
 } from '@/src/api/reservas';
 import { getVehiculos } from '@/src/api/vehiculos';
 import { getZona } from '@/src/api/zonas';
+import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { detalleZona, tituloZona } from '@/src/formato';
 import { useSession } from '@/src/session/context';
 import type { Reserva, Vehiculo, ZonaAzul } from '@/src/types';
@@ -50,13 +50,16 @@ const reglas: Record<keyof NuevaReservaForm, RegisterOptions<NuevaReservaForm>> 
 export function useNuevaReserva() {
   const { idZona } = useLocalSearchParams<{ idZona: string }>();
   const { user } = useSession();
+  const alerta = useAlerta();
   const [zona, setZona] = useState<ZonaAzul | null>(null);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [enCamino, setEnCamino] = useState<Reserva | null>(null);
   const [loading, setLoading] = useState(true);
   const [cargaError, setCargaError] = useState<string | null>(null);
+  // Si la zona ya se mostró, un error al recargar no se vería en pantalla: se avisa con una alerta.
+  const zonaCargada = useRef(false);
 
-  const { control, getValues, handleSubmit, setError, setValue, watch, formState } =
+  const { control, getValues, handleSubmit, setValue, watch, formState } =
     useForm<NuevaReservaForm>({
       defaultValues: { placa: '', horas: '1' },
     });
@@ -87,6 +90,7 @@ export function useNuevaReserva() {
       ])
         .then(([zonaActual, misVehiculos, misReservas]) => {
           if (!active) return;
+          zonaCargada.current = true;
           setZona(zonaActual);
           setVehiculos(misVehiculos);
           setEnCamino(misReservas.find((reserva) => estaEnCamino(reserva)) ?? null);
@@ -98,7 +102,16 @@ export function useNuevaReserva() {
           }
         })
         .catch((cause) => {
-          if (active) setCargaError((cause as Error).message);
+          if (!active) return;
+          const mensaje = (cause as Error).message;
+          setCargaError(mensaje);
+          if (zonaCargada.current) {
+            void alerta.mostrar({
+              tipo: 'error',
+              titulo: 'No se pudo actualizar la zona',
+              mensaje,
+            });
+          }
         })
         .finally(() => {
           if (active) setLoading(false);
@@ -107,7 +120,7 @@ export function useNuevaReserva() {
       return () => {
         active = false;
       };
-    }, [user, idNumerico, getValues, setValue]),
+    }, [user, idNumerico, getValues, setValue, alerta]),
   );
 
   const horas = horasValidas(watch('horas'));
@@ -131,7 +144,11 @@ export function useNuevaReserva() {
       const zonaActual = await getZona(zona.id);
       setZona(zonaActual);
       if (zonaActual.capacidad <= 0) {
-        setError('root', { message: 'La zona se quedó sin cupos. Elige otra zona.' });
+        void alerta.mostrar({
+          tipo: 'advertencia',
+          titulo: 'La zona se quedó sin cupos',
+          mensaje: 'Alguien tomó el último cupo antes que tú. Elige otra zona.',
+        });
         return;
       }
 
@@ -142,22 +159,22 @@ export function useNuevaReserva() {
         fecha_fin: new Date(Date.now() + horasReserva * MS_POR_HORA).toISOString(),
       });
 
-      Alert.alert(
-        'Reserva creada',
-        `Tu solicitud en ${titulo} quedó pendiente de aprobación. Tienes ${MINUTOS_PARA_LLEGAR} minutos para llegar a la zona.`,
-        [
-          {
-            text: 'Ver reserva',
-            onPress: () =>
-              router.replace({
-                pathname: '/conductor/(reservas)/reserva/[id]',
-                params: { id: String(reserva.id) },
-              }),
-          },
-        ],
-      );
+      await alerta.mostrar({
+        tipo: 'exito',
+        titulo: 'Reserva creada',
+        mensaje: `Tu solicitud en ${titulo} quedó pendiente de aprobación. Tienes ${MINUTOS_PARA_LLEGAR} minutos para llegar a la zona.`,
+        textoBoton: 'Ver reserva',
+      });
+      router.replace({
+        pathname: '/conductor/(reservas)/reserva/[id]',
+        params: { id: String(reserva.id) },
+      });
     } catch (cause) {
-      setError('root', { message: (cause as Error).message });
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo crear la reserva',
+        mensaje: (cause as Error).message,
+      });
     }
   };
 
@@ -176,7 +193,6 @@ export function useNuevaReserva() {
     extra,
     sinCupo,
     finEstimado,
-    errorGeneral: formState.errors.root?.message,
     reservando: formState.isSubmitting,
     reservar: handleSubmit(guardar),
   };

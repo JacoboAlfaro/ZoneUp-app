@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { useSession } from '@/src/session/context';
 import { useForm } from 'react-hook-form';
 
@@ -9,10 +10,11 @@ type LoginForm = { email: string; contrasena: string };
 export function useLogin() {
 
   const { signIn } = useSession();
+  const alerta = useAlerta();
   
     // `control` conecta los campos, `handleSubmit` valida antes de enviar y
     // `formState` trae los errores y si se está enviando en este momento.
-    const { control, handleSubmit, setError, formState } = useForm<LoginForm>({
+    const { control, handleSubmit, formState } = useForm<LoginForm>({
       defaultValues: { email: '', contrasena: '' },
     });
   
@@ -22,9 +24,13 @@ export function useLogin() {
         // No hay que navegar: al cambiar la sesión, el layout raíz muestra las
         // pantallas privadas automáticamente.
       } catch (error) {
-        // `root` es el error del formulario completo (credenciales malas, servidor
-        // caído...), a diferencia del error de un campo concreto.
-        setError('root', { message: (error as Error).message });
+        // Error del formulario completo (credenciales malas, servidor caído...).
+        // Los errores de cada campo los sigue mostrando <Field /> debajo del input.
+        void alerta.mostrar({
+          tipo: 'error',
+          titulo: 'No se pudo iniciar sesión',
+          mensaje: (error as Error).message,
+        });
       }
     };
   return {control, handleSubmit, formState, submit} 

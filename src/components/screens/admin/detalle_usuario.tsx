@@ -140,7 +140,7 @@ const AdminUsuarioDetalleScreen = function() {
                 <Pressable
                   key={estado}
                   disabled={saving}
-                  onPress={() => cambiarEstado(estado)}
+                  onPress={() => void cambiarEstado(estado)}
                   className={`rounded-xl border px-3 py-2.5 ${
                     active
                       ? 'border-zu-navy bg-zu-navy/10'
@@ -157,10 +157,6 @@ const AdminUsuarioDetalleScreen = function() {
             })}
           </View>
         </View>
-
-        {error ? (
-          <Text className="mt-5 rounded-xl bg-red-50 p-3 text-center text-red-700">{error}</Text>
-        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

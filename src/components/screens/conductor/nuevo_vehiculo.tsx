@@ -9,11 +9,10 @@ import {
 import { useNuevoVehiculo } from "@/src/hooks/vehiculos/useNuevoVehiculo";
 import Button from "../../Button";
 import Field from "../../Field";
-import FormError from "../../FormError";
 import NoSessionState from "../../NoSessionState";
 
 const NuevoVehiculoScreen = function () {
-  const { user, control, reglas, errorGeneral, guardando, registrar } =
+  const { user, control, reglas, guardando, registrar } =
     useNuevoVehiculo();
 
   if (!user) {
@@ -71,8 +70,6 @@ const NuevoVehiculoScreen = function () {
             rules={reglas.color}
           />
         </View>
-
-        <FormError message={errorGeneral} />
 
         <Button
           text={guardando ? "Guardando…" : "Registrar vehículo"}

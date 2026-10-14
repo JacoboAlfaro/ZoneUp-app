@@ -7,10 +7,9 @@ import { useControladorIndex } from '@/src/hooks/controlador/useControladorIndex
 import Button from '../../Button';
 import DashboardNavTile from '../../DashboardNavTile';
 import DashboardStat from '../../DashboardStat';
-import FormError from '../../FormError';
 
 const ControladorPanelScreen = function() {
-  const { user, items, error, porRevisar, contar, signOut } = useControladorIndex();
+  const { user, items, porRevisar, contar, signOut } = useControladorIndex();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
@@ -40,12 +39,6 @@ const ControladorPanelScreen = function() {
           />
           <DashboardStat value={items ? items.length : '…'} label="Total de reservas" />
         </View>
-
-        {error ? (
-          <View className="mt-4">
-            <FormError message={error} />
-          </View>
-        ) : null}
 
         <Text className="mb-3 mt-6 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
           Gestionar

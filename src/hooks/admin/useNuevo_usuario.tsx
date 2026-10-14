@@ -1,8 +1,8 @@
 import { createUser, toRegisterDto } from "@/src/api";
+import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { Register } from "@/src/types";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
-import { Alert } from "react-native";
 
 type CreateUserForm = Register & { confirmation: string };
 
@@ -10,7 +10,8 @@ const tipos = ['conductor', 'controlador'] as const;
 const estados = ['activo', 'no_verificado', 'inactivo'] as const;
 
 export function useNuevo_usuario() {
-    const { control, getValues, handleSubmit, setError, formState } = useForm<CreateUserForm>({
+    const alerta = useAlerta();
+    const { control, getValues, handleSubmit, formState } = useForm<CreateUserForm>({
         defaultValues: {
           documento_identidad: '',
           nombres: '',
@@ -27,11 +28,18 @@ export function useNuevo_usuario() {
       const guardar = async ({ confirmation: _, ...form }: CreateUserForm) => {
         try {
           await createUser(toRegisterDto(form));
-          Alert.alert('Usuario creado', 'El usuario fue registrado correctamente.', [
-            { text: 'Aceptar', onPress: () => router.back() },
-          ]);
+          await alerta.mostrar({
+            tipo: 'exito',
+            titulo: 'Usuario creado',
+            mensaje: 'El usuario fue registrado correctamente.',
+          });
+          router.back();
         } catch (cause) {
-          setError('root', { message: (cause as Error).message });
+          void alerta.mostrar({
+            tipo: 'error',
+            titulo: 'No se pudo crear el usuario',
+            mensaje: (cause as Error).message,
+          });
         }
       };
 
