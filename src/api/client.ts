@@ -97,6 +97,27 @@ export interface RequestOptions {
   method?: HttpMethod;
   /** Por defecto se infiere del prefijo del path (/auth, /users, /zonas, /reservas). */
   base?: ApiBase;
+  /**
+   * Para cancelar la petición. Las búsquedas cancelan la anterior cuando el
+   * usuario cambia el texto, así una respuesta vieja nunca pisa a la nueva.
+   */
+  signal?: AbortSignal;
+}
+
+/**
+ * El path con su query string, omitiendo los valores vacíos:
+ * `conParametros('/users', { q: 'ana', limit: 20 })` -> `/users?q=ana&limit=20`.
+ */
+export function conParametros(
+  path: string,
+  parametros: Record<string, string | number | null | undefined>,
+): string {
+  const query = Object.entries(parametros)
+    .filter(([, valor]) => valor !== undefined && valor !== null && valor !== '')
+    .map(([clave, valor]) => `${encodeURIComponent(clave)}=${encodeURIComponent(String(valor))}`)
+    .join('&');
+
+  return query ? `${path}?${query}` : path;
 }
 
 /**
@@ -129,8 +150,11 @@ export async function request<T>(path: string, body?: unknown, options?: Request
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: options?.signal,
     });
-  } catch {
+  } catch (cause) {
+    // Cancelada a propósito (llegó una búsqueda más nueva): quien la canceló la ignora.
+    if (options?.signal?.aborted) throw cause;
     // `fetch` solo falla así cuando no hubo respuesta: servidor apagado, URL
     // equivocada o el dispositivo no alcanza esa dirección (ver .env.example).
     throw new ApiError(`No se pudo conectar con ${base}. ¿Está encendido el servidor?`, 0);

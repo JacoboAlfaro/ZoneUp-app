@@ -1,4 +1,4 @@
-import { listUsers, listZonas } from "@/src/api";
+import { getResumenUsuarios, getResumenZonas } from "@/src/api";
 import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { useSession } from "@/src/session/context";
 import { useFocusEffect } from "expo-router";
@@ -14,11 +14,12 @@ export function useAdminIndex() {
     useCallback(() => {
       let active = true;
 
+      // Los totales los cuenta el servidor: no se descargan las listas completas.
       // Se espera a las dos para avisar una sola vez si alguna falla.
-      void Promise.allSettled([listUsers(), listZonas()]).then(([users, zonas]) => {
+      void Promise.allSettled([getResumenUsuarios(), getResumenZonas()]).then(([users, zonas]) => {
         if (!active) return;
-        setTotalUsuarios(users.status === 'fulfilled' ? users.value.length : null);
-        setTotalZonas(zonas.status === 'fulfilled' ? zonas.value.length : null);
+        setTotalUsuarios(users.status === 'fulfilled' ? users.value.total : null);
+        setTotalZonas(zonas.status === 'fulfilled' ? zonas.value.total : null);
 
         const fallo = users.status === 'rejected' ? users : zonas.status === 'rejected' ? zonas : null;
         if (fallo) {

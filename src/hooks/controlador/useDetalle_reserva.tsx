@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { ReservaDeZona, ZonaAzul } from '@/src/types';
-import { estaEnCamino, getZona, horasEntre, listReservasZona } from '@/src/api';
+import { ReservaDeZona } from '@/src/types';
+import { estaEnCamino, getReservaCompleta, horasEntre } from '@/src/api';
 import { detalleZona, tituloZona } from '@/src/formato';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { AccionReserva, ejecutarAccionReserva } from '@/src/components/reservas/accionesReserva';
 
 export default function useDetalle_reserva() {
-  const { id, idZona } = useLocalSearchParams<{ id: string; idZona: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
   const alerta = useAlerta();
   const [item, setItem] = useState<ReservaDeZona | null>(null);
-  const [zona, setZona] = useState<ZonaAzul | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [procesando, setProcesando] = useState(false);
@@ -19,12 +18,11 @@ export default function useDetalle_reserva() {
   const [error, setError] = useState<string | null>(null);
 
   const idNumerico = id ? Number(id) : NaN;
-  const idZonaNumerico = idZona ? Number(idZona) : NaN;
 
-  // El controlador no tiene GET /reservas/:id: la reserva se busca en las de su zona.
+  // Una sola petición: la reserva con su conductor, su vehículo y su zona.
   const cargar = useCallback(
     async (refresh = false) => {
-      if (!Number.isInteger(idNumerico) || !Number.isInteger(idZonaNumerico)) {
+      if (!Number.isInteger(idNumerico)) {
         setError('Identificador de reserva inválido.');
         setLoading(false);
         return;
@@ -35,15 +33,7 @@ export default function useDetalle_reserva() {
       setError(null);
 
       try {
-        const [reservasZona, zonaActual] = await Promise.all([
-          listReservasZona(idZonaNumerico),
-          // La zona solo aporta nombre e indicaciones: si falla, la reserva se muestra igual.
-          getZona(idZonaNumerico).catch(() => null),
-        ]);
-        const encontrada = reservasZona.find((fila) => fila.reserva.id === idNumerico);
-        setItem(encontrada ?? null);
-        setZona(zonaActual);
-        if (!encontrada) setError('No se encontró la reserva.');
+        setItem(await getReservaCompleta(idNumerico));
       } catch (cause) {
         const mensaje = (cause as Error).message;
         // Al recargar, la reserva ya está en pantalla y el error no se vería: se avisa.
@@ -57,7 +47,7 @@ export default function useDetalle_reserva() {
         setRefreshing(false);
       }
     },
-    [idNumerico, idZonaNumerico, alerta],
+    [idNumerico, alerta],
   );
 
   useEffect(() => {
@@ -76,8 +66,8 @@ export default function useDetalle_reserva() {
   }
   const { reserva, conductor, vehiculo } = item;
   const placa = reserva.id_vehiculo ?? '—';
-  const titulo = tituloZona(zona?.indicaciones, reserva.id_zona);
-  const extra = detalleZona(zona?.indicaciones);
+  const titulo = tituloZona(item.zona?.indicaciones, reserva.id_zona);
+  const extra = detalleZona(item.zona?.indicaciones);
   const porAtender = reserva.estado === 'pendiente' || reserva.estado === 'activa';
   const enCamino = estaEnCamino(reserva);
   const duracion = reserva.fecha_fin
@@ -111,7 +101,7 @@ export default function useDetalle_reserva() {
       textoBoton: 'Entendido',
     });
   return {
-    item, setZona, loading, refreshing, procesando, error, cargar,
+    item, loading, refreshing, procesando, error, cargar,
     reserva, conductor, vehiculo, placa, titulo, extra, porAtender, enCamino, duracion, ejecutar, placaNoCoincide
   }
 }

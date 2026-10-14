@@ -1,15 +1,34 @@
 import { router } from 'expo-router';
-import { MapPin, Plus, RefreshCw, Search, X } from 'lucide-react-native';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
+import { MapPin, Plus, RefreshCw, Search } from 'lucide-react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../Button';
+import CampoBusqueda from '../../CampoBusqueda';
+import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
 
 import { useZonas } from '@/src/hooks/admin/useZonas';
 
 const ZonasScreen = () => {
-  
-  const { zonas, busqueda, setBusqueda, loading, refreshing, error, cuposDisponibles, zonasFiltradas, cargarZonas, tituloDesdeIndicaciones, detalleDesdeIndicaciones } = useZonas();
+  const {
+    items: zonas,
+    total,
+    busqueda,
+    setBusqueda,
+    termino,
+    buscarAhora,
+    limpiarBusqueda,
+    loading,
+    refreshing,
+    cargandoMas,
+    error,
+    recargar,
+    cargarMas,
+    resumen,
+    refrescar,
+    tituloDesdeIndicaciones,
+    detalleDesdeIndicaciones,
+  } = useZonas();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
       <ScrollView
@@ -20,7 +39,7 @@ const ZonasScreen = () => {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => void cargarZonas(true)}
+            onRefresh={refrescar}
             tintColor="#1E3A5F"
           />
         }>
@@ -36,42 +55,26 @@ const ZonasScreen = () => {
         />
 
         <View className="mt-5 flex-row gap-3">
-          <DashboardStat value={zonas.length} label="Zonas registradas" />
+          <DashboardStat value={resumen?.total ?? '…'} label="Zonas registradas" />
           <DashboardStat
-            value={cuposDisponibles}
+            value={resumen?.cupos_disponibles ?? '…'}
             label="Cupos disponibles en total"
             valueClassName="text-emerald-700"
           />
         </View>
 
-        <View className="mt-6 flex-row items-center rounded-2xl border border-zu-border bg-zu-white/90 px-4">
-          <Search size={20} color="#6B8698" />
-          <TextInput
-            value={busqueda}
-            onChangeText={setBusqueda}
-            placeholder="Buscar por indicaciones o número de zona"
-            placeholderTextColor="#6B8698"
-            selectionColor="#6BB8E8"
-            underlineColorAndroid="transparent"
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="search"
-            className="flex-1 py-3.5 pl-3 text-base text-zu-navy"
-          />
-          {busqueda ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Limpiar búsqueda"
-              hitSlop={10}
-              onPress={() => setBusqueda('')}
-              className="p-1">
-              <X size={19} color="#6B8698" />
-            </Pressable>
-          ) : null}
-        </View>
+        <CampoBusqueda
+          value={busqueda}
+          onChangeText={setBusqueda}
+          onBuscar={buscarAhora}
+          onLimpiar={limpiarBusqueda}
+          buscando={loading && !!termino}
+          placeholder="Buscar por indicaciones o número de zona"
+          className="mt-6"
+        />
 
         <Text className="mb-1 mt-8 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
-          Listado ({zonasFiltradas.length})
+          Listado ({total})
         </Text>
 
         {loading ? (
@@ -85,7 +88,7 @@ const ZonasScreen = () => {
           <View className="mt-4 items-center rounded-2xl bg-red-50 p-5">
             <Text className="text-center text-red-700">{error}</Text>
             <Pressable
-              onPress={() => void cargarZonas()}
+              onPress={() => void recargar()}
               className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2">
               <RefreshCw size={18} color="#1E3A5F" />
               <Text className="font-semibold text-zu-navy">Reintentar</Text>
@@ -93,7 +96,7 @@ const ZonasScreen = () => {
           </View>
         ) : null}
 
-        {!loading && !error && zonas.length === 0 ? (
+        {!loading && !error && zonas.length === 0 && !termino ? (
           <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
             <MapPin size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
@@ -102,17 +105,17 @@ const ZonasScreen = () => {
           </View>
         ) : null}
 
-        {!loading && !error && zonas.length > 0 && zonasFiltradas.length === 0 ? (
+        {!loading && !error && zonas.length === 0 && termino ? (
           <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
-              No encontramos zonas que coincidan con “{busqueda}”.
+              No encontramos zonas que coincidan con “{termino}”.
             </Text>
           </View>
         ) : null}
 
         {!loading && !error
-          ? zonasFiltradas.map((zona) => {
+          ? zonas.map((zona) => {
               const extra = detalleDesdeIndicaciones(zona.indicaciones);
               return (
                 <Pressable
@@ -156,6 +159,15 @@ const ZonasScreen = () => {
               );
             })
           : null}
+
+        {!loading && !error ? (
+          <CargarMas
+            mostrados={zonas.length}
+            total={total}
+            cargando={cargandoMas}
+            onPress={() => void cargarMas()}
+          />
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

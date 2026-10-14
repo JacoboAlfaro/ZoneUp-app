@@ -14,7 +14,6 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,12 +21,36 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGestion_reserva } from '@/src/hooks/controlador/useGestion_reserva';
 import { estaEnCamino, limiteLlegada } from '../../../api/reservas';
 import { formatHora, formatVentana } from '../../../formato';
+import CampoBusqueda from '../../CampoBusqueda';
+import CargarMas from '../../CargarMas';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 
 const GestionReservasScreen = function() {
   
-  const { items, busqueda, setBusqueda, filtro, setFiltro, loading, refreshing, error, procesando, 
-    itemsFiltrados, contar, ejecutar, abrirDetalle, cargarReservas, filtros, tituloDe } = useGestion_reserva();
+  const {
+    items,
+    total,
+    busqueda,
+    setBusqueda,
+    termino,
+    buscarAhora,
+    limpiarBusqueda,
+    filtro,
+    setFiltro,
+    filtros,
+    contar,
+    loading,
+    refreshing,
+    cargandoMas,
+    error,
+    recargar,
+    cargarMas,
+    refrescar,
+    procesando,
+    ejecutar,
+    abrirDetalle,
+    tituloDe,
+  } = useGestion_reserva();
     
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
@@ -39,7 +62,7 @@ const GestionReservasScreen = function() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => void cargarReservas(true)}
+            onRefresh={refrescar}
             tintColor="#1E3A5F"
           />
         }>
@@ -48,31 +71,16 @@ const GestionReservasScreen = function() {
           verificando su placa.
         </Text>
 
-        <View className="mt-5 flex-row items-center rounded-2xl border border-zu-border bg-zu-white/90 px-4">
-          <Search size={20} color="#6B8698" />
-          <TextInput
-            value={busqueda}
-            onChangeText={setBusqueda}
-            placeholder="Buscar por placa, conductor o zona"
-            placeholderTextColor="#6B8698"
-            selectionColor="#6BB8E8"
-            underlineColorAndroid="transparent"
-            autoCapitalize="characters"
-            autoCorrect={false}
-            returnKeyType="search"
-            className="flex-1 py-3.5 pl-3 text-base text-zu-navy"
-          />
-          {busqueda ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Limpiar búsqueda"
-              hitSlop={10}
-              onPress={() => setBusqueda('')}
-              className="p-1">
-              <X size={19} color="#6B8698" />
-            </Pressable>
-          ) : null}
-        </View>
+        <CampoBusqueda
+          value={busqueda}
+          onChangeText={setBusqueda}
+          onBuscar={buscarAhora}
+          onLimpiar={limpiarBusqueda}
+          buscando={loading && !!termino}
+          placeholder="Buscar por placa, conductor o zona"
+          autoCapitalize="characters"
+          className="mt-5"
+        />
 
         <ScrollView
           horizontal
@@ -100,7 +108,7 @@ const GestionReservasScreen = function() {
         </ScrollView>
 
         <Text className="mb-1 mt-8 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
-          Listado ({itemsFiltrados.length})
+          Listado ({total})
         </Text>
 
         {loading ? (
@@ -114,7 +122,7 @@ const GestionReservasScreen = function() {
           <View className="mt-4 items-center rounded-2xl bg-red-50 p-5">
             <Text className="text-center text-red-700">{error}</Text>
             <Pressable
-              onPress={() => void cargarReservas()}
+              onPress={() => void recargar()}
               className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2">
               <RefreshCw size={18} color="#1E3A5F" />
               <Text className="font-semibold text-zu-navy">Reintentar</Text>
@@ -122,7 +130,7 @@ const GestionReservasScreen = function() {
           </View>
         ) : null}
 
-        {!loading && !error && items.length === 0 ? (
+        {!loading && !error && items.length === 0 && !termino && filtro === 'todas' ? (
           <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
             <ClipboardCheck size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
@@ -131,19 +139,19 @@ const GestionReservasScreen = function() {
           </View>
         ) : null}
 
-        {!loading && !error && items.length > 0 && itemsFiltrados.length === 0 ? (
+        {!loading && !error && items.length === 0 && (termino || filtro !== 'todas') ? (
           <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
-              {busqueda
-                ? `No encontramos reservas que coincidan con “${busqueda}”.`
+              {termino
+                ? `No encontramos reservas que coincidan con “${termino}”.`
                 : 'No hay reservas con este estado.'}
             </Text>
           </View>
         ) : null}
 
         {!loading && !error
-          ? itemsFiltrados.map((item) => {
+          ? items.map((item) => {
               const { reserva, conductor } = item;
               const titulo = tituloDe(item);
               const ocupado = procesando === reserva.id;
@@ -235,6 +243,15 @@ const GestionReservasScreen = function() {
               );
             })
           : null}
+
+        {!loading && !error ? (
+          <CargarMas
+            mostrados={items.length}
+            total={total}
+            cargando={cargandoMas}
+            onPress={() => void cargarMas()}
+          />
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

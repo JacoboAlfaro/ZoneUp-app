@@ -7,22 +7,31 @@
  * solo los reexporta para no memorizar rutas internas.
  */
 
-export { ApiError, getBaseUrl, getToken, request, setToken } from './client';
+export { ApiError, conParametros, getBaseUrl, getToken, request, setToken } from './client';
 export type { ApiBase, HttpMethod, RequestOptions } from './client';
 
 export { login, register, toRegisterDto, toUser } from './auth';
 export type { UserResponse } from './auth';
 
-export { createUser, getUserByEmail, listUsers, updateUser } from './users';
+export { createUser, getResumenUsuarios, getUserByEmail, listUsers, updateUser } from './users';
 
 export { addVehiculo, getVehiculos, toVehiculo } from './vehiculos';
 export type { VehiculoResponse } from './vehiculos';
 
-export { createZona, deleteZona, getZona, listZonas, toZona, updateZona } from './zonas';
+export {
+  createZona,
+  deleteZona,
+  getResumenZonas,
+  getZona,
+  listZonas,
+  toZona,
+  updateZona,
+} from './zonas';
 export type { ZonaResponse } from './zonas';
 
 export {
   aceptarReserva,
+  buscarReservas,
   cancelarReserva,
   CARGO_RESERVA,
   confirmarLlegada,
@@ -30,13 +39,14 @@ export {
   estaEnCamino,
   extendReserva,
   getReserva,
+  getReservaCompleta,
+  getResumenReservas,
+  getResumenReservasConductor,
   HORAS_MAX,
   HORAS_MIN,
   horasEntre,
   limiteLlegada,
   listReservasConductor,
-  listReservasDeZonas,
-  listReservasZona,
   MINUTOS_PARA_LLEGAR,
   precioEstimado,
   TARIFA_HORA,

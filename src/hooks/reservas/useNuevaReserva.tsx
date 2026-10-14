@@ -86,14 +86,18 @@ export function useNuevaReserva() {
       Promise.all([
         getZona(idNumerico),
         getVehiculos(user.documento_identidad),
-        listReservasConductor(user.id),
+        // La reserva en curso, si la hay, es de las más recientes: no hace falta el historial completo.
+        listReservasConductor(user.id, { limit: 5 }),
       ])
-        .then(([zonaActual, misVehiculos, misReservas]) => {
+        .then(([zonaActual, misVehiculos, recientes]) => {
           if (!active) return;
           zonaCargada.current = true;
           setZona(zonaActual);
           setVehiculos(misVehiculos);
-          setEnCamino(misReservas.find((reserva) => estaEnCamino(reserva)) ?? null);
+          setEnCamino(
+            recientes.items.map((fila) => fila.reserva).find((reserva) => estaEnCamino(reserva)) ??
+              null,
+          );
 
           // Deja elegido el primer vehículo si no hay uno válido seleccionado.
           const placaActual = getValues('placa');
