@@ -1,45 +1,31 @@
-import { router } from 'expo-router';
-import { Text, View } from 'react-native';
-import { useSession } from '../../../session/context';
-import Button from '../../Button';
+import { useConductorIndex } from "@/src/hooks/conductor/useConductorIndex";
+import { Pressable, View, Text} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ParkingMap } from "../../ParkingMap";
+import { User } from "lucide-react-native";
 
-const ConductorIndexScreen = function() {
-  const { user, signOut } = useSession();
+const ConductorIndexScreen = function () {
+  const { user, abrirDrawer } = useConductorIndex();
+  const insets = useSafeAreaInsets();
+
   return (
-    <View className="flex-1 justify-center gap-8 bg-neutral-50 p-6">
-      <View className="gap-2">
-        <Text className="text-3xl font-bold text-neutral-900">
-          Bienvenido, {user?.name}
+    <View className="flex-1">
+      <ParkingMap />
+
+      <Pressable
+        onPress={abrirDrawer}
+        style={{ position: 'absolute', top: 16, left: 16 }}
+        className="flex-row items-center rounded-full bg-zu-white px-2 py-1 shadow-sm"
+      >
+        <View className="h-10 w-10 items-center justify-center rounded-full bg-zu-navy">
+          <User size={20} color="#FFFFFF" />
+        </View>
+        <Text className="ml-2 mr-3 text-base font-semibold text-zu-navy">
+          Hola, {user?.name}
         </Text>
-        <Text className="text-neutral-500">
-          {user?.email}
-        </Text>
-      </View>
-      <View className="gap-3">
-        <Button
-          text="Reservar zona azul"
-          onPress={() => router.push('/conductor/(reservas)/zonas')}
-        />
-        <Button
-          text="Mis reservas"
-          onPress={() => router.push('/conductor/(reservas)/reservas')}
-        />
-        <Button
-          text="Mi perfil"
-          onPress={() => router.push('/conductor/(usuarios)')}
-        />
-        <Button
-          text="Mis vehículos"
-          onPress={() => router.push('/conductor/(vehiculos)')}
-        />
-        <Button
-          text="Cerrar sesión"
-          onPress={signOut}
-          secondary
-        />
-      </View>
+      </Pressable>
     </View>
   );
-}
+};
 
 export default ConductorIndexScreen;

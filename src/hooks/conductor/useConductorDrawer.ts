@@ -1,7 +1,10 @@
+
 import { router } from 'expo-router';
 import { useSession } from '@/src/session/context';
 
-type DrawerNav = { closeDrawer: () => void };
+type DrawerNav = {
+  closeDrawer: () => void;
+};
 
 export function useConductorDrawer(navigation: DrawerNav) {
   const { user, signOut } = useSession();
