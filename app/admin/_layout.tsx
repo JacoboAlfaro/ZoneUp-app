@@ -2,7 +2,11 @@ import { Stack } from 'expo-router';
 
 export default function AdminLayout() {
   return (
-    <Stack screenOptions={{ headerTitleStyle: { fontWeight: '600' } }}>
+    <Stack
+      screenOptions={{
+        headerTitleStyle: { fontWeight: '600' },
+        headerBackButtonDisplayMode: 'minimal',
+      }}>
       <Stack.Screen name="index" options={{ title: 'Panel administrativo' }} />
       <Stack.Screen name="(usuarios)/usuarios" options={{ title: 'Administrar usuarios' }} />
       <Stack.Screen name="(usuarios)/nuevo-usuario" options={{ title: 'Nuevo usuario' }} />

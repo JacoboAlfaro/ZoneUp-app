@@ -3,7 +3,7 @@
  *
  * Endpoints reales:
  * - POST  /users                  (ADMIN)    -> usuario creado
- * - GET   /users?q&limit&offset   (ADMIN)    -> una página de usuarios (busca en el servidor)
+ * - GET   /users?q&estado&limit&offset (ADMIN) -> una página de usuarios (busca y filtra en el servidor)
  * - GET   /users/resumen          (ADMIN)    -> { total, activos }
  * - GET   /users/:email           (ADMIN)    -> un usuario | 404
  * - PATCH /users/:documento       (ADMIN, o el propio CONDUCTOR) -> usuario actualizado
@@ -15,6 +15,7 @@
 import type {
   ConsultaPagina,
   CreateUserDto,
+  EstadoUsuario,
   Pagina,
   ResumenUsuarios,
   UpdateUserDto,
@@ -35,13 +36,18 @@ export async function createUser(dto: CreateUserDto): Promise<User> {
 
 /**
  * GET /users -> una página de usuarios, los más recientes primero. Requiere
- * token de ADMIN. `q` busca en nombre, documento y correo, en el servidor.
+ * token de ADMIN. `q` busca en nombre, documento y correo; `estado` deja solo
+ * ese estado. Ambos filtros los aplica el servidor.
  */
-export async function listUsers({ q, limit, offset, signal }: ConsultaPagina = {}): Promise<
-  Pagina<User>
-> {
+export async function listUsers({
+  q,
+  estado,
+  limit,
+  offset,
+  signal,
+}: ConsultaPagina & { estado?: EstadoUsuario } = {}): Promise<Pagina<User>> {
   const pagina = await request<Pagina<UserResponse>>(
-    conParametros('/users', { q, limit, offset }),
+    conParametros('/users', { q, estado, limit, offset }),
     undefined,
     { signal },
   );

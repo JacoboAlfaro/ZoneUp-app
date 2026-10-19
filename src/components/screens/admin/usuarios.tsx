@@ -15,6 +15,7 @@ import Button from '../../Button';
 import CampoBusqueda from '../../CampoBusqueda';
 import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
+import SelectFiltro from '../../SelectFiltro';
 
 const AdminUsuariosScreen = function() {
   const {
@@ -34,6 +35,10 @@ const AdminUsuariosScreen = function() {
     error,
     recargar,
     cargarMas,
+    filtrosEstado,
+    filtroEstado,
+    setFiltroEstado,
+    cargados,
     resumen,
     refrescar,
   } = useUsuarios();
@@ -81,9 +86,16 @@ const AdminUsuariosScreen = function() {
           placeholder="Buscar por nombre, documento o correo"
           className="mt-6"
         />
+        <SelectFiltro
+          etiqueta="Estado"
+          valor={filtroEstado}
+          opciones={filtrosEstado}
+          onChange={setFiltroEstado}
+          className="mt-3"
+        />
 
         <Text className="mb-1 mt-8 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
-          Listado ({total})
+          Listado ({usuarios.length})
         </Text>
 
         {loading ? (
@@ -105,7 +117,7 @@ const AdminUsuariosScreen = function() {
           </View>
         ) : null}
 
-        {!loading && !error && usuarios.length === 0 && !termino ? (
+        {!loading && !error && usuarios.length === 0 && !termino && filtroEstado === 'todos' ? (
           <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
             <Users size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
@@ -114,11 +126,13 @@ const AdminUsuariosScreen = function() {
           </View>
         ) : null}
 
-        {!loading && !error && usuarios.length === 0 && termino ? (
+        {!loading && !error && usuarios.length === 0 && (termino || filtroEstado !== 'todos') ? (
           <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
-              No encontramos usuarios que coincidan con “{termino}”.
+              {termino
+                ? `No encontramos usuarios que coincidan con “${termino}”.`
+                : 'No hay usuarios con este estado.'}
             </Text>
           </View>
         ) : null}
@@ -165,7 +179,8 @@ const AdminUsuariosScreen = function() {
         {!loading && !error ? (
           <CargarMas
             mostrados={usuarios.length}
-            total={total}
+            total={usuarios.length}
+            hayMas={cargados < total}
             cargando={cargandoMas}
             onPress={() => void cargarMas()}
           />

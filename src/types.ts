@@ -4,7 +4,7 @@
  *
  * Mapa real del backend (microservicios NestJS detrás de un gateway, sin prefijo global):
  * - auth  :3000 -> POST /auth/register, POST /auth/login (ver src/api/auth.ts)
- * - users :3001 -> POST /users, GET /users, GET /users/resumen, GET /users/:email,
+ * - users :3001 -> POST /users, GET /users?q&estado, GET /users/resumen, GET /users/:email,
  *                  POST /users/:documento/vehiculo, GET /users/:documento/vehiculos,
  *                  PATCH /users/:documento
  *                  (ver src/api/users.ts y src/api/vehiculos.ts)

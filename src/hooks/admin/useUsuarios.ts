@@ -5,12 +5,22 @@ import { useCallback, useState } from "react";
 
 import { useListaPaginada } from "../useListaPaginada";
 
+type FiltroEstado = 'todos' | EstadoUsuario;
+
 const estadoLabel: Record<EstadoUsuario, string> = {
     activo: 'Activo',
     no_verificado: 'No verificado',
     inactivo: 'Inactivo',
     eliminado: 'Eliminado',
   };
+
+const filtrosEstado: { valor: FiltroEstado; label: string }[] = [
+  { valor: 'todos', label: 'Todos' },
+  { valor: 'activo', label: 'Activo' },
+  { valor: 'no_verificado', label: 'No verificado' },
+  { valor: 'inactivo', label: 'Inactivo' },
+  { valor: 'eliminado', label: 'Eliminado' },
+];
   
   const tipoLabel: Record<TipoUsuario, string> = {
     conductor: 'Conductor',
@@ -27,10 +37,10 @@ function estadoClasses(estado: EstadoUsuario): string {
   
 /**
  * Lógica de "Administrar usuarios". La búsqueda y la paginación las hace el
- * servidor (ver `useListaPaginada`), y los totales de las tarjetas también:
- * la app nunca descarga la lista completa de usuarios.
+ * servidor. El estado se filtra aquí sobre los registros ya cargados.
  */
 export function useUsuarios() {
+  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todos');
   const lista = useListaPaginada(listUsers, (usuario) => usuario.id);
   const [resumen, setResumen] = useState<ResumenUsuarios | null>(null);
 
@@ -48,5 +58,22 @@ export function useUsuarios() {
     cargarResumen();
   };
 
-  return { estadoLabel, tipoLabel, estadoClasses, ...lista, resumen, refrescar };
+  const items =
+    filtroEstado === 'todos'
+      ? lista.items
+      : lista.items.filter((usuario) => usuario.estado === filtroEstado);
+
+  return {
+    estadoLabel,
+    tipoLabel,
+    estadoClasses,
+    filtrosEstado,
+    filtroEstado,
+    setFiltroEstado,
+    ...lista,
+    items,
+    cargados: lista.items.length,
+    resumen,
+    refrescar,
+  };
 }

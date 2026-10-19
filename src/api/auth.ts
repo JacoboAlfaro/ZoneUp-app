@@ -54,13 +54,25 @@ export function toUser(data: UserResponse): User {
   };
 }
 
+function mensajeSinAcceso(estado: EstadoUsuario): string {
+  if (estado === 'eliminado') {
+    return 'Esta cuenta fue eliminada y no puede iniciar sesión.';
+  }
+  return 'Tu cuenta está inactiva. Un administrador debe activarla para que puedas entrar.';
+}
+
 /** POST /auth/login -> token de sesión y usuario que entró. */
 export async function login(email: string, contrasena: string): Promise<AuthSession> {
   const session = await request<SessionResponse>('/auth/login', {
     email: email.trim().toLowerCase(),
     contrasena: contrasena,
   });
-  return { token: session.access_token, user: toUser(session.user) };
+  const user = toUser(session.user);
+  // El servidor puede devolver token aunque la cuenta no deba usarse.
+  if (user.estado === 'inactivo' || user.estado === 'eliminado') {
+    throw new Error(mensajeSinAcceso(user.estado));
+  }
+  return { token: session.access_token, user };
 }
 
 function splitEnDos(value: string): [string, string?] {
