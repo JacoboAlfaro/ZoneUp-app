@@ -373,9 +373,9 @@ Evitar valores arbitrarios si existe una utilidad estándar equivalente.
 
 | Clase         | Uso actual |
 | ------------- | ---------- |
-| `rounded-xl`  | Botones (`Button`) y mensajes de error. |
+| `rounded-xl`  | Botones (`Button` y botones de las alertas). |
 | `rounded-2xl` | Inputs, tarjetas, buscadores y estados vacíos. |
-| `rounded-3xl` | Tarjeta grande de login y registro. |
+| `rounded-3xl` | Tarjeta grande de login y registro, y tarjeta de las alertas. |
 | `rounded-full`| Chips, badges e indicadores circulares. |
 
 `rounded-lg` casi no se usa. El radio estándar de ZoneUp es `rounded-2xl`.
@@ -410,7 +410,35 @@ rounded-xl p-4
 
 ---
 
-# 8. Clases que deben evitarse
+# 8. Alertas emergentes
+
+Todos los avisos (errores al guardar, éxitos y confirmaciones) se muestran con
+la alerta emergente de ZoneUp. No usar `Alert.alert` de React Native ni cajas
+rojas dentro de la pantalla: si el usuario no se desplaza hasta el final, no las ve.
+
+```tsx
+const alerta = useAlerta(); // src/components/alerta/AlertaProvider
+
+void alerta.mostrar({ tipo: 'error', titulo: 'No se pudo guardar', mensaje });
+await alerta.mostrar({ tipo: 'exito', titulo: 'Zona creada' }); // espera a "Aceptar"
+if (await alerta.confirmar({ titulo: 'Eliminar zona', textoConfirmar: 'Eliminar', destructiva: true })) {
+  // ...
+}
+```
+
+| `tipo`        | Uso                                             | Color             |
+| ------------- | ----------------------------------------------- | ----------------- |
+| `error`       | Algo salió mal (respuesta del servidor, red...) | Rojo              |
+| `exito`       | La acción terminó bien                          | Esmeralda         |
+| `advertencia` | Confirmaciones destructivas y avisos            | Ámbar             |
+| `info`        | Información neutra                              | `zu-navy` / cielo |
+| `pregunta`    | Confirmaciones no destructivas                  | `zu-navy` / cielo |
+
+Los errores de un campo concreto siguen debajo del input (`Field`): esos no van en alerta.
+
+---
+
+# 9. Clases que deben evitarse
 
 Evitar definir colores directamente en los componentes:
 

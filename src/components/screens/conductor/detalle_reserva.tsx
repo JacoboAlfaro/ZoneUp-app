@@ -19,7 +19,6 @@ import {
 } from '../../../formato';
 import type { EstadoReserva } from '../../../types';
 import Button from '../../Button';
-import FormError from '../../FormError';
 import NoSessionState from '../../NoSessionState';
 import ContadorLlegada from '../../reservas/ContadorLlegada';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
@@ -208,14 +207,12 @@ const DetalleReservaScreen = function() {
                     ? `Extender ${horasExtra} h`
                     : 'Elige cuántas horas agregar'
               }
-              onPress={extender}
+              onPress={() => void extender()}
               disabled={!horasExtra || extendiendo}
               className="mt-4 bg-zu-navy"
             />
           </View>
         ) : null}
-
-        <FormError message={error ?? undefined} />
       </ScrollView>
     </SafeAreaView>
   );

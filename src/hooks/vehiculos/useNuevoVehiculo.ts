@@ -1,8 +1,8 @@
 import { router } from "expo-router";
 import { useForm, type RegisterOptions } from "react-hook-form";
-import { Alert } from "react-native";
 
 import { addVehiculo } from "@/src/api/vehiculos";
+import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { useSession } from "@/src/session/context";
 
 /** Los datos que captura el formulario de nuevo vehículo. */
@@ -48,8 +48,9 @@ const reglas: Record<
  */
 export function useNuevoVehiculo() {
   const { user } = useSession();
+  const alerta = useAlerta();
 
-  const { control, handleSubmit, setError, formState } =
+  const { control, handleSubmit, formState } =
     useForm<NuevoVehiculoForm>({
       defaultValues: { placa: "", marca: "", color: "" },
     });
@@ -60,19 +61,19 @@ export function useNuevoVehiculo() {
     try {
       await addVehiculo(user.documento_identidad, form);
 
-      Alert.alert(
-        "Vehículo registrado",
-        "El vehículo fue agregado correctamente.",
-        [
-          {
-            text: "Aceptar",
-            onPress: () => router.replace("/conductor/(vehiculos)"),
-          },
-        ],
-      );
+      await alerta.mostrar({
+        tipo: "exito",
+        titulo: "Vehículo registrado",
+        mensaje: "El vehículo fue agregado correctamente.",
+      });
+      router.replace("/conductor/(vehiculos)");
     } catch (cause) {
-      // `root` es el error del formulario completo (placa repetida, servidor caído...).
-      setError("root", { message: (cause as Error).message });
+      // Errores del formulario completo: placa repetida, servidor caído...
+      void alerta.mostrar({
+        tipo: "error",
+        titulo: "No se pudo registrar el vehículo",
+        mensaje: (cause as Error).message,
+      });
     }
   };
 
@@ -80,7 +81,6 @@ export function useNuevoVehiculo() {
     user,
     control,
     reglas,
-    errorGeneral: formState.errors.root?.message,
     guardando: formState.isSubmitting,
     registrar: handleSubmit(guardar),
   };

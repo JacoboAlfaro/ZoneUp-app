@@ -1,9 +1,9 @@
 import { deleteZona, getZona, updateZona } from '@/src/api';
+import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { ZonaAzul } from '@/src/types';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useLayoutEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
-import { Alert } from 'react-native';
 
 /** Los datos que captura este formulario. Todo entra como texto y se convierte al guardar. */
 type ZonaForm = {
@@ -35,6 +35,7 @@ type ZonaForm = {
 export function useDetalle_zona() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
+  const alerta = useAlerta();
   const [zona, setZona] = useState<ZonaAzul | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -96,38 +97,48 @@ export function useDetalle_zona() {
       });
       setZona(actualizada);
       reset(zonaAForm(actualizada));
-      Alert.alert('Zona actualizada', 'Los cambios fueron guardados correctamente.');
+      void alerta.mostrar({
+        tipo: 'exito',
+        titulo: 'Zona actualizada',
+        mensaje: 'Los cambios fueron guardados correctamente.',
+      });
     } catch (cause) {
-      setError('root', { message: (cause as Error).message });
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo guardar la zona',
+        mensaje: (cause as Error).message,
+      });
     }
   };
 
-  const eliminar = () => {
+  const eliminar = async () => {
     if (!zona || deleting) return;
 
-    Alert.alert(
-      'Eliminar zona',
-      `La zona #${zona.id} se eliminará de forma permanente.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              await deleteZona(zona.id);
-              Alert.alert('Zona eliminada', 'La zona fue eliminada correctamente.', [
-                { text: 'Aceptar', onPress: () => router.back() },
-              ]);
-            } catch (cause) {
-              setError('root', { message: (cause as Error).message });
-              setDeleting(false);
-            }
-          },
-        },
-      ],
-    );
+    const confirmado = await alerta.confirmar({
+      titulo: 'Eliminar zona',
+      mensaje: `La zona #${zona.id} se eliminará de forma permanente.`,
+      textoConfirmar: 'Eliminar',
+      destructiva: true,
+    });
+    if (!confirmado) return;
+
+    setDeleting(true);
+    try {
+      await deleteZona(zona.id);
+      await alerta.mostrar({
+        tipo: 'exito',
+        titulo: 'Zona eliminada',
+        mensaje: 'La zona fue eliminada correctamente.',
+      });
+      router.back();
+    } catch (cause) {
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo eliminar la zona',
+        mensaje: (cause as Error).message,
+      });
+      setDeleting(false);
+    }
   };
     return { zona, control, getValues, handleSubmit, formState, loading, deleting, cargaError, guardar, eliminar, aNumero, aEntero }
 }

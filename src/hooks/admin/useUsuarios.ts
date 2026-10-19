@@ -1,7 +1,9 @@
-import { listUsers } from "@/src/api";
-import { EstadoUsuario, TipoUsuario, User } from "@/src/types";
+import { getResumenUsuarios, listUsers } from "@/src/api";
+import { EstadoUsuario, ResumenUsuarios, TipoUsuario } from "@/src/types";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
+
+import { useListaPaginada } from "../useListaPaginada";
 
 const estadoLabel: Record<EstadoUsuario, string> = {
     activo: 'Activo',
@@ -23,51 +25,28 @@ function estadoClasses(estado: EstadoUsuario): string {
     return 'bg-red-100 text-red-700';
 }
   
-function normalizarBusqueda(value: string): string {
-    return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-}
-
+/**
+ * Lógica de "Administrar usuarios". La búsqueda y la paginación las hace el
+ * servidor (ver `useListaPaginada`), y los totales de las tarjetas también:
+ * la app nunca descarga la lista completa de usuarios.
+ */
 export function useUsuarios() {
-  const [usuarios, setUsuarios] = useState<User[]>([]);
-  const [busqueda, setBusqueda] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const lista = useListaPaginada(listUsers, (usuario) => usuario.id);
+  const [resumen, setResumen] = useState<ResumenUsuarios | null>(null);
 
-  const cargarUsuarios = useCallback(async (refresh = false) => {
-    if (refresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-
-    try {
-      setUsuarios(await listUsers());
-    } catch (cause) {
-      setError((cause as Error).message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  const cargarResumen = useCallback(() => {
+    getResumenUsuarios()
+      .then(setResumen)
+      .catch(() => setResumen(null));
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      void cargarUsuarios();
-    }, [cargarUsuarios]),
-  );
+  useFocusEffect(cargarResumen);
 
-  const activos = usuarios.filter((usuario) => usuario.estado === 'activo').length;
-  const usuariosFiltrados = useMemo(() => {
-    const termino = normalizarBusqueda(busqueda.trim());
-    if (!termino) return usuarios;
+  /** Deslizar hacia abajo: primera página y totales de nuevo. */
+  const refrescar = () => {
+    void lista.recargar(true);
+    cargarResumen();
+  };
 
-    return usuarios.filter((usuario) =>
-      [usuario.name, usuario.documento_identidad, usuario.email].some((value) =>
-        normalizarBusqueda(value).includes(termino),
-      ),
-    );
-  }, [busqueda, usuarios]);
-  return { estadoLabel, tipoLabel, usuarios, busqueda, setBusqueda, loading, refreshing, error, activos, usuariosFiltrados, estadoClasses, cargarUsuarios }
+  return { estadoLabel, tipoLabel, estadoClasses, ...lista, resumen, refrescar };
 }

@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Button from '../../Button';
 import Field from '../../Field';
-import FormError from '../../FormError';
 import { useNuevo_zona } from '@/src/hooks/admin/useNuevo_zona';
 
 const NuevaZonaScreen = () => {
@@ -110,8 +109,6 @@ const NuevaZonaScreen = () => {
               },
             }}
           />
-
-          <FormError message={formState.errors.root?.message} />
 
           <Button
             text={formState.isSubmitting ? 'Guardando…' : 'Crear zona'}

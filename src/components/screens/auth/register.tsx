@@ -3,7 +3,6 @@ import { Link } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Button from '../../Button';
 import Field from '../../Field';
-import FormError from '../../FormError';
 
 
 const RegisterScreen = () => {
@@ -126,8 +125,6 @@ const RegisterScreen = () => {
               }}
             />
           </View>
-
-          <FormError message={formState.errors.root?.message} />
 
           <Button
             text={formState.isSubmitting ? 'Creando…' : 'Regístrate'}

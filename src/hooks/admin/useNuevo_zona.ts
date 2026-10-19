@@ -1,7 +1,7 @@
 import { createZona } from "@/src/api";
+import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
-import { Alert } from "react-native";
 
 /** Los datos que captura este formulario. Todo entra como texto y se convierte al guardar. */
 type NuevaZonaForm = {
@@ -21,6 +21,7 @@ function aEntero(value: string): number {
 }
 
 export  function useNuevo_zona() {
+    const alerta = useAlerta();
     const { control, getValues, handleSubmit, setError, formState } = useForm<NuevaZonaForm>({
         defaultValues: {
           indicaciones: '',
@@ -50,11 +51,18 @@ export  function useNuevo_zona() {
             capacidad,
             capacidad_total,
           });
-          Alert.alert('Zona creada', 'La zona azul fue registrada correctamente.', [
-            { text: 'Aceptar', onPress: () => router.back() },
-          ]);
+          await alerta.mostrar({
+            tipo: 'exito',
+            titulo: 'Zona creada',
+            mensaje: 'La zona azul fue registrada correctamente.',
+          });
+          router.back();
         } catch (cause) {
-          setError('root', { message: (cause as Error).message });
+          void alerta.mostrar({
+            tipo: 'error',
+            titulo: 'No se pudo crear la zona',
+            mensaje: (cause as Error).message,
+          });
         }
     };
 

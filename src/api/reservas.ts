@@ -5,33 +5,40 @@
  * - POST  /reservas            (CONDUCTOR)        -> reserva creada, estado `pendiente`
  *   | 400 conductor, vehículo o zona no existe | 400 fecha inválida
  * - GET   /reservas/:id        (ADMIN, CONDUCTOR) -> una reserva | 404 "Reserva no encontrada"
- * - GET   /reservas/user/:id   (ADMIN, CONDUCTOR) -> reservas del conductor (uuid), la más
- *   reciente primero ([] si no tiene)
+ * - GET   /reservas/user/:id?limit&offset (ADMIN, el propio CONDUCTOR) -> una página del
+ *   historial del conductor (uuid), la más reciente primero, cada una con su zona
+ * - GET   /reservas/user/:id/resumen (ADMIN, el propio CONDUCTOR) -> conteo por estado
  * - PATCH /reservas/:id/extend (CONDUCTOR)        -> reserva con nueva `fecha_fin` y precio
  *   | 400 si no es suya, si ya terminó o si la nueva hora no es mayor a la actual
  *
  * Endpoints reales que usa el encargado (controlador):
- * - GET   /reservas/zona/:idZona (ADMIN, CONTROLADOR) -> reservas de la zona con su
- *   conductor y vehículo, la más reciente primero
+ * - GET   /reservas?q&estado&limit&offset (ADMIN, CONTROLADOR) -> una página de las
+ *   reservas de todas las zonas con su conductor, vehículo y zona; primero las
+ *   pendientes, luego las activas. Busca en el servidor.
+ * - GET   /reservas/resumen      (ADMIN, CONTROLADOR) -> conteo por estado
+ * - GET   /reservas/:id/completa (ADMIN, CONTROLADOR) -> una reserva con su conductor,
+ *   vehículo y zona | 404
  * - PUT   /reservas/:id/state    (ADMIN, CONTROLADOR) -> reserva con el nuevo estado | 404
  *
  * El servidor pone el inicio (ahora), calcula el precio y descuenta un cupo de
  * la zona al crear. OJO: no valida que queden cupos; eso lo revisa la app.
  * Al pasar a `completada` o `cancelada` devuelve el cupo a la zona.
- *
- * No hay GET /reservas (lista global) ni endpoint que diga qué zonas tiene
- * asignadas un controlador: el encargado consulta zona por zona.
  */
 
 import type {
   ConductorDeReserva,
+  ConsultaPagina,
   CreateReservaDto,
   EstadoReserva,
+  Pagina,
   Reserva,
+  ReservaConZona,
   ReservaDeZona,
+  ResumenReservas,
   UpdateReservaEstadoDto,
+  ZonaDeReserva,
 } from '../types';
-import { request } from './client';
+import { conParametros, request } from './client';
 import { toVehiculo, type VehiculoResponse } from './vehiculos';
 
 /**
@@ -86,15 +93,36 @@ export async function getReserva(id: number): Promise<Reserva> {
   return toReserva(await request<ReservaResponse>(`/reservas/${id}`));
 }
 
+interface ReservaConZonaResponse {
+  reserva: ReservaResponse;
+  zona: ZonaDeReserva | null;
+}
+
 /**
- * GET /reservas/user/:id -> las reservas del conductor, la más reciente primero.
- * El parámetro es el `id` (uuid) del usuario, no su documento.
+ * GET /reservas/user/:id -> una página del historial del conductor, la más
+ * reciente primero, cada reserva con su zona. El parámetro es el `id` (uuid)
+ * del usuario, no su documento.
  */
-export async function listReservasConductor(idConductor: string): Promise<Reserva[]> {
-  const reservas = await request<ReservaResponse[]>(
-    `/reservas/user/${encodeURIComponent(idConductor.trim())}`,
+export async function listReservasConductor(
+  idConductor: string,
+  { limit, offset, signal }: ConsultaPagina = {},
+): Promise<Pagina<ReservaConZona>> {
+  const pagina = await request<Pagina<ReservaConZonaResponse>>(
+    conParametros(`/reservas/user/${encodeURIComponent(idConductor.trim())}`, { limit, offset }),
+    undefined,
+    { signal },
   );
-  return reservas.map(toReserva);
+  return {
+    ...pagina,
+    items: pagina.items.map((fila) => ({ reserva: toReserva(fila.reserva), zona: fila.zona })),
+  };
+}
+
+/** GET /reservas/user/:id/resumen -> cuántas reservas tiene el conductor en cada estado. */
+export async function getResumenReservasConductor(idConductor: string): Promise<ResumenReservas> {
+  return request<ResumenReservas>(
+    `/reservas/user/${encodeURIComponent(idConductor.trim())}/resumen`,
+  );
 }
 
 /**
@@ -112,11 +140,7 @@ export async function extendReserva(id: number, fechaFin: string): Promise<Reser
   );
 }
 
-/**
- * Conductor tal como llega en GET /reservas/zona/:idZona. El servidor manda la
- * fila completa de `usuarios` (incluido el hash de la contraseña): aquí solo
- * se declaran y copian los datos que la app necesita.
- */
+/** Conductor tal como llega junto a la reserva (sin contraseña). */
 interface ConductorResponse {
   id: string;
   documento_identidad: string;
@@ -132,6 +156,7 @@ interface ReservaDeZonaResponse {
   reserva: ReservaResponse;
   conductor: ConductorResponse | null;
   vehiculo: VehiculoResponse | null;
+  zona: ZonaDeReserva | null;
 }
 
 function toConductorDeReserva(data: ConductorResponse): ConductorDeReserva {
@@ -151,25 +176,42 @@ function toReservaDeZona(data: ReservaDeZonaResponse): ReservaDeZona {
     reserva: toReserva(data.reserva),
     conductor: data.conductor ? toConductorDeReserva(data.conductor) : null,
     vehiculo: data.vehiculo ? toVehiculo(data.vehiculo) : null,
+    zona: data.zona,
   };
 }
 
 /**
- * GET /reservas/zona/:idZona -> reservas de la zona con su conductor y
- * vehículo, la más reciente primero. Requiere token de ADMIN o CONTROLADOR.
+ * GET /reservas -> una página de las reservas de todas las zonas, primero las
+ * pendientes y luego las activas. Requiere token de ADMIN o CONTROLADOR. `q`
+ * busca en el servidor por placa, conductor (nombre o documento), indicaciones
+ * de la zona, "#12" (número de reserva) o "zona 3".
  */
-export async function listReservasZona(idZona: number): Promise<ReservaDeZona[]> {
-  const filas = await request<ReservaDeZonaResponse[]>(`/reservas/zona/${idZona}`);
-  return filas.map(toReservaDeZona);
+export async function buscarReservas({
+  q,
+  estado,
+  limit,
+  offset,
+  signal,
+}: ConsultaPagina & { estado?: EstadoReserva } = {}): Promise<Pagina<ReservaDeZona>> {
+  const pagina = await request<Pagina<ReservaDeZonaResponse>>(
+    conParametros('/reservas', { q, estado, limit, offset }),
+    undefined,
+    { signal },
+  );
+  return { ...pagina, items: pagina.items.map(toReservaDeZona) };
+}
+
+/** GET /reservas/resumen -> cuántas reservas hay en cada estado. Requiere ADMIN o CONTROLADOR. */
+export async function getResumenReservas(): Promise<ResumenReservas> {
+  return request<ResumenReservas>('/reservas/resumen');
 }
 
 /**
- * Las reservas de varias zonas juntas: una petición por zona, en paralelo,
- * porque el servidor no tiene una lista global.
+ * GET /reservas/:id/completa -> la reserva con su conductor, vehículo y zona
+ * (el detalle que ve el encargado). Requiere ADMIN o CONTROLADOR. 404 si no existe.
  */
-export async function listReservasDeZonas(idsZona: number[]): Promise<ReservaDeZona[]> {
-  const porZona = await Promise.all(idsZona.map((idZona) => listReservasZona(idZona)));
-  return porZona.flat();
+export async function getReservaCompleta(id: number): Promise<ReservaDeZona> {
+  return toReservaDeZona(await request<ReservaDeZonaResponse>(`/reservas/${id}/completa`));
 }
 
 /**

@@ -1,22 +1,42 @@
 import { router } from 'expo-router';
-import { Plus, RefreshCw, Search, Users, X } from 'lucide-react-native';
+import { Plus, RefreshCw, Search, Users } from 'lucide-react-native';
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useUsuarios } from '@/src/hooks/admin/useUsuarios';
 import Button from '../../Button';
+import CampoBusqueda from '../../CampoBusqueda';
+import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
 
 const AdminUsuariosScreen = function() {
-  const { estadoLabel, tipoLabel, usuarios, busqueda, setBusqueda, loading, refreshing, error, activos, usuariosFiltrados, estadoClasses, cargarUsuarios } = useUsuarios();
+  const {
+    estadoLabel,
+    tipoLabel,
+    estadoClasses,
+    items: usuarios,
+    total,
+    busqueda,
+    setBusqueda,
+    termino,
+    buscarAhora,
+    limpiarBusqueda,
+    loading,
+    refreshing,
+    cargandoMas,
+    error,
+    recargar,
+    cargarMas,
+    resumen,
+    refrescar,
+  } = useUsuarios();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
@@ -28,7 +48,7 @@ const AdminUsuariosScreen = function() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => void cargarUsuarios(true)}
+            onRefresh={refrescar}
             tintColor="#1E3A5F"
           />
         }>
@@ -44,42 +64,26 @@ const AdminUsuariosScreen = function() {
         />
 
         <View className="mt-5 flex-row gap-3">
-          <DashboardStat value={usuarios.length} label="Total registrados" />
+          <DashboardStat value={resumen?.total ?? '…'} label="Total registrados" />
           <DashboardStat
-            value={activos}
+            value={resumen?.activos ?? '…'}
             label="Usuarios activos"
             valueClassName="text-emerald-700"
           />
         </View>
 
-        <View className="mt-6 flex-row items-center rounded-2xl border border-zu-border bg-zu-white/90 px-4">
-          <Search size={20} color="#6B8698" />
-          <TextInput
-            value={busqueda}
-            onChangeText={setBusqueda}
-            placeholder="Buscar por nombre, documento o correo"
-            placeholderTextColor="#6B8698"
-            selectionColor="#6BB8E8"
-            underlineColorAndroid="transparent"
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="search"
-            className="flex-1 py-3.5 pl-3 text-base text-zu-navy"
-          />
-          {busqueda ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Limpiar búsqueda"
-              hitSlop={10}
-              onPress={() => setBusqueda('')}
-              className="p-1">
-              <X size={19} color="#6B8698" />
-            </Pressable>
-          ) : null}
-        </View>
+        <CampoBusqueda
+          value={busqueda}
+          onChangeText={setBusqueda}
+          onBuscar={buscarAhora}
+          onLimpiar={limpiarBusqueda}
+          buscando={loading && !!termino}
+          placeholder="Buscar por nombre, documento o correo"
+          className="mt-6"
+        />
 
         <Text className="mb-1 mt-8 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
-          Listado ({usuariosFiltrados.length})
+          Listado ({total})
         </Text>
 
         {loading ? (
@@ -93,7 +97,7 @@ const AdminUsuariosScreen = function() {
           <View className="mt-4 items-center rounded-2xl bg-red-50 p-5">
             <Text className="text-center text-red-700">{error}</Text>
             <Pressable
-              onPress={() => void cargarUsuarios()}
+              onPress={() => void recargar()}
               className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2">
               <RefreshCw size={18} color="#1E3A5F" />
               <Text className="font-semibold text-zu-navy">Reintentar</Text>
@@ -101,7 +105,7 @@ const AdminUsuariosScreen = function() {
           </View>
         ) : null}
 
-        {!loading && !error && usuarios.length === 0 ? (
+        {!loading && !error && usuarios.length === 0 && !termino ? (
           <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
             <Users size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
@@ -110,17 +114,17 @@ const AdminUsuariosScreen = function() {
           </View>
         ) : null}
 
-        {!loading && !error && usuarios.length > 0 && usuariosFiltrados.length === 0 ? (
+        {!loading && !error && usuarios.length === 0 && termino ? (
           <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
-              No encontramos usuarios que coincidan con “{busqueda}”.
+              No encontramos usuarios que coincidan con “{termino}”.
             </Text>
           </View>
         ) : null}
 
         {!loading && !error
-          ? usuariosFiltrados.map((usuario) => (
+          ? usuarios.map((usuario) => (
               <Pressable
                 key={usuario.id}
                 accessibilityRole="button"
@@ -157,6 +161,15 @@ const AdminUsuariosScreen = function() {
               </Pressable>
             ))
           : null}
+
+        {!loading && !error ? (
+          <CargarMas
+            mostrados={usuarios.length}
+            total={total}
+            cargando={cargandoMas}
+            onPress={() => void cargarMas()}
+          />
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

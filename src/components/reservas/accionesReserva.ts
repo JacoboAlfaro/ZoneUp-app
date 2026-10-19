@@ -4,10 +4,9 @@
  * textos y el comportamiento sean los mismos en ambos.
  */
 
-import { Alert } from 'react-native';
-
 import { aceptarReserva, cancelarReserva, confirmarLlegada } from '../../api/reservas';
 import type { Reserva } from '../../types';
+import type { Alertas } from '../alerta/AlertaProvider';
 
 export type AccionReserva = 'aceptar' | 'rechazar' | 'confirmar_llegada' | 'cancelar';
 
@@ -70,33 +69,28 @@ const llamadas: Record<AccionReserva, (reserva: Reserva) => Promise<Reserva>> = 
  * Pide confirmación y, si el encargado acepta, cambia el estado de la reserva
  * y avisa el resultado. Devuelve la reserva actualizada, o null si se echó
  * para atrás. Los errores del servidor se lanzan para que la pantalla los muestre.
+ *
+ * @param alerta Las alertas de la app, de `useAlerta()` en el hook que la llama.
  */
-export function ejecutarAccionReserva(
+export async function ejecutarAccionReserva(
   accion: AccionReserva,
   reserva: Reserva,
+  alerta: Alertas,
 ): Promise<Reserva | null> {
   const texto = textos[accion];
   const placa = reserva.id_vehiculo ?? 'sin registrar';
 
-  return new Promise((resolve, reject) => {
-    Alert.alert(
-      texto.titulo,
-      texto.pregunta(placa),
-      [
-        { text: 'Volver', style: 'cancel', onPress: () => resolve(null) },
-        {
-          text: texto.boton,
-          style: texto.destructiva ? 'destructive' : 'default',
-          onPress: () => {
-            llamadas[accion](reserva).then((actualizada) => {
-              Alert.alert(texto.exito, texto.detalleExito(placa));
-              resolve(actualizada);
-            }, reject);
-          },
-        },
-      ],
-      // En Android, tocar fuera del diálogo equivale a "Volver".
-      { cancelable: true, onDismiss: () => resolve(null) },
-    );
+  // Tocar fuera de la alerta o el botón atrás de Android equivale a "Volver".
+  const confirmado = await alerta.confirmar({
+    titulo: texto.titulo,
+    mensaje: texto.pregunta(placa),
+    textoConfirmar: texto.boton,
+    textoCancelar: 'Volver',
+    destructiva: texto.destructiva,
   });
+  if (!confirmado) return null;
+
+  const actualizada = await llamadas[accion](reserva);
+  void alerta.mostrar({ tipo: 'exito', titulo: texto.exito, mensaje: texto.detalleExito(placa) });
+  return actualizada;
 }

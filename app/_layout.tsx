@@ -1,23 +1,28 @@
 /**
  * Layout raíz: envuelve TODA la app.
  *
- * Hace dos cosas:
+ * Hace tres cosas:
  *  1. Pone el proveedor de sesión, para que cualquier pantalla pueda saber
  *     quién entró.
- *  2. Declara la navegación y decide, con `Stack.Protected`, qué pantallas
+ *  2. Pone el proveedor de alertas, para que cualquier pantalla pueda abrir
+ *     una alerta emergente con `useAlerta()` y se vea encima de todo.
+ *  3. Declara la navegación y decide, con `Stack.Protected`, qué pantallas
  *     existen según haya sesión o no. Sin sesión, las rutas privadas ni
  *     siquiera están registradas: no hay forma de llegar a ellas.
  */
 
 import { Stack } from 'expo-router';
 import '../global.css';
+import { AlertaProvider } from '../src/components/alerta/AlertaProvider';
 import { SessionProvider, useSession } from '../src/session/context';
 
 export default function RootLayout() {
   return (
-    <SessionProvider>
-      <Navigator />
-    </SessionProvider>
+    <AlertaProvider>
+      <SessionProvider>
+        <Navigator />
+      </SessionProvider>
+    </AlertaProvider>
   );
 }
 

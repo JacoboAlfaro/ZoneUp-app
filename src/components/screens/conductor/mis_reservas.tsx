@@ -14,6 +14,7 @@ import { useMisReservas } from '@/src/hooks/reservas/useMisReservas';
 import { horasEntre } from '../../../api/reservas';
 import { formatHoras, formatPesos, formatVentana } from '../../../formato';
 import Button from '../../Button';
+import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
 import NoSessionState from '../../NoSessionState';
 import ContadorLlegada from '../../reservas/ContadorLlegada';
@@ -22,16 +23,20 @@ import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 const MisReservasScreen = function() {
   const {
     user,
-    reservas,
+    items: reservas,
+    total,
     loading,
     refreshing,
+    cargandoMas,
     error,
-    cargarReservas,
+    recargar,
+    cargarMas,
+    refrescar,
+    resumen,
     alTerminarLlegada,
     tituloDe,
     abrirDetalle,
     enCamino,
-    completadas,
   } = useMisReservas();
 
   if (!user) {
@@ -47,7 +52,7 @@ const MisReservasScreen = function() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => void cargarReservas(true)}
+            onRefresh={refrescar}
             tintColor="#1E3A5F"
           />
         }>
@@ -62,9 +67,9 @@ const MisReservasScreen = function() {
               En curso
             </Text>
             <ContadorLlegada
-              reserva={enCamino}
+              reserva={enCamino.reserva}
               zonaTitulo={tituloDe(enCamino)}
-              onPress={() => abrirDetalle(enCamino)}
+              onPress={() => abrirDetalle(enCamino.reserva)}
               onFin={alTerminarLlegada}
             />
           </>
@@ -78,16 +83,16 @@ const MisReservasScreen = function() {
         />
 
         <View className="mt-5 flex-row gap-3">
-          <DashboardStat value={reservas.length} label="Reservas realizadas" />
+          <DashboardStat value={resumen?.total ?? '…'} label="Reservas realizadas" />
           <DashboardStat
-            value={completadas}
+            value={resumen?.completada ?? '…'}
             label="Reservas completadas"
             valueClassName="text-emerald-700"
           />
         </View>
 
         <Text className="mb-1 mt-8 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
-          Historial ({reservas.length})
+          Historial ({total})
         </Text>
 
         {loading ? (
@@ -101,7 +106,7 @@ const MisReservasScreen = function() {
           <View className="mt-4 items-center rounded-2xl bg-red-50 p-5">
             <Text className="text-center text-red-700">{error}</Text>
             <Pressable
-              onPress={() => void cargarReservas()}
+              onPress={() => void recargar()}
               className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2">
               <RefreshCw size={18} color="#1E3A5F" />
               <Text className="font-semibold text-zu-navy">Reintentar</Text>
@@ -119,8 +124,9 @@ const MisReservasScreen = function() {
         ) : null}
 
         {!loading && !error
-          ? reservas.map((reserva) => {
-              const titulo = tituloDe(reserva);
+          ? reservas.map((fila) => {
+              const { reserva } = fila;
+              const titulo = tituloDe(fila);
               const duracion = reserva.fecha_fin
                 ? horasEntre(reserva.fecha_real_inicio, new Date(reserva.fecha_fin))
                 : null;
@@ -163,6 +169,15 @@ const MisReservasScreen = function() {
               );
             })
           : null}
+
+        {!loading && !error ? (
+          <CargarMas
+            mostrados={reservas.length}
+            total={total}
+            cargando={cargandoMas}
+            onPress={() => void cargarMas()}
+          />
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

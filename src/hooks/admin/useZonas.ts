@@ -1,7 +1,9 @@
-import { listZonas } from "@/src/api";
-import { ZonaAzul } from "@/src/types";
+import { getResumenZonas, listZonas } from "@/src/api";
+import { ResumenZonas } from "@/src/types";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
+
+import { useListaPaginada } from "../useListaPaginada";
 
 /**
  * Título y detalle derivados de `indicaciones`, igual que en la parte visual
@@ -21,52 +23,27 @@ function tituloDesdeIndicaciones(indicaciones: string | null, id: number): strin
     return lineas.slice(1).join('\n');
   }
   
-  function normalizarBusqueda(value: string): string {
-    return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-  }
-
+/**
+ * Lógica de "Zonas azules" (admin). La búsqueda y la paginación las hace el
+ * servidor (ver `useListaPaginada`), y los totales de las tarjetas también.
+ */
 export function useZonas() {
-  const [zonas, setZonas] = useState<ZonaAzul[]>([]);
-  const [busqueda, setBusqueda] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const lista = useListaPaginada(listZonas, (zona) => zona.id);
+  const [resumen, setResumen] = useState<ResumenZonas | null>(null);
 
-  const cargarZonas = useCallback(async (refresh = false) => {
-    if (refresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-
-    try {
-      setZonas(await listZonas());
-    } catch (cause) {
-      setError((cause as Error).message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  const cargarResumen = useCallback(() => {
+    getResumenZonas()
+      .then(setResumen)
+      .catch(() => setResumen(null));
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      void cargarZonas();
-    }, [cargarZonas]),
-  );
+  useFocusEffect(cargarResumen);
 
-  const cuposDisponibles = zonas.reduce((total, zona) => total + zona.capacidad, 0);
-  const zonasFiltradas = useMemo(() => {
-    const termino = normalizarBusqueda(busqueda.trim());
-    if (!termino) return zonas;
+  /** Deslizar hacia abajo: primera página y totales de nuevo. */
+  const refrescar = () => {
+    void lista.recargar(true);
+    cargarResumen();
+  };
 
-    return zonas.filter((zona) =>
-      [`Zona ${zona.id}`, `#${zona.id}`, zona.indicaciones ?? ''].some((value) =>
-        normalizarBusqueda(value).includes(termino),
-      ),
-    );
-  }, [busqueda, zonas]);
-
-  return { zonas, busqueda, setBusqueda, loading, refreshing, error, cuposDisponibles, zonasFiltradas, cargarZonas, tituloDesdeIndicaciones, detalleDesdeIndicaciones }
+  return { ...lista, resumen, refrescar, tituloDesdeIndicaciones, detalleDesdeIndicaciones };
 }

@@ -2,18 +2,41 @@
  * El vocabulario de la app.
  *
  *
- * Mapa real del backend (3 microservicios NestJS, sin prefijo global):
+ * Mapa real del backend (microservicios NestJS detrás de un gateway, sin prefijo global):
  * - auth  :3000 -> POST /auth/register, POST /auth/login (ver src/api/auth.ts)
- * - users :3001 -> POST /users, GET /users, GET /users/:email,
+ * - users :3001 -> POST /users, GET /users, GET /users/resumen, GET /users/:email,
  *                  POST /users/:documento/vehiculo, GET /users/:documento/vehiculos,
  *                  PATCH /users/:documento
  *                  (ver src/api/users.ts y src/api/vehiculos.ts)
- * - zonas :3002 -> POST /zonas, GET /zonas, GET /zonas/:id, PATCH /zonas/:id,
- *                  DELETE /zonas/:id (ver src/api/zonas.ts)
- * - reservas :3004 -> POST /reservas, GET /reservas/:id, GET /reservas/user/:id,
- *                  GET /reservas/zona/:idZona, PUT /reservas/:id/state,
+ * - zonas :3002 -> POST /zonas, GET /zonas, GET /zonas/resumen, GET /zonas/:id,
+ *                  PATCH /zonas/:id, DELETE /zonas/:id (ver src/api/zonas.ts)
+ * - reservas :3004 -> POST /reservas, GET /reservas, GET /reservas/resumen,
+ *                  GET /reservas/:id, GET /reservas/:id/completa, GET /reservas/user/:id,
+ *                  GET /reservas/user/:id/resumen, PUT /reservas/:id/state,
  *                  PATCH /reservas/:id/extend (ver src/api/reservas.ts)
+ *
+ * Los listados (GET /users, /zonas, /reservas y /reservas/user/:id) buscan y
+ * paginan en el servidor: devuelven una `Pagina`, nunca la tabla completa.
  */
+
+/** Una página de un listado del servidor y cuántos elementos coinciden en total. */
+export interface Pagina<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/** Lo que se le pide al servidor para traer una página de un listado. */
+export interface ConsultaPagina {
+  /** Texto buscado. El servidor ignora tildes y mayúsculas. */
+  q?: string;
+  /** Elementos por página (el servidor pone 20 por defecto y máximo 50). */
+  limit?: number;
+  /** Cuántos elementos saltar: el largo de lo que ya se mostró. */
+  offset?: number;
+  signal?: AbortSignal;
+}
 
 /**
  * Estados de `estado_usuario` en Postgres. El registro crea al usuario como
@@ -23,9 +46,10 @@ export const ESTADOS_USUARIO = ['activo', 'no_verificado', 'inactivo', 'eliminad
 export type EstadoUsuario = (typeof ESTADOS_USUARIO)[number];
 
 /**
- * Subtablas de `usuarios`: cada persona puede tener fila en una sola
- * (`conductores`, `controladores` o `admin`) o en ninguna (null).
- * La app registra `conductor`; el resto lo asigna un administrador.
+ * Subtablas de `usuarios` (`conductores`, `controladores` o `admin`): cada
+ * persona tiene un solo tipo vigente, o ninguno (null). El registro siempre
+ * crea `conductor`; un administrador puede cambiarlo después (el tipo anterior
+ * queda marcado como eliminado en el servidor y su historial se conserva).
  */
 export const TIPOS_USUARIO = ['conductor', 'controlador', 'admin'] as const;
 export type TipoUsuario = (typeof TIPOS_USUARIO)[number];
@@ -204,13 +228,47 @@ export interface ConductorDeReserva {
   celular: string;
 }
 
-/** Fila de GET /reservas/zona/:idZona: la reserva con su conductor y su vehículo. */
-export interface ReservaDeZona {
+/** Lo justo de la zona para mostrar su nombre junto a una reserva. */
+export interface ZonaDeReserva {
+  id: number;
+  indicaciones: string | null;
+}
+
+/** Fila del historial del conductor (GET /reservas/user/:id): la reserva y su zona. */
+export interface ReservaConZona {
   reserva: Reserva;
+  /** null si la zona se borró. */
+  zona: ZonaDeReserva | null;
+}
+
+/** Fila de GET /reservas: la reserva con su conductor, su vehículo y su zona. */
+export interface ReservaDeZona extends ReservaConZona {
   /** null si la reserva quedó sin conductor. */
   conductor: ConductorDeReserva | null;
   /** null si el vehículo se borró después de reservar. */
   vehiculo: Vehiculo | null;
+}
+
+/** GET /users/resumen. */
+export interface ResumenUsuarios {
+  total: number;
+  activos: number;
+}
+
+/** GET /zonas/resumen. */
+export interface ResumenZonas {
+  total: number;
+  con_cupo: number;
+  cupos_disponibles: number;
+}
+
+/** GET /reservas/resumen y GET /reservas/user/:id/resumen: cuántas hay en cada estado. */
+export interface ResumenReservas {
+  total: number;
+  pendiente: number;
+  activa: number;
+  completada: number;
+  cancelada: number;
 }
 
 /** Cuerpo de PUT /reservas/:id/state. */

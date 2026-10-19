@@ -26,7 +26,6 @@ import {
 import { formatHora, formatMomento, formatPesos } from '../../../formato';
 import Button from '../../Button';
 import Field from '../../Field';
-import FormError from '../../FormError';
 import NoSessionState from '../../NoSessionState';
 import DisponibilidadBadge from '../../reservas/DisponibilidadBadge';
 
@@ -82,7 +81,6 @@ const NuevaReservaScreen = function() {
     extra,
     sinCupo,
     finEstimado,
-    errorGeneral,
     reservando,
     reservar,
   } = useNuevaReserva();
@@ -147,8 +145,6 @@ const NuevaReservaScreen = function() {
               disponibles / total
             </Text>
           </View>
-
-          <FormError message={cargaError ?? undefined} />
 
           {enCamino ? (
             <Aviso icon={TriangleAlert} title="Ya tienes una reserva en curso">
@@ -309,8 +305,6 @@ const NuevaReservaScreen = function() {
                   El encargado acepta tu solicitud y verifica la placa cuando llegas.
                 </Text>
               </View>
-
-              <FormError message={errorGeneral} />
 
               <Button
                 text={reservando ? 'Reservando…' : 'Reservar'}

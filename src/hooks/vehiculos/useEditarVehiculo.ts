@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useForm, type RegisterOptions } from "react-hook-form";
-import { Alert } from "react-native";
 
 import { updateVehiculo } from "@/src/api/vehiculos";
+import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { useSession } from "@/src/session/context";
 import type { Vehiculo } from "@/src/types";
 
@@ -46,8 +46,9 @@ export function useEditarVehiculo(
   alActualizar: (vehiculo: Vehiculo) => void,
 ) {
   const { user } = useSession();
+  const alerta = useAlerta();
 
-  const { control, handleSubmit, reset, setError, formState } =
+  const { control, handleSubmit, reset, formState } =
     useForm<EditarVehiculoForm>({
       defaultValues: { marca: "", color: "" },
     });
@@ -67,19 +68,23 @@ export function useEditarVehiculo(
         form,
       );
       alActualizar(actualizado);
-      Alert.alert(
-        "Vehículo actualizado",
-        "Los cambios fueron guardados correctamente.",
-      );
+      void alerta.mostrar({
+        tipo: "exito",
+        titulo: "Vehículo actualizado",
+        mensaje: "Los cambios fueron guardados correctamente.",
+      });
     } catch (cause) {
-      setError("root", { message: (cause as Error).message });
+      void alerta.mostrar({
+        tipo: "error",
+        titulo: "No se pudo guardar el vehículo",
+        mensaje: (cause as Error).message,
+      });
     }
   };
 
   return {
     control,
     reglas,
-    errorGeneral: formState.errors.root?.message,
     guardando: formState.isSubmitting,
     guardarCambios: handleSubmit(guardar),
   };

@@ -2,7 +2,6 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, Vi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../Button';
 import Field from '../../Field';
-import FormError from '../../FormError';
 
 import { useDetalle_zona } from '@/src/hooks/admin/useDetalle_zona';
 
@@ -31,7 +30,7 @@ const AdminZonaDetalleScreen = function() {
         style={{ flex: 1, backgroundColor: '#EEF8FC', paddingHorizontal: 20, paddingTop: 20 }}
         edges={['bottom']}>
         <Text className="text-base text-red-700">
-          {cargaError ?? formState.errors.root?.message ?? 'No se encontró la zona.'}
+          {cargaError ?? 'No se encontró la zona.'}
         </Text>
       </SafeAreaView>
     );
@@ -145,9 +144,6 @@ const AdminZonaDetalleScreen = function() {
             }}
           />
 
-          <FormError message={formState.errors.root?.message} />
-          <FormError message={cargaError ?? undefined} />
-
           <Button
             text={formState.isSubmitting ? 'Guardando…' : 'Guardar cambios'}
             onPress={handleSubmit(guardar)}
@@ -157,7 +153,7 @@ const AdminZonaDetalleScreen = function() {
 
           <Button
             text={deleting ? 'Eliminando…' : 'Eliminar zona'}
-            onPress={eliminar}
+            onPress={() => void eliminar()}
             disabled={formState.isSubmitting || deleting}
             secondary
             className="border-red-400 bg-red-300/60"
