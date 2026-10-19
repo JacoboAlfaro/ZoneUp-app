@@ -1,39 +1,15 @@
-import { Stack } from "expo-router";
+import ConductorDrawer from '@/src/components/screens/conductor/drawer';
+import { Drawer } from 'expo-router/drawer';
 
 export default function ConductorLayout() {
   return (
-    <Stack screenOptions={{ headerTitleStyle: { fontWeight: "600" } }}>
-      <Stack.Screen name="index" options={{ title: "Panel Conductor" }} />
-      <Stack.Screen name="(usuarios)" options={{ title: "Mi perfil" }} />
-      <Stack.Screen
-        name="(usuarios)/edition"
-        options={{ title: "Editar perfil" }}
-      />
-      <Stack.Screen name="(vehiculos)" options={{ title: "Mis vehículos" }} />
-      <Stack.Screen
-        name="(vehiculos)/nuevo-vehiculo"
-        options={{ title: "Nuevo vehículo" }}
-      />
-      <Stack.Screen
-        name="(vehiculos)/vehiculo/[placa]"
-        options={{ title: "Detalle del vehículo" }}
-      />
-      <Stack.Screen
-        name="(reservas)/reservas"
-        options={{ title: "Mis reservas" }}
-      />
-      <Stack.Screen
-        name="(reservas)/zonas"
-        options={{ title: "Reservar zona azul" }}
-      />
-      <Stack.Screen
-        name="(reservas)/nueva-reserva"
-        options={{ title: "Nueva reserva" }}
-      />
-      <Stack.Screen
-        name="(reservas)/reserva/[id]"
-        options={{ title: "Detalle de la reserva" }}
-      />
-    </Stack>
+    <Drawer
+      drawerContent={(props) => <ConductorDrawer {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerType: 'front',
+        swipeEnabled: false,
+      }}
+    />
   );
 }
