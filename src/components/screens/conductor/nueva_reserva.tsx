@@ -18,12 +18,11 @@ import {
     CARGO_RESERVA,
     HORAS_MAX,
     HORAS_MIN,
-    limiteLlegada,
     MINUTOS_PARA_LLEGAR,
     precioEstimado,
     TARIFA_HORA,
 } from '../../../api/reservas';
-import { formatHora, formatMomento, formatPesos } from '../../../formato';
+import { formatMomento, formatPesos } from '../../../formato';
 import Button from '../../Button';
 import Field from '../../Field';
 import NoSessionState from '../../NoSessionState';
@@ -70,7 +69,9 @@ const NuevaReservaScreen = function() {
     user,
     zona,
     vehiculos,
-    enCamino,
+    ocupados,
+    todosOcupados,
+    reservaEnCurso,
     loading,
     cargaError,
     control,
@@ -146,18 +147,18 @@ const NuevaReservaScreen = function() {
             </Text>
           </View>
 
-          {enCamino ? (
-            <Aviso icon={TriangleAlert} title="Ya tienes una reserva en curso">
+          {reservaEnCurso ? (
+            <Aviso icon={TriangleAlert} title="Todos tus vehículos tienen una reserva en curso">
               <Text className="mt-3 text-sm leading-5 text-zu-slate">
-                Podrás reservar otra zona cuando termine tu tiempo para llegar, a las{' '}
-                {formatHora(limiteLlegada(enCamino))}.
+                Cada vehículo puede tener una sola reserva a la vez. Podrás reservar con uno de
+                ellos cuando su reserva termine o se cancele.
               </Text>
               <Button
                 text="Ver mi reserva"
                 onPress={() =>
                   router.push({
-                    pathname: '/conductor/(reservas)/reserva/[id]',
-                    params: { id: String(enCamino.id) },
+                    pathname: '/conductor/(panel)/(reservas)/reserva/[id]',
+                    params: { id: String(reservaEnCurso.id) },
                   })
                 }
                 className="mt-4 bg-zu-navy"
@@ -184,7 +185,7 @@ const NuevaReservaScreen = function() {
               </Text>
               <Button
                 text="Registrar vehículo"
-                onPress={() => router.push('/conductor/(vehiculos)/nuevo-vehiculo')}
+                onPress={() => router.push('/conductor/(panel)/(vehiculos)/nuevo-vehiculo')}
                 className="mt-4 bg-zu-navy"
               />
             </Aviso>
@@ -201,17 +202,19 @@ const NuevaReservaScreen = function() {
                       <View className="flex-row flex-wrap gap-2">
                         {vehiculos.map((vehiculo) => {
                           const active = vehiculo.placa === value;
+                          const ocupado = ocupados.has(vehiculo.placa);
                           return (
                             <Pressable
                               key={vehiculo.placa}
                               accessibilityRole="radio"
-                              accessibilityState={{ checked: active }}
+                              accessibilityState={{ checked: active, disabled: ocupado }}
+                              disabled={ocupado}
                               onPress={() => onChange(vehiculo.placa)}
                               className={`flex-row items-center gap-2 rounded-xl border px-3 py-2.5 active:opacity-70 ${
                                 active
                                   ? 'border-zu-navy bg-zu-navy/10'
                                   : 'border-zu-border bg-zu-white'
-                              }`}>
+                              } disabled:opacity-50`}>
                               <Car size={18} color={active ? '#1E3A5F' : '#6B8698'} />
                               <View>
                                 <Text
@@ -220,7 +223,11 @@ const NuevaReservaScreen = function() {
                                   }`}>
                                   {vehiculo.placa}
                                 </Text>
-                                {vehiculo.marca || vehiculo.color ? (
+                                {ocupado ? (
+                                  <Text className="text-xs font-medium text-amber-700">
+                                    Con reserva en curso
+                                  </Text>
+                                ) : vehiculo.marca || vehiculo.color ? (
                                   <Text className="text-xs text-zu-slate">
                                     {[vehiculo.marca, vehiculo.color].filter(Boolean).join(' · ')}
                                   </Text>
@@ -302,7 +309,8 @@ const NuevaReservaScreen = function() {
                 <Info size={20} color="#4A8EC4" />
                 <Text className="flex-1 text-sm leading-5 text-zu-slate">
                   Después de reservar tienes {MINUTOS_PARA_LLEGAR} minutos para llegar a la zona.
-                  El encargado acepta tu solicitud y verifica la placa cuando llegas.
+                  El encargado acepta tu solicitud y verifica la placa cuando llegas. Si no llegas
+                  a tiempo, la reserva se cancela y se cobra el cargo de reserva.
                 </Text>
               </View>
 

@@ -9,26 +9,39 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDetalleReserva } from '@/src/hooks/reservas/useDetalleReserva';
-import { CARGO_RESERVA, HORAS_MAX, TARIFA_HORA } from '../../../api/reservas';
+import { CARGO_RESERVA, HORAS_MAX, llego, TARIFA_HORA } from '../../../api/reservas';
 import {
     formatFechaHora,
+    formatHora,
     formatHoras,
     formatMomento,
     formatPesos,
     formatVentana,
 } from '../../../formato';
-import type { EstadoReserva } from '../../../types';
+import type { Reserva } from '../../../types';
 import Button from '../../Button';
 import NoSessionState from '../../NoSessionState';
 import ContadorLlegada from '../../reservas/ContadorLlegada';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 
-const descripcionEstado: Record<EstadoReserva, string> = {
-  pendiente: 'Esperando a que el encargado de la zona acepte tu solicitud.',
-  activa: 'El encargado aceptó tu reserva. Al llegar verificará la placa de tu vehículo.',
-  completada: 'El encargado confirmó tu llegada. La reserva terminó.',
-  cancelada: 'La solicitud fue rechazada o anulada y el cupo quedó libre.',
-};
+function descripcionEstado(reserva: Reserva): string {
+  switch (reserva.estado) {
+    case 'pendiente':
+      return 'Esperando a que el encargado acepte tu solicitud. Tienes 15 minutos para llegar.';
+    case 'activa':
+      return llego(reserva)
+        ? `Llegada confirmada. Tu reserva termina a las ${
+            reserva.fecha_fin ? formatHora(reserva.fecha_fin) : '—'
+          }.`
+        : 'El encargado aceptó tu reserva. Al llegar verificará la placa de tu vehículo.';
+    case 'completada':
+      return 'Terminó tu reserva.';
+    case 'cancelada':
+      return llego(reserva)
+        ? 'El encargado canceló la reserva después de tu llegada.'
+        : 'La reserva se canceló (rechazada o no llegaste a tiempo). Se cobra el cargo de reserva.';
+  }
+}
 
 const HORAS_EXTRA = [1, 2, 3] as const;
 
@@ -109,7 +122,7 @@ const DetalleReservaScreen = function() {
             <EstadoReservaBadge estado={reserva.estado} />
           </View>
           <Text className="mt-2 text-sm leading-5 text-zu-slate">
-            {descripcionEstado[reserva.estado]}
+            {descripcionEstado(reserva)}
           </Text>
 
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
@@ -129,10 +142,15 @@ const DetalleReservaScreen = function() {
             Ventana de la reserva
           </Text>
           <Text className="mt-1 text-base text-zu-navy">
-            {formatVentana(reserva.fecha_real_inicio, reserva.fecha_fin)}
+            {formatVentana(reserva.fecha_creacion, reserva.fecha_fin)}
           </Text>
           {duracion !== null ? (
             <Text className="mt-1 text-sm text-zu-slate">Duración: {formatHoras(duracion)}</Text>
+          ) : null}
+          {reserva.fecha_real_inicio ? (
+            <Text className="mt-1 text-sm text-zu-slate">
+              Llegó: {formatFechaHora(reserva.fecha_real_inicio)}
+            </Text>
           ) : null}
 
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
@@ -140,7 +158,9 @@ const DetalleReservaScreen = function() {
           </Text>
           <Text className="mt-1 text-2xl font-bold text-zu-navy">{formatPesos(reserva.precio)}</Text>
           <Text className="mt-1 text-sm text-zu-slate">
-            {formatPesos(TARIFA_HORA)} por hora + {formatPesos(CARGO_RESERVA)} de reserva.
+            {reserva.estado === 'cancelada' && !llego(reserva)
+              ? `Solo el cargo de reserva: ${formatPesos(CARGO_RESERVA)}.`
+              : `${formatPesos(TARIFA_HORA)} por hora + ${formatPesos(CARGO_RESERVA)} de reserva.`}
           </Text>
 
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
@@ -155,8 +175,8 @@ const DetalleReservaScreen = function() {
           <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm">
             <Text className="text-base font-semibold text-zu-navy">Extender reserva</Text>
             <Text className="mt-1 text-sm text-zu-slate">
-              Agrega horas a tu ventana de parqueo (máximo {HORAS_MAX} h en total). El total se
-              recalcula desde el inicio de la reserva.
+              Agrega horas a tu ventana de parqueo (máximo {HORAS_MAX} h en total desde que
+              reservaste). Cada hora extra cuesta {formatPesos(TARIFA_HORA)}.
             </Text>
 
             <View className="mt-4 flex-row gap-2">

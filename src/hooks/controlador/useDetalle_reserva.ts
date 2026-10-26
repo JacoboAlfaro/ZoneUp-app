@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { ReservaDeZona } from '@/src/types';
-import { estaEnCamino, getReservaCompleta, horasEntre } from '@/src/api';
+import {
+  ApiError,
+  estaEnCamino,
+  estaParqueada,
+  getReservaCompleta,
+  horasEntre,
+  limiteLlegada,
+  llegadaVencida,
+  llego,
+} from '@/src/api';
 import { detalleZona, tituloZona } from '@/src/formato';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { AccionReserva, ejecutarAccionReserva } from '@/src/components/reservas/accionesReserva';
@@ -14,8 +23,8 @@ export default function useDetalle_reserva() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [procesando, setProcesando] = useState(false);
-  /** Error al cargar la reserva. Los demás errores se muestran en una alerta. */
   const [error, setError] = useState<string | null>(null);
+  const [ahora, setAhora] = useState(() => new Date());   // Referencia para saber si el conductor sigue a tiempo de llegar.
 
   const idNumerico = id ? Number(id) : NaN;
 
@@ -34,6 +43,7 @@ export default function useDetalle_reserva() {
 
       try {
         setItem(await getReservaCompleta(idNumerico));
+        setAhora(new Date());
       } catch (cause) {
         const mensaje = (cause as Error).message;
         // Al recargar, la reserva ya está en pantalla y el error no se vería: se avisa.
@@ -60,6 +70,14 @@ export default function useDetalle_reserva() {
     });
   }, [navigation, item]);
 
+  // Cuando vencen los 15 minutos se renueva "ahora", y la pantalla deja de
+  // ofrecer la verificación de placa.
+  const limite = item && estaEnCamino(item.reserva, ahora) ? limiteLlegada(item.reserva).getTime() : null;
+  useEffect(() => {
+    if (limite === null) return;
+    const espera = setTimeout(() => setAhora(new Date()), Math.max(0, limite - Date.now()) + 500);
+    return () => clearTimeout(espera);
+  }, [limite]);
 
   if(!item){
     return {item: null, reserva: null, loading, error}
@@ -68,10 +86,13 @@ export default function useDetalle_reserva() {
   const placa = reserva.id_vehiculo ?? '—';
   const titulo = tituloZona(item.zona?.indicaciones, reserva.id_zona);
   const extra = detalleZona(item.zona?.indicaciones);
-  const porAtender = reserva.estado === 'pendiente' || reserva.estado === 'activa';
-  const enCamino = estaEnCamino(reserva);
+  const llegada = llego(reserva);
+  const enCamino = estaEnCamino(reserva, ahora);
+  const vencida = llegadaVencida(reserva, ahora);
+  const parqueada = estaParqueada(reserva, ahora);
+  // La ventana va desde que se hizo la reserva hasta su fin.
   const duracion = reserva.fecha_fin
-    ? horasEntre(reserva.fecha_real_inicio, new Date(reserva.fecha_fin))
+    ? horasEntre(reserva.fecha_creacion, new Date(reserva.fecha_fin))
     : null;
 
   const ejecutar = async (accion: AccionReserva) => {
@@ -82,11 +103,14 @@ export default function useDetalle_reserva() {
       const actualizada = await ejecutarAccionReserva(accion, reserva, alerta);
       if (actualizada) setItem({ ...item, reserva: actualizada });
     } catch (cause) {
+      // 409: la reserva cambió entretanto (otro encargado, o venció el tiempo para llegar).
+      const conflicto = cause instanceof ApiError && cause.status === 409;
       void alerta.mostrar({
-        tipo: 'error',
+        tipo: conflicto ? 'advertencia' : 'error',
         titulo: 'No se pudo actualizar la reserva',
         mensaje: (cause as Error).message,
       });
+      if (conflicto) void cargar(true);
     } finally {
       setProcesando(false);
     }
@@ -102,6 +126,6 @@ export default function useDetalle_reserva() {
     });
   return {
     item, loading, refreshing, procesando, error, cargar,
-    reserva, conductor, vehiculo, placa, titulo, extra, porAtender, enCamino, duracion, ejecutar, placaNoCoincide
+    reserva, conductor, vehiculo, placa, titulo, extra, llegada, enCamino, vencida, parqueada, duracion, ejecutar, placaNoCoincide
   }
 }

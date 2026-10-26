@@ -15,7 +15,8 @@ import { type CargarPagina, useListaPaginada } from '../useListaPaginada';
  * Lógica de la pantalla "Mis reservas": el historial del conductor en sesión,
  * paginado en el servidor y con el nombre de la zona en cada reserva (ya no se
  * descargan todas las zonas). Los totales también los cuenta el servidor.
- * Calcula la reserva en curso y se vuelve a cargar cada vez que gana el foco.
+ * Calcula las reservas en camino (puede haber una por vehículo) y se vuelve a
+ * cargar cada vez que gana el foco.
  */
 export function useMisReservas() {
   const { user } = useSession();
@@ -57,12 +58,13 @@ export function useMisReservas() {
 
   const abrirDetalle = (reserva: Reserva) =>
     router.push({
-      pathname: '/conductor/(reservas)/reserva/[id]',
+      pathname: '/conductor/(panel)/(reservas)/reserva/[id]',
       params: { id: String(reserva.id) },
     });
 
-  // La reserva en curso es de las más recientes: siempre llega en la primera página.
-  const enCamino = lista.items.find((fila) => estaEnCamino(fila.reserva, ahora)) ?? null;
+  // Las reservas en camino son de las más recientes: llegan en la primera página.
+  // Puede haber varias, una por vehículo.
+  const enCamino = lista.items.filter((fila) => estaEnCamino(fila.reserva, ahora));
 
   return {
     user,

@@ -8,7 +8,6 @@ type NuevaZonaForm = {
     indicaciones: string;
     latitud: string;
     longitud: string;
-    capacidad: string;
     capacidad_total: string;
 };
 
@@ -22,34 +21,23 @@ function aEntero(value: string): number {
 
 export  function useNuevo_zona() {
     const alerta = useAlerta();
-    const { control, getValues, handleSubmit, setError, formState } = useForm<NuevaZonaForm>({
+    const { control, handleSubmit, formState } = useForm<NuevaZonaForm>({
         defaultValues: {
           indicaciones: '',
           latitud: '5.0704',
           longitud: '-75.5178',
-          capacidad: '0',
           capacidad_total: '10',
         },
       });
     
       const guardar = async (form: NuevaZonaForm) => {
-        const capacidad = aEntero(form.capacidad);
-        const capacidad_total = aEntero(form.capacidad_total);
-    
-        if (capacidad > capacidad_total) {
-          setError('capacidad', {
-            message: 'Los cupos disponibles no pueden superar la capacidad total',
-          });
-          return;
-        }
-    
+        // Solo la capacidad total: los cupos disponibles los calcula el servidor.
         try {
           await createZona({
             indicaciones: form.indicaciones.trim(),
             latitud: aNumero(form.latitud),
             longitud: aNumero(form.longitud),
-            capacidad,
-            capacidad_total,
+            capacidad_total: aEntero(form.capacidad_total),
           });
           await alerta.mostrar({
             tipo: 'exito',
@@ -66,5 +54,5 @@ export  function useNuevo_zona() {
         }
     };
 
-  return { control, getValues, handleSubmit, formState, guardar, aNumero, aEntero }
+  return { control, handleSubmit, formState, guardar, aNumero, aEntero }
 }

@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useMisReservas } from '@/src/hooks/reservas/useMisReservas';
 import { horasEntre } from '../../../api/reservas';
-import { formatHoras, formatPesos, formatVentana } from '../../../formato';
+import { formatHora, formatHoras, formatPesos, formatVentana } from '../../../formato';
 import Button from '../../Button';
 import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
@@ -61,24 +61,29 @@ const MisReservasScreen = function() {
           respondió.
         </Text>
 
-        {!loading && enCamino ? (
+        {!loading && enCamino.length > 0 ? (
           <>
             <Text className="mb-3 mt-6 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
-              En curso
+              En camino
             </Text>
-            <ContadorLlegada
-              reserva={enCamino.reserva}
-              zonaTitulo={tituloDe(enCamino)}
-              onPress={() => abrirDetalle(enCamino.reserva)}
-              onFin={alTerminarLlegada}
-            />
+            <View className="gap-3">
+              {enCamino.map((fila) => (
+                <ContadorLlegada
+                  key={fila.reserva.id}
+                  reserva={fila.reserva}
+                  zonaTitulo={tituloDe(fila)}
+                  onPress={() => abrirDetalle(fila.reserva)}
+                  onFin={alTerminarLlegada}
+                />
+              ))}
+            </View>
           </>
         ) : null}
 
         <Button
           text="Nueva reserva"
           icon={Plus}
-          onPress={() => router.push('/conductor/(reservas)/zonas')}
+          onPress={() => router.push('/conductor/(panel)/(reservas)/zonas')}
           className="mt-5 rounded-2xl bg-zu-navy"
         />
 
@@ -127,8 +132,9 @@ const MisReservasScreen = function() {
           ? reservas.map((fila) => {
               const { reserva } = fila;
               const titulo = tituloDe(fila);
+              // La ventana va desde que se hizo la reserva hasta su fin.
               const duracion = reserva.fecha_fin
-                ? horasEntre(reserva.fecha_real_inicio, new Date(reserva.fecha_fin))
+                ? horasEntre(reserva.fecha_creacion, new Date(reserva.fecha_fin))
                 : null;
 
               return (
@@ -146,8 +152,13 @@ const MisReservasScreen = function() {
                         {duracion !== null ? ` · ${formatHoras(duracion)}` : ''}
                       </Text>
                       <Text className="mt-1 text-sm leading-5 text-zu-slate">
-                        {formatVentana(reserva.fecha_real_inicio, reserva.fecha_fin)}
+                        {formatVentana(reserva.fecha_creacion, reserva.fecha_fin)}
                       </Text>
+                      {reserva.fecha_real_inicio ? (
+                        <Text className="mt-1 text-sm leading-5 text-zu-slate">
+                          Llegó: {formatHora(reserva.fecha_real_inicio)}
+                        </Text>
+                      ) : null}
                       <Text className="mt-3 text-sm font-medium text-zu-navy">
                         Total: <Text className="font-bold">{formatPesos(reserva.precio)}</Text>
                       </Text>

@@ -2,12 +2,17 @@
  * Zonas azules (zones-service).
  *
  * Endpoints reales:
- * - POST   /zonas     (ADMIN)   -> zona creada
+ * - POST   /zonas { latitud, longitud, indicaciones, capacidad_total } (ADMIN) -> zona creada
+ *   | 400 CAPACIDAD_TOTAL_INVALIDA
  * - GET    /zonas?q&orden&limit&offset (público) -> una página de zonas (busca en el servidor)
  * - GET    /zonas/resumen (público) -> { total, con_cupo, cupos_disponibles }
  * - GET    /zonas/:id (público) -> una zona | 404 "Zona no encontrada"
- * - PATCH  /zonas/:id (ADMIN)   -> zona actualizada | 404
+ * - PATCH  /zonas/:id (ADMIN)   -> zona actualizada | 404 | 400 CAPACIDAD_TOTAL_INVALIDA
+ *   | 409 CAPACIDAD_MENOR_A_OCUPADOS (capacidad total por debajo de las reservas en curso)
  * - DELETE /zonas/:id (ADMIN)   -> { message: "Zona eliminada" } | 404
+ *
+ * `capacidad` son los cupos disponibles AHORA: el servidor los calcula
+ * (capacidad total − reservas en curso). La app nunca los manda.
  *
  * Las lecturas son públicas: el mapa puede usarlas sin sesión.
  * La escritura exige token de ADMIN (el de conductor devuelve 403).

@@ -7,7 +7,7 @@ import { useDetalle_zona } from '@/src/hooks/admin/useDetalle_zona';
 
 const AdminZonaDetalleScreen = function() {
 
-  const { zona, control, getValues, handleSubmit, formState, loading, deleting, cargaError, guardar, eliminar, aNumero, aEntero } = useDetalle_zona();
+  const { zona, control, handleSubmit, formState, loading, deleting, cargaError, guardar, eliminar, aNumero, aEntero } = useDetalle_zona();
 
   if (loading) {
     return (
@@ -52,8 +52,8 @@ const AdminZonaDetalleScreen = function() {
             </Text>
             <Text className="mt-1 text-lg font-bold text-zu-navy">#{zona.id}</Text>
             <Text className="mt-1 text-sm text-zu-slate">
-              Cupos: {zona.capacidad}/{zona.capacidad_total} disponibles / total · (
-              {zona.latitud}, {zona.longitud})
+              Disponibles ahora: {zona.capacidad} de {zona.capacidad_total} · ({zona.latitud},{' '}
+              {zona.longitud})
             </Text>
           </View>
 
@@ -108,26 +108,6 @@ const AdminZonaDetalleScreen = function() {
           />
           <Field
             control={control}
-            name="capacidad"
-            label="Cupos disponibles"
-            placeholder="0"
-            keyboardType="number-pad"
-            maxLength={6}
-            rules={{
-              required: 'Los cupos disponibles son obligatorios',
-              validate: (value) => {
-                const numero = aEntero(value);
-                if (!Number.isInteger(numero)) return 'Debe ser un número entero';
-                if (numero < 0) return 'No puede ser negativo';
-                const total = aEntero(getValues('capacidad_total'));
-                if (Number.isInteger(total) && numero > total)
-                  return 'No puede superar la capacidad total';
-                return true;
-              },
-            }}
-          />
-          <Field
-            control={control}
             name="capacidad_total"
             label="Capacidad total"
             placeholder="10"
@@ -143,6 +123,10 @@ const AdminZonaDetalleScreen = function() {
               },
             }}
           />
+          <Text className="-mt-2 ml-1 text-xs leading-4 text-zu-slate">
+            Los cupos disponibles los calcula el servidor: capacidad total menos las reservas en
+            curso. No puede quedar por debajo de las reservas en curso.
+          </Text>
 
           <Button
             text={formState.isSubmitting ? 'Guardando…' : 'Guardar cambios'}

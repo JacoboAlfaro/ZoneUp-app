@@ -6,6 +6,8 @@
  *   | 404 si el documento no existe | 400 si no es conductor | 409 placa repetida
  * - GET  /users/:documento/vehiculos (ADMIN o CONDUCTOR) -> vehículos []
  *   | 404 si el documento no existe (un no-conductor devuelve [])
+ * - PATCH  /users/:documento/vehiculo/:placa (ADMIN o CONDUCTOR) -> vehículo editado (marca, color)
+ * - DELETE /users/:documento/vehiculo/:placa (ADMIN o CONDUCTOR) -> borra el vehículo
  */
 
 import type {

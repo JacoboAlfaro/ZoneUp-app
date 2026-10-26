@@ -4,7 +4,14 @@
  * textos y el comportamiento sean los mismos en ambos.
  */
 
-import { aceptarReserva, cancelarReserva, confirmarLlegada } from '../../api/reservas';
+import {
+  aceptarReserva,
+  CARGO_RESERVA,
+  cancelarReserva,
+  confirmarLlegada,
+  llego,
+} from '../../api/reservas';
+import { formatPesos } from '../../formato';
 import type { Reserva } from '../../types';
 import type { Alertas } from '../alerta/AlertaProvider';
 
@@ -12,12 +19,15 @@ export type AccionReserva = 'aceptar' | 'rechazar' | 'confirmar_llegada' | 'canc
 
 interface Textos {
   titulo: string;
-  pregunta: (placa: string) => string;
+  pregunta: (placa: string, reserva: Reserva) => string;
   boton: string;
   destructiva: boolean;
   exito: string;
   detalleExito: (placa: string) => string;
 }
+
+/** Lo que se cobra si se cancela antes de que el vehículo llegue. */
+const SOLO_CARGO = `Se cobra solo el cargo de reserva (${formatPesos(CARGO_RESERVA)}).`;
 
 const textos: Record<AccionReserva, Textos> = {
   aceptar: {
@@ -32,7 +42,7 @@ const textos: Record<AccionReserva, Textos> = {
   rechazar: {
     titulo: 'Rechazar reserva',
     pregunta: (placa) =>
-      `La solicitud de la placa ${placa} se cancelará y el cupo quedará libre.`,
+      `La solicitud de la placa ${placa} se cancelará y el cupo quedará libre. ${SOLO_CARGO}`,
     boton: 'Rechazar',
     destructiva: true,
     exito: 'Reserva rechazada',
@@ -41,16 +51,17 @@ const textos: Record<AccionReserva, Textos> = {
   confirmar_llegada: {
     titulo: 'Confirmar llegada',
     pregunta: (placa) =>
-      `Confirmas que el vehículo frente a ti tiene la placa ${placa}. La reserva quedará completada.`,
+      `Confirmas que el vehículo frente a ti tiene la placa ${placa}. La reserva seguirá activa hasta su hora de fin.`,
     boton: 'Confirmar',
     destructiva: false,
     exito: 'Llegada confirmada',
-    detalleExito: (placa) => `La reserva de la placa ${placa} quedó completada.`,
+    detalleExito: (placa) => `La llegada de la placa ${placa} quedó registrada.`,
   },
   cancelar: {
     titulo: 'Cancelar reserva',
-    pregunta: (placa) =>
-      `La reserva de la placa ${placa} se cancelará y el cupo quedará libre.`,
+    pregunta: (placa, reserva) =>
+      `La reserva de la placa ${placa} se cancelará y el cupo quedará libre.` +
+      (llego(reserva) ? '' : ` ${SOLO_CARGO}`),
     boton: 'Cancelar reserva',
     destructiva: true,
     exito: 'Reserva cancelada',
@@ -61,7 +72,7 @@ const textos: Record<AccionReserva, Textos> = {
 const llamadas: Record<AccionReserva, (reserva: Reserva) => Promise<Reserva>> = {
   aceptar: (reserva) => aceptarReserva(reserva.id),
   rechazar: (reserva) => cancelarReserva(reserva.id),
-  confirmar_llegada: (reserva) => confirmarLlegada(reserva),
+  confirmar_llegada: (reserva) => confirmarLlegada(reserva.id),
   cancelar: (reserva) => cancelarReserva(reserva.id),
 };
 
@@ -83,7 +94,7 @@ export async function ejecutarAccionReserva(
   // Tocar fuera de la alerta o el botón atrás de Android equivale a "Volver".
   const confirmado = await alerta.confirmar({
     titulo: texto.titulo,
-    mensaje: texto.pregunta(placa),
+    mensaje: texto.pregunta(placa, reserva),
     textoConfirmar: texto.boton,
     textoCancelar: 'Volver',
     destructiva: texto.destructiva,

@@ -39,7 +39,7 @@ export function useEliminarVehiculo(vehiculo: Vehiculo | null) {
         titulo: "Vehículo eliminado",
         mensaje: "El vehículo fue eliminado correctamente.",
       });
-      router.replace("/conductor/(vehiculos)");
+      router.replace("/conductor/(panel)/(vehiculos)");
     } catch (cause) {
       void alerta.mostrar({
         tipo: "error",

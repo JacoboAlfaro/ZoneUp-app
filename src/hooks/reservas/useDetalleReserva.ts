@@ -1,13 +1,15 @@
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 
+import { ApiError } from '@/src/api/client';
 import {
   estaEnCamino,
+  estaParqueada,
   extendReserva,
   getReserva,
   HORAS_MAX,
   horasEntre,
-  precioEstimado,
+  TARIFA_HORA,
 } from '@/src/api/reservas';
 import { getZona } from '@/src/api/zonas';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
@@ -92,26 +94,26 @@ export function useDetalleReserva() {
   const enCamino = reserva !== null && estaEnCamino(reserva, ahora);
   const titulo = tituloZona(zona?.indicaciones, reserva?.id_zona ?? null);
   const extra = detalleZona(zona?.indicaciones);
+  // La ventana va desde que se hizo la reserva hasta su fin.
   const duracion = reserva?.fecha_fin
-    ? horasEntre(reserva.fecha_real_inicio, new Date(reserva.fecha_fin))
+    ? horasEntre(reserva.fecha_creacion, new Date(reserva.fecha_fin))
     : null;
 
-  // El servidor solo extiende reservas pendientes o activas. Las horas se suman
-  // al fin actual, o a este momento si ese fin ya pasó.
-  const extensible = reserva?.estado === 'pendiente' || reserva?.estado === 'activa';
-  const baseExtension = Math.max(
-    reserva?.fecha_fin ? new Date(reserva.fecha_fin).getTime() : 0,
-    Date.now(),
-  );
-  const finConExtra = (horas: number) => new Date(baseExtension + horas * MS_POR_HORA);
-  const superaMaximo = (horas: number) =>
-    reserva !== null && horasEntre(reserva.fecha_real_inicio, finConExtra(horas)) > HORAS_MAX;
+  // Se puede extender mientras la reserva sigue en curso: en camino o parqueada.
+  // Las horas se suman al fin actual, sin pasar de HORAS_MAX desde la creación.
+  const extensible =
+    reserva !== null && reserva.fecha_fin !== null && (enCamino || estaParqueada(reserva, ahora));
+  const finConExtra = (horas: number) =>
+    reserva?.fecha_fin ? new Date(new Date(reserva.fecha_fin).getTime() + horas * MS_POR_HORA) : null;
+  const superaMaximo = (horas: number) => {
+    const fin = finConExtra(horas);
+    return reserva === null || fin === null || horasEntre(reserva.fecha_creacion, fin) > HORAS_MAX;
+  };
   const nuevoFin = horasExtra ? finConExtra(horasExtra) : null;
-  const nuevoPrecio =
-    reserva && nuevoFin ? precioEstimado(horasEntre(reserva.fecha_real_inicio, nuevoFin)) : null;
+  const nuevoPrecio = reserva && horasExtra ? reserva.precio + horasExtra * TARIFA_HORA : null;
 
   const extender = async () => {
-    if (!reserva || !nuevoFin || nuevoPrecio === null || extendiendo) return;
+    if (!reserva || !horasExtra || !nuevoFin || nuevoPrecio === null || extendiendo) return;
 
     const confirmado = await alerta.confirmar({
       titulo: 'Extender reserva',
@@ -122,7 +124,7 @@ export function useDetalleReserva() {
 
     setExtendiendo(true);
     try {
-      const actualizada = await extendReserva(reserva.id, nuevoFin.toISOString());
+      const actualizada = await extendReserva(reserva.id, horasExtra);
       setReserva(actualizada);
       setHorasExtra(null);
       void alerta.mostrar({
@@ -131,11 +133,17 @@ export function useDetalleReserva() {
         mensaje: `Nuevo fin: ${formatMomento(actualizada.fecha_fin ?? nuevoFin)}.`,
       });
     } catch (cause) {
+      // 409 RESERVA_TERMINADA: la reserva terminó o se canceló mientras tanto.
+      const terminada = cause instanceof ApiError && cause.status === 409;
       void alerta.mostrar({
-        tipo: 'error',
+        tipo: terminada ? 'advertencia' : 'error',
         titulo: 'No se pudo extender la reserva',
         mensaje: (cause as Error).message,
       });
+      if (terminada) {
+        setHorasExtra(null);
+        void cargar(true);
+      }
     } finally {
       setExtendiendo(false);
     }

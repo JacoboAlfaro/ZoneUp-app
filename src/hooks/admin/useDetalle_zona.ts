@@ -1,4 +1,4 @@
-import { deleteZona, getZona, updateZona } from '@/src/api';
+import { ApiError, deleteZona, getZona, updateZona } from '@/src/api';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { ZonaAzul } from '@/src/types';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
@@ -10,7 +10,6 @@ type ZonaForm = {
     indicaciones: string;
     latitud: string;
     longitud: string;
-    capacidad: string;
     capacidad_total: string;
   };
   
@@ -27,7 +26,6 @@ type ZonaForm = {
       indicaciones: zona.indicaciones ?? '',
       latitud: String(zona.latitud),
       longitud: String(zona.longitud),
-      capacidad: String(zona.capacidad),
       capacidad_total: String(zona.capacidad_total),
     };
   }
@@ -41,12 +39,11 @@ export function useDetalle_zona() {
   const [deleting, setDeleting] = useState(false);
   const [cargaError, setCargaError] = useState<string | null>(null);
 
-  const { control, getValues, handleSubmit, reset, setError, formState } = useForm<ZonaForm>({
+  const { control, handleSubmit, reset, formState } = useForm<ZonaForm>({
     defaultValues: {
       indicaciones: '',
       latitud: '',
       longitud: '',
-      capacidad: '',
       capacidad_total: '',
     },
   });
@@ -77,23 +74,14 @@ export function useDetalle_zona() {
 
   const guardar = async (form: ZonaForm) => {
     if (!zona || formState.isSubmitting) return;
-    const capacidad = aEntero(form.capacidad);
-    const capacidad_total = aEntero(form.capacidad_total);
 
-    if (capacidad > capacidad_total) {
-      setError('capacidad', {
-        message: 'Los cupos disponibles no pueden superar la capacidad total',
-      });
-      return;
-    }
-
+    // Solo la capacidad total: los cupos disponibles los calcula el servidor.
     try {
       const actualizada = await updateZona(zona.id, {
         indicaciones: form.indicaciones.trim(),
         latitud: aNumero(form.latitud),
         longitud: aNumero(form.longitud),
-        capacidad,
-        capacidad_total,
+        capacidad_total: aEntero(form.capacidad_total),
       });
       setZona(actualizada);
       reset(zonaAForm(actualizada));
@@ -103,8 +91,9 @@ export function useDetalle_zona() {
         mensaje: 'Los cambios fueron guardados correctamente.',
       });
     } catch (cause) {
+      const conflicto = cause instanceof ApiError && cause.status === 409;
       void alerta.mostrar({
-        tipo: 'error',
+        tipo: conflicto ? 'advertencia' : 'error',
         titulo: 'No se pudo guardar la zona',
         mensaje: (cause as Error).message,
       });
@@ -140,5 +129,5 @@ export function useDetalle_zona() {
       setDeleting(false);
     }
   };
-    return { zona, control, getValues, handleSubmit, formState, loading, deleting, cargaError, guardar, eliminar, aNumero, aEntero }
+    return { zona, control, handleSubmit, formState, loading, deleting, cargaError, guardar, eliminar, aNumero, aEntero }
 }

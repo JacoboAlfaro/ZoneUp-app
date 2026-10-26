@@ -1,4 +1,4 @@
-import { buscarReservas, getResumenReservas } from "@/src/api";
+import { ApiError, buscarReservas, getResumenReservas } from "@/src/api";
 import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { AccionReserva, ejecutarAccionReserva } from "@/src/components/reservas/accionesReserva";
 import { tituloZona } from "@/src/formato";
@@ -79,11 +79,15 @@ export function useGestion_reserva() {
         cargarResumen();
       }
     } catch (cause) {
+      // 409: la reserva cambió entretanto (otro encargado, o venció el tiempo para
+      // llegar y el servidor la canceló). Se recarga para mostrar su estado real.
+      const conflicto = cause instanceof ApiError && cause.status === 409;
       void alerta.mostrar({
-        tipo: 'error',
+        tipo: conflicto ? 'advertencia' : 'error',
         titulo: 'No se pudo actualizar la reserva',
         mensaje: (cause as Error).message,
       });
+      if (conflicto) refrescar();
     } finally {
       setProcesando(null);
     }
