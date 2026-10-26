@@ -9,6 +9,8 @@ export default function ConductorLayout() {
         headerShown: false,
         drawerType: 'front',
         swipeEnabled: false,
+        overlayColor: 'rgba(15, 40, 70, 0.18)',
+        drawerStyle: { width: 300 },
       }}
     />
   );
