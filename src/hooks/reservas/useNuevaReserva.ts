@@ -170,7 +170,7 @@ export function useNuevaReserva() {
         textoBoton: 'Ver reserva',
       });
       router.replace({
-        pathname: '/conductor/(reservas)/reserva/[id]',
+        pathname: '/conductor/(panel)/(reservas)/reserva/[id]',
         params: { id: String(reserva.id) },
       });
     } catch (cause) {

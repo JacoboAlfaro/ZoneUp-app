@@ -57,7 +57,7 @@ export function useMisReservas() {
 
   const abrirDetalle = (reserva: Reserva) =>
     router.push({
-      pathname: '/conductor/(reservas)/reserva/[id]',
+      pathname: '/conductor/(panel)/(reservas)/reserva/[id]',
       params: { id: String(reserva.id) },
     });
 

@@ -78,7 +78,7 @@ const MisReservasScreen = function() {
         <Button
           text="Nueva reserva"
           icon={Plus}
-          onPress={() => router.push('/conductor/(reservas)/zonas')}
+          onPress={() => router.push('/conductor/(panel)/(reservas)/zonas')}
           className="mt-5 rounded-2xl bg-zu-navy"
         />
 

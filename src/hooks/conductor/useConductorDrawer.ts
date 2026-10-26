@@ -1,5 +1,4 @@
-
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useSession } from '@/src/session/context';
 
 type DrawerNav = {
@@ -9,17 +8,17 @@ type DrawerNav = {
 export function useConductorDrawer(navigation: DrawerNav) {
   const { user, signOut } = useSession();
 
-  const ir = (href: string) => {
+  const ir = (href: Href) => {
     navigation.closeDrawer();
-    router.push(href as never);
+    router.push(href);
   };
 
   return {
     user,
-    irAReservar: () => ir('/conductor/(reservas)/zonas'),
-    irAReservas: () => ir('/conductor/(reservas)/reservas'),
-    irAPerfil: () => ir('/conductor/(usuarios)'),
-    irAVehiculos: () => ir('/conductor/(vehiculos)'),
+    irAReservar: () => ir('/conductor/(panel)/(reservas)/zonas'),
+    irAReservas: () => ir('/conductor/(panel)/(reservas)/reservas'),
+    irAPerfil: () => ir('/conductor/(panel)/(usuarios)'),
+    irAVehiculos: () => ir('/conductor/(panel)/(vehiculos)'),
     cerrarSesion: signOut,
   };
 }

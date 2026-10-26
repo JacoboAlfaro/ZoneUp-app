@@ -95,7 +95,7 @@ const PerfilScreen = function() {
 
         <Button
           text="Editar perfil"
-          onPress={() => router.push('/conductor/(usuarios)/edition')}
+          onPress={() => router.push('/conductor/(panel)/(usuarios)/edition')}
         />
 
       </ScrollView>

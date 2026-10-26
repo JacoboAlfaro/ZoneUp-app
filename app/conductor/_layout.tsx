@@ -11,7 +11,8 @@ export default function ConductorLayout() {
         swipeEnabled: false,
         overlayColor: 'rgba(15, 40, 70, 0.18)',
         drawerStyle: { width: 300 },
-      }}
-    />
+      }}>
+      <Drawer.Screen name="(panel)" options={{ headerShown: false }} />
+    </Drawer>
   );
 }

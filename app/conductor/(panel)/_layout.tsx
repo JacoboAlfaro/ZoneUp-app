@@ -1,9 +1,15 @@
 import { Stack } from 'expo-router'
 
+import { headerGlassScreenOptions } from '@/src/components/HeaderGlassBackground';
+
 const _layout = () => {
   return (
-    <Stack screenOptions={{ headerTitleStyle: { fontWeight: "600" } }}>
-      <Stack.Screen name="index" options={{ title: "Panel Conductor" }} />
+    <Stack
+      screenOptions={{
+        ...headerGlassScreenOptions,
+        headerBackButtonDisplayMode: 'minimal',
+      }}>
+      <Stack.Screen name="index" options={{ headerShown: false, title: "Panel Conductor" }} />
       <Stack.Screen name="(usuarios)" options={{ title: "Mi perfil" }} />
       <Stack.Screen
         name="(usuarios)/edition"

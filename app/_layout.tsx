@@ -30,7 +30,12 @@ function Navigator() {
   const { user } = useSession();
 
   return (
-    <Stack screenOptions={{ headerTitleStyle: { fontWeight: '600' } }}>
+    <Stack
+      screenOptions={{
+        headerTitleStyle: { fontWeight: '600' },
+        headerTransparent: false,
+        headerStyle: { backgroundColor: '#FFFFFF' },
+      }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Protected
         guard={!!user && user.tipo_usuario !== 'admin' && user.tipo_usuario !== 'controlador'}>

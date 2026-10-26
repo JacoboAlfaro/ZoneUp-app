@@ -1,10 +1,12 @@
 import { Stack } from 'expo-router';
 
+import { headerGlassScreenOptions } from '@/src/components/HeaderGlassBackground';
+
 export default function AdminLayout() {
   return (
     <Stack
       screenOptions={{
-        headerTitleStyle: { fontWeight: '600' },
+        ...headerGlassScreenOptions,
         headerBackButtonDisplayMode: 'minimal',
       }}>
       <Stack.Screen name="index" options={{ title: 'Panel administrativo' }} />

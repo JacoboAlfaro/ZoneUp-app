@@ -1,5 +1,5 @@
 import { useConductorIndex } from "@/src/hooks/conductor/useConductorIndex";
-import { Pressable, View, Text} from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ParkingMap } from "../../ParkingMap";
 import { User } from "lucide-react-native";
@@ -12,7 +12,14 @@ const ConductorIndexScreen = function () {
   return (
     <View className="flex-1">
       <ParkingMap />
-      <View style={{ position: 'absolute', top: 16, left: 16 }}>
+      <View
+        style={{
+          position: 'absolute',
+          top: insets.top + 8,
+          left: 16,
+          zIndex: 20,
+          elevation: 20,
+        }}>
         <LiquidChip
           text={`Hola, ${user?.name ?? ''}`}
           icon={User}

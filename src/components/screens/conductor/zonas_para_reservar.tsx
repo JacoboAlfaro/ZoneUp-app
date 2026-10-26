@@ -130,7 +130,7 @@ const ReservarZonaScreen = function() {
                   disabled={sinCupo}
                   onPress={() =>
                     router.push({
-                      pathname: '/conductor/(reservas)/nueva-reserva',
+                      pathname: '/conductor/(panel)/(reservas)/nueva-reserva',
                       params: { idZona: String(zona.id) },
                     })
                   }

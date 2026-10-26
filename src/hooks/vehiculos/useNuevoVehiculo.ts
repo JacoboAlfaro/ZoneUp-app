@@ -66,7 +66,7 @@ export function useNuevoVehiculo() {
         titulo: "Vehículo registrado",
         mensaje: "El vehículo fue agregado correctamente.",
       });
-      router.replace("/conductor/(vehiculos)");
+      router.replace("/conductor/(panel)/(vehiculos)");
     } catch (cause) {
       // Errores del formulario completo: placa repetida, servidor caído...
       void alerta.mostrar({

@@ -45,7 +45,7 @@ const MisVehiculosScreen = function () {
         <Button
           text="Agregar vehículo"
           icon={Plus}
-          onPress={() => router.push("/conductor/(vehiculos)/nuevo-vehiculo")}
+          onPress={() => router.push("/conductor/(panel)/(vehiculos)/nuevo-vehiculo")}
           className="mt-5 rounded-2xl bg-zu-navy"
         />
 
@@ -102,7 +102,7 @@ const MisVehiculosScreen = function () {
                 accessibilityLabel={`Vehículo ${vehiculo.placa}`}
                 onPress={() =>
                   router.push({
-                    pathname: "/conductor/(vehiculos)/vehiculo/[placa]",
+                    pathname: "/conductor/(panel)/(vehiculos)/vehiculo/[placa]",
                     params: { placa: vehiculo.placa },
                   })
                 }

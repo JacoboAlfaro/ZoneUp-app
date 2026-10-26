@@ -1,21 +1,22 @@
 import { useLogin } from '@/src/hooks/auth/useLogin';
 import { Link } from 'expo-router';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import Button from '../../Button';
 import Field from '../../Field';
 
 
 const LoginScreen = () => {
   const {control, handleSubmit, formState, submit} = useLogin();
+  const { height } = useWindowDimensions();
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-zu-sky-bottom"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View className="flex-1 bg-zu-sky-bottom">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="flex-grow justify-center px-5 py-10"
-        keyboardShouldPersistTaps="handled">
+        contentContainerClassName="justify-center px-5 py-10"
+        contentContainerStyle={{ minHeight: height }}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         <View className="absolute -right-20 top-12 h-56 w-56 rounded-full bg-zu-sky-mid" />
         <View className="absolute -left-24 bottom-8 h-64 w-64 rounded-full bg-zu-sky-fade" />
 
@@ -76,7 +77,7 @@ const LoginScreen = () => {
           </Link>
         </Text>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

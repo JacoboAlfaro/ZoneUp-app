@@ -156,7 +156,7 @@ const NuevaReservaScreen = function() {
                 text="Ver mi reserva"
                 onPress={() =>
                   router.push({
-                    pathname: '/conductor/(reservas)/reserva/[id]',
+                    pathname: '/conductor/(panel)/(reservas)/reserva/[id]',
                     params: { id: String(enCamino.id) },
                   })
                 }
@@ -184,7 +184,7 @@ const NuevaReservaScreen = function() {
               </Text>
               <Button
                 text="Registrar vehículo"
-                onPress={() => router.push('/conductor/(vehiculos)/nuevo-vehiculo')}
+                onPress={() => router.push('/conductor/(panel)/(vehiculos)/nuevo-vehiculo')}
                 className="mt-4 bg-zu-navy"
               />
             </Aviso>
