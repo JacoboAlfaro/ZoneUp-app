@@ -3,12 +3,10 @@ import { Link } from 'expo-router';
 import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import Button from '../../Button';
 import Field from '../../Field';
-
-
+import { GlassCard } from '../../GlassCard';
 const LoginScreen = () => {
   const {control, handleSubmit, formState, submit} = useLogin();
   const { height } = useWindowDimensions();
-
   return (
     <View className="flex-1 bg-zu-sky-bottom">
       <ScrollView
@@ -17,10 +15,10 @@ const LoginScreen = () => {
         contentContainerStyle={{ minHeight: height }}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets>
-        <View className="absolute -right-20 top-12 h-56 w-56 rounded-full bg-zu-sky-mid" />
-        <View className="absolute -left-24 bottom-8 h-64 w-64 rounded-full bg-zu-sky-fade" />
-
-        <View className="gap-6 rounded-3xl border border-zu-white/70 bg-zu-white/65 p-6 shadow-md">
+        <View className="absolute -right-16 top-8 h-72 w-72 rounded-full bg-zu-sky-mid" />
+        <View className="absolute -left-20 bottom-4 h-80 w-80 rounded-full bg-zu-sky-fade" />
+        <View className="absolute right-10 bottom-32 h-40 w-40 rounded-full bg-zu-accent/50" />
+        <GlassCard className="gap-6">
           <View className="items-center gap-2">
             <View className="mb-1 h-1 w-10 rounded-full bg-zu-accent" />
             <Text className="text-xs font-semibold uppercase tracking-[3px] text-zu-slogan">
@@ -31,7 +29,6 @@ const LoginScreen = () => {
               Ingresa tus datos para continuar en ZoneUp
             </Text>
           </View>
-
           <View className="gap-3">
             <Field
               control={control}
@@ -61,15 +58,12 @@ const LoginScreen = () => {
               }}
             />
           </View>
-
           <Button
             text={formState.isSubmitting ? 'Ingresando…' : 'Ingresar'}
             onPress={handleSubmit(submit)}
             disabled={formState.isSubmitting}
-            className="rounded-2xl bg-zu-navy"
           />
-        </View>
-
+        </GlassCard>
         <Text className="mt-6 text-center text-sm text-zu-slate">
           ¿Sin cuenta?{' '}
           <Link href="/register" className="font-bold text-zu-navy underline">
@@ -80,5 +74,4 @@ const LoginScreen = () => {
     </View>
   );
 }
-
 export default LoginScreen

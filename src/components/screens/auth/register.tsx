@@ -3,11 +3,9 @@ import { Link } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Button from '../../Button';
 import Field from '../../Field';
-
-
+import { GlassCard } from '../../GlassCard';
 const RegisterScreen = () => {
   const {control, handleSubmit, getValues, formState, submit} = useRegister(); 
-
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-zu-sky-bottom"
@@ -16,10 +14,11 @@ const RegisterScreen = () => {
         className="flex-1"
         contentContainerClassName="flex-grow px-3 py-4"
         keyboardShouldPersistTaps="handled">
-        <View className="absolute -right-20 top-12 h-56 w-56 rounded-full bg-zu-sky-mid" />
-        <View className="absolute -left-24 bottom-8 h-64 w-64 rounded-full bg-zu-sky-fade" />
-
-        <View className="gap-5 mt-7 rounded-3xl border border-zu-white/70 bg-zu-white/65 p-5 shadow-lg">
+        <View className="absolute -right-16 top-8 h-72 w-72 rounded-full bg-zu-sky-mid" />
+        <View className="absolute -left-20 bottom-4 h-80 w-80 rounded-full bg-zu-sky-fade" />
+        <View className="absolute right-10 bottom-32 h-40 w-40 rounded-full bg-zu-accent/50" />
+        <View className="mt-7">
+          <GlassCard className="gap-5">
           <View className="items-center gap-1.5">
             <View className="mb-1 h-1 w-10 rounded-full bg-zu-accent" />
             <Text className="text-xs font-semibold uppercase tracking-[3px] text-zu-slogan">
@@ -27,7 +26,6 @@ const RegisterScreen = () => {
             </Text>
             <Text className="text-3xl font-bold text-zu-navy">Crea tu cuenta</Text>
           </View>
-
           <View className="gap-2">
             <Field
               control={control}
@@ -125,15 +123,13 @@ const RegisterScreen = () => {
               }}
             />
           </View>
-
           <Button
             text={formState.isSubmitting ? 'Creando…' : 'Regístrate'}
             onPress={handleSubmit(submit)}
             disabled={formState.isSubmitting}
-            className="rounded-2xl bg-zu-navy"
           />
+          </GlassCard>
         </View>
-
         <Text className="my-5 text-center text-sm text-zu-slate">
           ¿Ya tienes una cuenta?{' '}
           <Link href="/login" className="font-bold text-zu-navy underline">
@@ -144,5 +140,4 @@ const RegisterScreen = () => {
     </KeyboardAvoidingView>
   );
 }
-
 export default RegisterScreen
