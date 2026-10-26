@@ -155,8 +155,7 @@ const AdminZonaDetalleScreen = function() {
             text={deleting ? 'Eliminando…' : 'Eliminar zona'}
             onPress={() => void eliminar()}
             disabled={formState.isSubmitting || deleting}
-            secondary
-            className="border-red-400 bg-red-300/60"
+            destructive
           />
         </ScrollView>
       </KeyboardAvoidingView>

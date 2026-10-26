@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import 'uniwind';
 
-@theme {
+@theme static {
   --color-zu-navy: #1e3a5f;
   --color-zu-sky-top: #6bb8e8;
   --color-zu-sky-mid: #9fd4f0;
@@ -15,4 +15,6 @@
   --color-zu-card: rgba(255, 255, 255, 0.9);
   --color-zu-card-cyan: rgba(200, 235, 245, 0.82);
   --color-zu-skyline: #7a93a8;
+  --color-zu-red: #fca5a5;
+  --color-zu-red-text: #b91c1c;
 }

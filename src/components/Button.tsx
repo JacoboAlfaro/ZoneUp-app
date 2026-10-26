@@ -1,7 +1,14 @@
+import {
+  GlassView,
+  isGlassEffectAPIAvailable,
+  isLiquidGlassAvailable,
+} from 'expo-glass-effect';
 import type { ComponentType } from 'react';
-import { Pressable, Text } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 
-type IconComponent = ComponentType<{
+import { color, glass } from '@/src/theme';
+
+export type Icon = ComponentType<{
   size?: number;
   color?: string;
 }>;
@@ -9,14 +16,25 @@ type IconComponent = ComponentType<{
 interface Props {
   text: string;
   onPress: () => void;
-  /** Se ve apagado y deja de responder. Útil mientras se envía un formulario. */
   disabled?: boolean;
-  /** Variante secundaria: borde en vez de fondo lleno. */
   secondary?: boolean;
-  icon?: IconComponent;
+  /** Cerrar sesión, eliminar, rechazar: vidrio rojo suave. */
+  destructive?: boolean;
+  icon?: Icon;
   iconColor?: string;
   iconSize?: number;
   className?: string;
+}
+
+const RADIO = 16;
+
+/** El botón controla color y radio; de className solo deja margen/flex. */
+function clasesDeLayout(className?: string) {
+  if (!className) return '';
+  return className
+    .split(/\s+/)
+    .filter((token) => token && !/^(bg-|border-|rounded-)/.test(token))
+    .join(' ');
 }
 
 export default function Button({
@@ -24,24 +42,67 @@ export default function Button({
   onPress,
   disabled,
   secondary,
+  destructive,
   icon: Icon,
   iconColor,
   iconSize = 20,
   className,
 }: Props) {
-  const contentColor = iconColor ?? (secondary ? '#404040' : '#FFFFFF');
+  const estilo = destructive
+    ? {
+        tint: glass.red,
+        fondo: 'bg-zu-red/60',
+        borde: 'border-zu-red',
+        texto: 'text-zu-red-text',
+        icono: color.redText,
+      }
+    : secondary
+      ? {
+          tint: glass.sky,
+          fondo: 'bg-zu-sky-fade/62',
+          borde: 'border-zu-white/55',
+          texto: 'text-zu-navy',
+          icono: color.navy,
+        }
+      : {
+          tint: glass.navy,
+          fondo: 'bg-zu-navy/82',
+          borde: 'border-zu-white/25',
+          texto: 'text-zu-white',
+          icono: color.white,
+        };
+  const colorIcono = iconColor ?? estilo.icono;
+  const liquid =
+    Platform.OS === 'ios' && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
+
+  const contenido = (
+    <View className="flex-row items-center justify-center gap-2 px-4 py-4">
+      {Icon ? <Icon size={iconSize} color={colorIcono} /> : null}
+      <Text className={`font-semibold ${estilo.texto}`}>{text}</Text>
+    </View>
+  );
 
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      className={`flex-row items-center justify-center gap-2 rounded-xl p-4 active:opacity-80 disabled:opacity-50 ${
-        secondary ? 'border border-neutral-300' : 'bg-blue-600'
-      } ${className ?? ''}`}>
-      {Icon ? <Icon size={iconSize} color={contentColor} /> : null}
-      <Text className={`font-semibold ${secondary ? 'text-neutral-700' : 'text-white'}`}>
-        {text}
-      </Text>
+      accessibilityRole="button"
+      accessibilityLabel={text}
+      className={`overflow-hidden rounded-2xl active:scale-95 disabled:opacity-50 ${clasesDeLayout(className)}`}>
+      {liquid ? (
+        <GlassView
+          isInteractive
+          colorScheme="light"
+          glassEffectStyle="clear"
+          tintColor={estilo.tint}
+          style={{ borderRadius: RADIO, overflow: 'hidden' }}>
+          {contenido}
+        </GlassView>
+      ) : (
+        <View className={`rounded-2xl border ${estilo.borde} ${estilo.fondo}`}>
+          {contenido}
+        </View>
+      )}
     </Pressable>
   );
 }

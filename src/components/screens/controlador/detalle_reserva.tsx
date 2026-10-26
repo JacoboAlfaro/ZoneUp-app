@@ -204,11 +204,9 @@ const ControladorReservaDetalleScreen = function() {
             <Button
               text="Rechazar"
               icon={X}
-              iconColor="#B91C1C"
               onPress={() => void ejecutar('rechazar')}
               disabled={procesando}
-              secondary
-              className="border-red-400 bg-red-300/60"
+              destructive
             />
           </>
         ) : null}
@@ -218,8 +216,7 @@ const ControladorReservaDetalleScreen = function() {
             text="Cancelar reserva"
             onPress={() => void ejecutar('cancelar')}
             disabled={procesando}
-            secondary
-            className="border-red-400 bg-red-300/60"
+            destructive
           />
         ) : null}
       </ScrollView>

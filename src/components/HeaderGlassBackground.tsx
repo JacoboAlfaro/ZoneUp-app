@@ -6,8 +6,7 @@ import {
 } from 'expo-glass-effect';
 import { Platform, StyleSheet, View } from 'react-native';
 
-const TINT_IOS = 'rgba(238, 248, 252, 0.42)';
-const TINT_ANDROID = 'rgba(238, 248, 252, 0.78)';
+import { color, glass } from '@/src/theme';
 
 export function HeaderGlassBackground() {
   const liquid =
@@ -18,7 +17,7 @@ export function HeaderGlassBackground() {
       <GlassView
         colorScheme="light"
         glassEffectStyle="regular"
-        tintColor={TINT_IOS}
+        tintColor={glass.skySoft}
         style={StyleSheet.absoluteFill}
       />
     );
@@ -37,14 +36,8 @@ export function HeaderGlassBackground() {
   return (
     <View
       pointerEvents="none"
-      style={[
-        StyleSheet.absoluteFill,
-        {
-          backgroundColor: TINT_ANDROID,
-          borderBottomWidth: StyleSheet.hairlineWidth,
-          borderBottomColor: 'rgba(197, 213, 224, 0.55)',
-        },
-      ]}
+      className="border-b border-zu-border/55 bg-zu-sky-fade/78"
+      style={StyleSheet.absoluteFill}
     />
   );
 }
@@ -52,8 +45,12 @@ export function HeaderGlassBackground() {
 export const headerGlassScreenOptions = {
   headerTransparent: false,
   headerShadowVisible: false,
-  headerTintColor: '#1E3A5F',
-  headerTitleStyle: { fontWeight: '600' as const, color: '#1E3A5F' },
+  get headerTintColor() {
+    return color.navy;
+  },
+  get headerTitleStyle() {
+    return { fontWeight: '600' as const, color: color.navy };
+  },
   headerStyle: { backgroundColor: 'transparent' },
   headerBackground: () => <HeaderGlassBackground />,
 };

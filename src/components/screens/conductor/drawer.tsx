@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { withUniwind } from 'uniwind';
 
 import { useConductorDrawer } from '@/src/hooks/conductor/useConductorDrawer';
-import { LiquidButton } from '../../LiquidButton';
+import Button from '../../Button';
 
 const AreaSegura = withUniwind(SafeAreaView);
 
@@ -34,16 +34,11 @@ export default function ConductorDrawer({ navigation }: Props) {
         <Text className="mt-1 text-base text-zu-slate">{user?.email}</Text>
 
         <View className="mt-6 gap-3">
-          <LiquidButton text="Reservar zona azul" icon={MapPin} onPress={irAReservar} />
-          <LiquidButton text="Mis reservas" icon={CalendarClock} onPress={irAReservas} />
-          <LiquidButton text="Mi perfil" icon={User} onPress={irAPerfil} />
-          <LiquidButton text="Mis vehículos" icon={Car} onPress={irAVehiculos} />
-          <LiquidButton
-            text="Cerrar sesión"
-            icon={LogOut}
-            destructive
-            onPress={cerrarSesion}
-          />
+          <Button text="Reservar zona azul" icon={MapPin} onPress={irAReservar} />
+          <Button text="Mis reservas" icon={CalendarClock} onPress={irAReservas} />
+          <Button text="Mi perfil" icon={User} onPress={irAPerfil} />
+          <Button text="Mis vehículos" icon={Car} onPress={irAVehiculos} />
+          <Button text="Cerrar sesión" icon={LogOut} destructive onPress={cerrarSesion} />
         </View>
       </ScrollView>
     </AreaSegura>

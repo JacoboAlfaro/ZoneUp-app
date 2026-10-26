@@ -61,8 +61,8 @@ const AdminIndexScreen = () => {
         <Button
           text="Cerrar sesión"
           onPress={signOut}
-          secondary
-          className="mt-8 border-red-400 bg-red-300/60"
+          destructive
+          className="mt-8"
         />
       </ScrollView>
     </SafeAreaView>

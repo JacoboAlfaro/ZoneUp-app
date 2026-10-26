@@ -98,8 +98,7 @@ const DetalleVehiculoScreen = function () {
           text={eliminando ? "Eliminando…" : "Eliminar vehículo"}
           onPress={() => void eliminar()}
           disabled={guardando || eliminando}
-          secondary
-          className="border-red-300 bg-red-50"
+          destructive
         />
       </ScrollView>
     </KeyboardAvoidingView>
