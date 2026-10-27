@@ -1,4 +1,4 @@
-import { Check, ShieldCheck, Timer, X } from 'lucide-react-native';
+import { Car, Check, ShieldCheck, Timer, X } from 'lucide-react-native';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,16 +11,24 @@ import {
   formatPesos,
   formatVentana,
 } from '../../../formato';
-import type { EstadoReserva } from '../../../types';
+import type { Reserva } from '../../../types';
 import Button from '../../Button';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 
-const descripcionEstado: Record<EstadoReserva, string> = {
-  pendiente: 'Llegó una nueva solicitud. Acéptala o recházala.',
-  activa: 'Ya la aceptaste. Falta confirmar la placa cuando llegue el vehículo.',
-  completada: 'Llegada confirmada: la placa coincidió con la de la reserva.',
-  cancelada: 'Solicitud rechazada o anulada. El cupo quedó libre.',
-};
+function descripcionEstado(reserva: Reserva, llegada: boolean): string {
+  switch (reserva.estado) {
+    case 'pendiente':
+      return 'Llegó una nueva solicitud. Acéptala o recházala antes de que pasen 15 minutos.';
+    case 'activa':
+      return llegada
+        ? 'Llegada confirmada. El vehículo está parqueado hasta el fin de la reserva.'
+        : 'Ya la aceptaste. Falta confirmar la placa cuando llegue el vehículo.';
+    case 'completada':
+      return 'Terminó el tiempo de la reserva. El cupo quedó libre.';
+    case 'cancelada':
+      return 'Rechazada, anulada o el conductor no llegó a tiempo. El cupo quedó libre.';
+  }
+}
 
 function Dato({ label, children }: { label: string; children: string }) {
   return (
@@ -37,7 +45,7 @@ const ControladorReservaDetalleScreen = function() {
 
   const {
     item, loading, refreshing, procesando, error, cargar,
-    reserva, conductor, vehiculo, placa, titulo, extra, porAtender, enCamino, duracion, ejecutar, placaNoCoincide
+    reserva, conductor, vehiculo, placa, titulo, extra, llegada, enCamino, vencida, parqueada, duracion, ejecutar, placaNoCoincide
   } = useDetalle_reserva()
   
   if (loading) {
@@ -92,7 +100,7 @@ const ControladorReservaDetalleScreen = function() {
           </Text>
         </View>
 
-        {reserva.estado === 'activa' ? (
+        {reserva.estado === 'activa' && !llegada && !vencida ? (
           <View className="rounded-2xl border border-zu-white/70 bg-zu-card-cyan p-5 shadow-sm">
             <View className="flex-row items-center">
               <View className="h-11 w-11 items-center justify-center rounded-full bg-zu-sky-mid/45">
@@ -124,6 +132,40 @@ const ControladorReservaDetalleScreen = function() {
           </View>
         ) : null}
 
+        {vencida ? (
+          <View className="rounded-2xl border border-amber-300 bg-amber-50 p-5 shadow-sm">
+            <View className="flex-row items-center">
+              <Timer size={22} color="#B45309" />
+              <Text className="ml-3 flex-1 text-base font-semibold text-amber-800">
+                El tiempo para llegar venció
+              </Text>
+            </View>
+            <Text className="mt-2 text-sm leading-5 text-amber-800">
+              Nadie confirmó la llegada antes de las {formatHora(limiteLlegada(reserva))}. La reserva
+              se cancelará automáticamente y el cupo ya quedó libre.
+            </Text>
+          </View>
+        ) : null}
+
+        {reserva.estado === 'activa' && llegada && reserva.fecha_real_inicio ? (
+          <View className="rounded-2xl border border-zu-white/70 bg-zu-card-cyan p-5 shadow-sm">
+            <View className="flex-row items-center">
+              <View className="h-11 w-11 items-center justify-center rounded-full bg-zu-sky-mid/45">
+                <Car size={22} color="#1E3A5F" />
+              </View>
+              <Text className="ml-3 flex-1 text-base font-semibold text-zu-navy">
+                Llegó a las {formatHora(reserva.fecha_real_inicio)}
+                {reserva.fecha_fin ? ` · parqueado hasta las ${formatHora(reserva.fecha_fin)}` : ''}
+              </Text>
+            </View>
+            {!parqueada ? (
+              <Text className="mt-2 text-sm leading-5 text-zu-slate">
+                Su tiempo ya terminó; la reserva se completará automáticamente.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
         <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
           <View className="flex-row items-center justify-between gap-3">
             <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
@@ -132,18 +174,13 @@ const ControladorReservaDetalleScreen = function() {
             <EstadoReservaBadge estado={reserva.estado} />
           </View>
           <Text className="mt-2 text-sm leading-5 text-zu-slate">
-            {descripcionEstado[reserva.estado]}
+            {descripcionEstado(reserva, llegada)}
           </Text>
-          {porAtender ? (
+          {enCamino ? (
             <View className="mt-3 flex-row items-center gap-1.5">
-              <Timer size={16} color={enCamino ? '#4A8EC4' : '#B45309'} />
-              <Text
-                className={`flex-1 text-sm ${
-                  enCamino ? 'text-zu-slate' : 'font-semibold text-amber-700'
-                }`}>
-                {enCamino
-                  ? `El conductor debe llegar antes de las ${formatHora(limiteLlegada(reserva))}.`
-                  : `El tiempo para llegar venció a las ${formatHora(limiteLlegada(reserva))}.`}
+              <Timer size={16} color="#4A8EC4" />
+              <Text className="flex-1 text-sm text-zu-slate">
+                El conductor debe llegar antes de las {formatHora(limiteLlegada(reserva))}.
               </Text>
             </View>
           ) : null}
@@ -173,10 +210,13 @@ const ControladorReservaDetalleScreen = function() {
           {extra ? <Text className="mt-1 text-sm leading-5 text-zu-slate">{extra}</Text> : null}
 
           <Dato label="Ventana de la reserva">
-            {formatVentana(reserva.fecha_real_inicio, reserva.fecha_fin)}
+            {formatVentana(reserva.fecha_creacion, reserva.fecha_fin)}
           </Dato>
           {duracion !== null ? (
             <Text className="mt-1 text-sm text-zu-slate">Duración: {formatHoras(duracion)}</Text>
+          ) : null}
+          {reserva.fecha_real_inicio ? (
+            <Dato label="Llegada">{`Llegó: ${formatFechaHora(reserva.fecha_real_inicio)}`}</Dato>
           ) : null}
 
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">

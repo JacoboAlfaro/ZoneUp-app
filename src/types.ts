@@ -13,7 +13,8 @@
  * - reservas :3004 -> POST /reservas, GET /reservas, GET /reservas/resumen,
  *                  GET /reservas/:id, GET /reservas/:id/completa, GET /reservas/user/:id,
  *                  GET /reservas/user/:id/resumen, PUT /reservas/:id/state,
- *                  PATCH /reservas/:id/extend (ver src/api/reservas.ts)
+ *                  POST /reservas/:id/llegada, PATCH /reservas/:id/extend
+ *                  (ver src/api/reservas.ts)
  *
  * Los listados (GET /users, /zonas, /reservas y /reservas/user/:id) buscan y
  * paginan en el servidor: devuelven una `Pagina`, nunca la tabla completa.
@@ -157,23 +158,30 @@ export interface UserWithVehiculos extends User {
   vehiculos: Vehiculo[];
 }
 
-/** Fila de `zonas_azules`. En la app latitud/longitud son número. */
+/** Zona azul. En la app latitud/longitud son número. */
 export interface ZonaAzul {
   id: number;
   latitud: number;
   longitud: number;
   /** null cuando la zona se creó sin indicaciones (columna nullable). */
   indicaciones: string | null;
+  /**
+   * Cupos disponibles ahora, calculados por el servidor: capacidad total menos
+   * las reservas en curso. Solo lectura.
+   */
   capacidad: number;
+  /** Cupos físicos de la zona. Es lo único que define el admin. */
   capacidad_total: number;
 }
 
-/** Cuerpo de POST /zonas. Acepta número o texto para las coordenadas. */
+/**
+ * Cuerpo de POST /zonas. Acepta número o texto para las coordenadas. Los
+ * disponibles no se mandan: los calcula el servidor.
+ */
 export interface CreateZonaDto {
   latitud: number | string;
   longitud: number | string;
   indicaciones: string;
-  capacidad: number;
   capacidad_total: number;
 }
 
@@ -182,7 +190,7 @@ export interface UpdateZonaDto {
   latitud?: number | string;
   longitud?: number | string;
   indicaciones?: string;
-  capacidad?: number;
+  /** 409 `CAPACIDAD_MENOR_A_OCUPADOS` si queda por debajo de las reservas en curso. */
   capacidad_total?: number;
 }
 
@@ -193,8 +201,10 @@ export interface DeleteZonaResponse {
 
 /**
  * Estados de `estado_reserva` en Postgres. Toda reserva nace `pendiente`; el
- * encargado la pasa a `activa` (acepta) o `cancelada` (rechaza), y a
- * `completada` cuando verifica la placa en la zona.
+ * encargado la pasa a `activa` (acepta) o `cancelada` (rechaza o cancela).
+ * Verificar la placa registra la llegada y la deja `activa`. El servidor la
+ * pasa solo a `completada` cuando termina su tiempo, o a `cancelada` si el
+ * conductor no llegó en 15 minutos.
  */
 export const ESTADOS_RESERVA = ['pendiente', 'activa', 'cancelada', 'completada'] as const;
 export type EstadoReserva = (typeof ESTADOS_RESERVA)[number];
@@ -207,13 +217,20 @@ export interface Reserva {
   id_zona: number | null;
   /** Placa del vehículo (FK a `vehiculos.placa`). null si el vehículo se borró. */
   id_vehiculo: string | null;
-  /** Inicio de la ventana. El servidor lo reinicia cuando el encargado acepta. */
-  fecha_real_inicio: string;
-  /** Fin de la ventana de parqueo. */
+  /** Llegada confirmada por el encargado (placa verificada). null = aún no llega. */
+  fecha_real_inicio: string | null;
+  /**
+   * Fin de la reserva: creación + horas reservadas (más las extensiones).
+   * null solo en datos viejos rotos.
+   */
   fecha_fin: string | null;
-  /** COP, calculado en el servidor: horas × 3.500 + 5.000. */
+  /**
+   * COP, calculado en el servidor: horas × 3.500 + 5.000. Si se cancela sin
+   * llegada, queda solo el cargo de reserva (5.000).
+   */
   precio: number;
   estado: EstadoReserva;
+  /** Cuándo se hizo la reserva. La ventana empieza aquí y de aquí cuentan los 15 minutos para llegar. */
   fecha_creacion: string;
   fecha_actualizacion: string;
 }
@@ -271,25 +288,24 @@ export interface ResumenReservas {
   cancelada: number;
 }
 
-/** Cuerpo de PUT /reservas/:id/state. */
+/**
+ * Cuerpo de PUT /reservas/:id/state: `activa` = aceptar una pendiente,
+ * `cancelada` = rechazar o cancelar. `completada` no se pide: la pone el servidor.
+ */
 export interface UpdateReservaEstadoDto {
-  estado: EstadoReserva;
-  /**
-   * ISO 8601. Si no se manda al completar o cancelar, el servidor pone "ahora"
-   * como fin de la reserva.
-   */
-  fecha_fin?: string;
+  estado: 'activa' | 'cancelada';
 }
 
-/** Cuerpo de POST /reservas. El servidor pone el inicio (ahora) y el precio. */
+/**
+ * Cuerpo de POST /reservas. El conductor sale del token; el servidor calcula el
+ * fin (ahora + horas) con su reloj y el precio.
+ */
 export interface CreateReservaDto {
-  /** Id (uuid) del conductor: el `id` del usuario en sesión. */
-  id_conductor: string;
   id_zona: number;
   /** Placa de un vehículo registrado a nombre del conductor (máx. 10). */
   id_vehiculo: string;
-  /** ISO 8601, posterior a ahora. */
-  fecha_fin: string;
+  /** Horas enteras, de 1 a 24. */
+  horas: number;
 }
 
 /**

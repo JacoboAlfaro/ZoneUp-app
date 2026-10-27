@@ -2,9 +2,9 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { useForm, type RegisterOptions } from 'react-hook-form';
 
+import { ApiError } from '@/src/api/client';
 import {
   createReserva,
-  estaEnCamino,
   HORAS_MAX,
   HORAS_MIN,
   listReservasConductor,
@@ -43,9 +43,9 @@ const reglas: Record<keyof NuevaReservaForm, RegisterOptions<NuevaReservaForm>> 
 
 /**
  * Lógica de la pantalla "Nueva reserva": lee la zona de la ruta, carga la zona,
- * los vehículos del conductor y si ya tiene una reserva en curso; maneja el
- * formulario (vehículo y horas) y crea la reserva tras confirmar que la zona
- * sigue con cupo.
+ * los vehículos del conductor y sus reservas en curso (una por vehículo como
+ * máximo); maneja el formulario (vehículo y horas) y crea la reserva. El
+ * servidor revisa el cupo y el vehículo en el mismo momento de reservar.
  */
 export function useNuevaReserva() {
   const { idZona } = useLocalSearchParams<{ idZona: string }>();
@@ -53,7 +53,10 @@ export function useNuevaReserva() {
   const alerta = useAlerta();
   const [zona, setZona] = useState<ZonaAzul | null>(null);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
-  const [enCamino, setEnCamino] = useState<Reserva | null>(null);
+  /** Reserva en curso de cada vehículo (por placa). Esos vehículos no pueden reservar. */
+  const [ocupados, setOcupados] = useState<Map<string, Reserva>>(() => new Map());
+  // Cambiarlo vuelve a cargar todo (p. ej. después de que el servidor rechazó la reserva).
+  const [recargas, setRecargas] = useState(0);
   const [loading, setLoading] = useState(true);
   const [cargaError, setCargaError] = useState<string | null>(null);
   // Si la zona ya se mostró, un error al recargar no se vería en pantalla: se avisa con una alerta.
@@ -86,23 +89,25 @@ export function useNuevaReserva() {
       Promise.all([
         getZona(idNumerico),
         getVehiculos(user.documento_identidad),
-        // La reserva en curso, si la hay, es de las más recientes: no hace falta el historial completo.
-        listReservasConductor(user.id, { limit: 5 }),
+        // Solo las que ocupan un cupo ahora: hay como máximo una por vehículo.
+        listReservasConductor(user.id, { enCurso: true, limit: 50 }),
       ])
-        .then(([zonaActual, misVehiculos, recientes]) => {
+        .then(([zonaActual, misVehiculos, enCurso]) => {
           if (!active) return;
           zonaCargada.current = true;
           setZona(zonaActual);
           setVehiculos(misVehiculos);
-          setEnCamino(
-            recientes.items.map((fila) => fila.reserva).find((reserva) => estaEnCamino(reserva)) ??
-              null,
-          );
+          const porPlaca = new Map<string, Reserva>();
+          for (const { reserva } of enCurso.items) {
+            if (reserva.id_vehiculo) porPlaca.set(reserva.id_vehiculo, reserva);
+          }
+          setOcupados(porPlaca);
 
-          // Deja elegido el primer vehículo si no hay uno válido seleccionado.
+          // Deja elegido el primer vehículo libre si el seleccionado no sirve.
           const placaActual = getValues('placa');
-          if (!misVehiculos.some((vehiculo) => vehiculo.placa === placaActual)) {
-            setValue('placa', misVehiculos[0]?.placa ?? '');
+          const libres = misVehiculos.filter((vehiculo) => !porPlaca.has(vehiculo.placa));
+          if (!libres.some((vehiculo) => vehiculo.placa === placaActual)) {
+            setValue('placa', libres[0]?.placa ?? '');
           }
         })
         .catch((cause) => {
@@ -124,7 +129,7 @@ export function useNuevaReserva() {
       return () => {
         active = false;
       };
-    }, [user, idNumerico, getValues, setValue, alerta]),
+    }, [user, idNumerico, getValues, setValue, alerta, recargas]),
   );
 
   const horas = horasValidas(watch('horas'));
@@ -132,7 +137,12 @@ export function useNuevaReserva() {
   const titulo = tituloZona(zona?.indicaciones, zona?.id ?? null);
   const extra = detalleZona(zona?.indicaciones);
   const sinCupo = zona !== null && zona.capacidad <= 0;
+  // Fin estimado: el servidor lo calcula igual, desde el momento de reservar.
   const finEstimado = horas ? new Date(Date.now() + horas * MS_POR_HORA) : null;
+  const todosOcupados =
+    vehiculos.length > 0 && vehiculos.every((vehiculo) => ocupados.has(vehiculo.placa));
+  /** La reserva que se muestra cuando todos los vehículos están ocupados. */
+  const reservaEnCurso = todosOcupados ? (ocupados.values().next().value ?? null) : null;
 
   const elegirHoras = (opcion: number) =>
     setValue('horas', String(opcion), { shouldValidate: true });
@@ -144,23 +154,10 @@ export function useNuevaReserva() {
     if (!horasReserva) return;
 
     try {
-      // El servidor no revisa cupos al crear: se confirma que sigan libres justo antes.
-      const zonaActual = await getZona(zona.id);
-      setZona(zonaActual);
-      if (zonaActual.capacidad <= 0) {
-        void alerta.mostrar({
-          tipo: 'advertencia',
-          titulo: 'La zona se quedó sin cupos',
-          mensaje: 'Alguien tomó el último cupo antes que tú. Elige otra zona.',
-        });
-        return;
-      }
-
       const reserva = await createReserva({
-        id_conductor: user.id,
         id_zona: zona.id,
         id_vehiculo: form.placa,
-        fecha_fin: new Date(Date.now() + horasReserva * MS_POR_HORA).toISOString(),
+        horas: horasReserva,
       });
 
       await alerta.mostrar({
@@ -174,11 +171,28 @@ export function useNuevaReserva() {
         params: { id: String(reserva.id) },
       });
     } catch (cause) {
-      void alerta.mostrar({
-        tipo: 'error',
-        titulo: 'No se pudo crear la reserva',
-        mensaje: (cause as Error).message,
-      });
+      const codigo = cause instanceof ApiError ? cause.codigo : undefined;
+      if (codigo === 'ZONA_SIN_CUPO') {
+        void alerta.mostrar({
+          tipo: 'advertencia',
+          titulo: 'La zona se quedó sin cupos',
+          mensaje: 'Alguien tomó el último cupo antes que tú. Elige otra zona.',
+        });
+        setRecargas((n) => n + 1);
+      } else if (codigo === 'VEHICULO_CON_RESERVA') {
+        void alerta.mostrar({
+          tipo: 'advertencia',
+          titulo: 'El vehículo ya tiene una reserva',
+          mensaje: (cause as Error).message,
+        });
+        setRecargas((n) => n + 1);
+      } else {
+        void alerta.mostrar({
+          tipo: 'error',
+          titulo: 'No se pudo crear la reserva',
+          mensaje: (cause as Error).message,
+        });
+      }
     }
   };
 
@@ -186,7 +200,9 @@ export function useNuevaReserva() {
     user,
     zona,
     vehiculos,
-    enCamino,
+    ocupados,
+    todosOcupados,
+    reservaEnCurso,
     loading,
     cargaError,
     control,

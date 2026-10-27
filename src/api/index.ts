@@ -15,7 +15,7 @@ export type { UserResponse } from './auth';
 
 export { createUser, getResumenUsuarios, getUserByEmail, listUsers, updateUser } from './users';
 
-export { addVehiculo, getVehiculos, toVehiculo } from './vehiculos';
+export { addVehiculo, deleteVehiculo, getVehiculos, toVehiculo, updateVehiculo } from './vehiculos';
 export type { VehiculoResponse } from './vehiculos';
 
 export {
@@ -37,6 +37,7 @@ export {
   confirmarLlegada,
   createReserva,
   estaEnCamino,
+  estaParqueada,
   extendReserva,
   getReserva,
   getReservaCompleta,
@@ -47,6 +48,8 @@ export {
   horasEntre,
   limiteLlegada,
   listReservasConductor,
+  llegadaVencida,
+  llego,
   MINUTOS_PARA_LLEGAR,
   precioEstimado,
   TARIFA_HORA,

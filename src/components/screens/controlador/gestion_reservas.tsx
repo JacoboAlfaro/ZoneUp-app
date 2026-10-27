@@ -1,4 +1,5 @@
 import {
+  Car,
   Check,
   ClipboardCheck,
   RefreshCw,
@@ -19,7 +20,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useGestion_reserva } from '@/src/hooks/controlador/useGestion_reserva';
-import { estaEnCamino, limiteLlegada } from '../../../api/reservas';
+import { estaEnCamino, limiteLlegada, llegadaVencida, llego } from '../../../api/reservas';
 import { formatHora, formatVentana } from '../../../formato';
 import CampoBusqueda from '../../CampoBusqueda';
 import CargarMas from '../../CargarMas';
@@ -155,7 +156,9 @@ const GestionReservasScreen = function() {
               const { reserva, conductor } = item;
               const titulo = tituloDe(item);
               const ocupado = procesando === reserva.id;
-              const porAtender = reserva.estado === 'pendiente' || reserva.estado === 'activa';
+              const enCamino = estaEnCamino(reserva);
+              const vencida = llegadaVencida(reserva);
+              const parqueado = reserva.estado === 'activa' && llego(reserva);
 
               return (
                 <Pressable
@@ -186,20 +189,29 @@ const GestionReservasScreen = function() {
                       </Text>
                     </View>
                     <Text className="flex-1 text-sm text-zu-slate">
-                      {formatVentana(reserva.fecha_real_inicio, reserva.fecha_fin)}
+                      {formatVentana(reserva.fecha_creacion, reserva.fecha_fin)}
                     </Text>
                   </View>
 
-                  {porAtender ? (
+                  {enCamino || vencida ? (
                     <View className="mt-3 flex-row items-center gap-1.5">
-                      <Timer size={15} color={estaEnCamino(reserva) ? '#4A8EC4' : '#B45309'} />
+                      <Timer size={15} color={enCamino ? '#4A8EC4' : '#B45309'} />
                       <Text
                         className={`text-xs ${
-                          estaEnCamino(reserva) ? 'text-zu-slate' : 'font-semibold text-amber-700'
+                          enCamino ? 'text-zu-slate' : 'font-semibold text-amber-700'
                         }`}>
-                        {estaEnCamino(reserva)
+                        {enCamino
                           ? `Debe llegar antes de las ${formatHora(limiteLlegada(reserva))}`
                           : `El tiempo para llegar venció a las ${formatHora(limiteLlegada(reserva))}`}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {parqueado && reserva.fecha_fin ? (
+                    <View className="mt-3 flex-row items-center gap-1.5">
+                      <Car size={15} color="#4A8EC4" />
+                      <Text className="text-xs text-zu-slate">
+                        Parqueado hasta las {formatHora(reserva.fecha_fin)}
                       </Text>
                     </View>
                   ) : null}
@@ -229,13 +241,15 @@ const GestionReservasScreen = function() {
                     </View>
                   ) : (
                     <View className="mt-3.5 flex-row items-center gap-1.5 self-start rounded-full border border-zu-navy/10 bg-white/80 py-2 pl-3.5 pr-3 shadow-sm">
-                      {reserva.estado === 'activa' ? (
+                      {reserva.estado === 'activa' && !parqueado && !vencida ? (
                         <ShieldCheck size={16} color="#1E3A5F" />
                       ) : (
                         <Ticket size={16} color="#1E3A5F" />
                       )}
                       <Text className="pr-0.5 text-[13px] font-semibold text-zu-navy">
-                        {reserva.estado === 'activa' ? 'Verificar placa' : 'Ver detalle'}
+                        {reserva.estado === 'activa' && !parqueado && !vencida
+                          ? 'Verificar placa'
+                          : 'Ver detalle'}
                       </Text>
                     </View>
                   )}

@@ -1,28 +1,42 @@
 /**
  * Reservas (reservations-service).
  *
- * Endpoints reales que usa el conductor:
- * - POST  /reservas            (CONDUCTOR)        -> reserva creada, estado `pendiente`
- *   | 400 conductor, vehículo o zona no existe | 400 fecha inválida
- * - GET   /reservas/:id        (ADMIN, CONDUCTOR) -> una reserva | 404 "Reserva no encontrada"
- * - GET   /reservas/user/:id?limit&offset (ADMIN, el propio CONDUCTOR) -> una página del
- *   historial del conductor (uuid), la más reciente primero, cada una con su zona
- * - GET   /reservas/user/:id/resumen (ADMIN, el propio CONDUCTOR) -> conteo por estado
- * - PATCH /reservas/:id/extend (CONDUCTOR)        -> reserva con nueva `fecha_fin` y precio
- *   | 400 si no es suya, si ya terminó o si la nueva hora no es mayor a la actual
+ * Flujo: el conductor reserva (`pendiente`) y tiene 15 minutos para llegar,
+ * contados desde `fecha_creacion`. El encargado acepta (`activa`) y, cuando el
+ * vehículo llega, verifica la placa: eso registra la llegada en
+ * `fecha_real_inicio` y la reserva sigue `activa`. El servidor la pasa solo a
+ * `completada` cuando llega `fecha_fin`, o a `cancelada` si nadie confirmó la
+ * llegada en los 15 minutos. Ninguna acción mueve las fechas, salvo extender.
  *
- * Endpoints reales que usa el encargado (controlador):
+ * Los cupos los controla el servidor: una reserva ocupa un cupo desde que se
+ * crea, y lo suelta al cancelarse, al vencer los 15 minutos sin llegada o al
+ * terminar su tiempo. Cada vehículo puede tener una sola reserva en curso.
+ *
+ * Endpoints que usa el conductor:
+ * - POST  /reservas { id_zona, id_vehiculo, horas } (CONDUCTOR) -> reserva `pendiente`
+ *   | 403 VEHICULO_AJENO | 409 VEHICULO_CON_RESERVA | 404 ZONA_NO_EXISTE | 409 ZONA_SIN_CUPO
+ * - GET   /reservas/:id        (ADMIN, CONDUCTOR dueño) -> una reserva | 404 | 403 RESERVA_AJENA
+ * - GET   /reservas/user/:id?limit&offset&en_curso (ADMIN, el propio CONDUCTOR) -> una
+ *   página del historial del conductor (uuid), la más reciente primero, cada una
+ *   con su zona. Con `en_curso=true`, solo las que ocupan un cupo ahora mismo.
+ * - GET   /reservas/user/:id/resumen (ADMIN, el propio CONDUCTOR) -> conteo por estado
+ * - PATCH /reservas/:id/extend { horas } (CONDUCTOR dueño) -> reserva con `fecha_fin` + horas
+ *   | 403 RESERVA_AJENA | 409 RESERVA_TERMINADA | 400 DURACION_MAXIMA (más de 24 h)
+ *
+ * Endpoints que usa el encargado (controlador):
  * - GET   /reservas?q&estado&limit&offset (ADMIN, CONTROLADOR) -> una página de las
  *   reservas de todas las zonas con su conductor, vehículo y zona; primero las
  *   pendientes, luego las activas. Busca en el servidor.
  * - GET   /reservas/resumen      (ADMIN, CONTROLADOR) -> conteo por estado
  * - GET   /reservas/:id/completa (ADMIN, CONTROLADOR) -> una reserva con su conductor,
  *   vehículo y zona | 404
- * - PUT   /reservas/:id/state    (ADMIN, CONTROLADOR) -> reserva con el nuevo estado | 404
+ * - PUT   /reservas/:id/state { estado: 'activa' | 'cancelada' } (ADMIN, CONTROLADOR)
+ *   -> reserva | 404 | 409 LLEGADA_VENCIDA | 409 TRANSICION_INVALIDA
+ * - POST  /reservas/:id/llegada (ADMIN, CONTROLADOR) -> reserva con la llegada
+ *   | 409 RESERVA_NO_ACEPTADA | 409 LLEGADA_YA_CONFIRMADA | 409 LLEGADA_VENCIDA
  *
- * El servidor pone el inicio (ahora), calcula el precio y descuenta un cupo de
- * la zona al crear. OJO: no valida que queden cupos; eso lo revisa la app.
- * Al pasar a `completada` o `cancelada` devuelve el cupo a la zona.
+ * Los errores propios traen `codigo` (lo expone `ApiError.codigo`) y un
+ * `message` listo para mostrar.
  */
 
 import type {
@@ -50,7 +64,7 @@ export interface ReservaResponse {
   id_conductor: string | null;
   id_zona: number | null;
   id_vehiculo: string | null;
-  fecha_real_inicio: string;
+  fecha_real_inicio: string | null;
   fecha_fin: string | null;
   precio: string | number;
   estado: EstadoReserva;
@@ -76,14 +90,16 @@ export function toReserva(data: ReservaResponse): Reserva {
 
 /**
  * POST /reservas -> reserva creada en estado `pendiente`. Requiere token de
- * CONDUCTOR. La placa se normaliza a mayúsculas, como en `./vehiculos`.
+ * CONDUCTOR: el servidor toma al conductor del token, calcula el fin (ahora +
+ * horas) y el precio, y revisa en una sola transacción que el vehículo sea suyo,
+ * que no tenga otra reserva en curso y que la zona tenga cupo. La placa se
+ * normaliza a mayúsculas, como en `./vehiculos`.
  */
 export async function createReserva(dto: CreateReservaDto): Promise<Reserva> {
   const body: CreateReservaDto = {
-    id_conductor: dto.id_conductor,
     id_zona: dto.id_zona,
     id_vehiculo: dto.id_vehiculo.trim().toUpperCase(),
-    fecha_fin: dto.fecha_fin,
+    horas: dto.horas,
   };
   return toReserva(await request<ReservaResponse>('/reservas', body));
 }
@@ -101,14 +117,19 @@ interface ReservaConZonaResponse {
 /**
  * GET /reservas/user/:id -> una página del historial del conductor, la más
  * reciente primero, cada reserva con su zona. El parámetro es el `id` (uuid)
- * del usuario, no su documento.
+ * del usuario, no su documento. Con `enCurso`, solo las reservas que ocupan un
+ * cupo ahora mismo (como máximo una por vehículo).
  */
 export async function listReservasConductor(
   idConductor: string,
-  { limit, offset, signal }: ConsultaPagina = {},
+  { limit, offset, signal, enCurso }: ConsultaPagina & { enCurso?: boolean } = {},
 ): Promise<Pagina<ReservaConZona>> {
   const pagina = await request<Pagina<ReservaConZonaResponse>>(
-    conParametros(`/reservas/user/${encodeURIComponent(idConductor.trim())}`, { limit, offset }),
+    conParametros(`/reservas/user/${encodeURIComponent(idConductor.trim())}`, {
+      limit,
+      offset,
+      en_curso: enCurso ? 'true' : undefined,
+    }),
     undefined,
     { signal },
   );
@@ -126,17 +147,13 @@ export async function getResumenReservasConductor(idConductor: string): Promise<
 }
 
 /**
- * PATCH /reservas/:id/extend -> reserva con la nueva `fecha_fin` y el precio
- * recalculado. Solo el conductor dueño de la reserva, y solo si sigue
- * `pendiente` o `activa`.
+ * PATCH /reservas/:id/extend -> reserva con `fecha_fin` + `horas` y el precio
+ * + horas × 3.500. Solo el conductor dueño, solo si sigue en curso y sin pasar
+ * de 24 horas desde que se creó.
  */
-export async function extendReserva(id: number, fechaFin: string): Promise<Reserva> {
+export async function extendReserva(id: number, horas: number): Promise<Reserva> {
   return toReserva(
-    await request<ReservaResponse>(
-      `/reservas/${id}/extend`,
-      { fecha_fin: fechaFin },
-      { method: 'PATCH' },
-    ),
+    await request<ReservaResponse>(`/reservas/${id}/extend`, { horas }, { method: 'PATCH' }),
   );
 }
 
@@ -229,28 +246,30 @@ export async function updateReservaEstado(
 }
 
 /**
- * El encargado acepta una solicitud `pendiente` -> `activa`. El servidor
- * reinicia la ventana desde este momento y conserva su duración.
+ * El encargado acepta una solicitud `pendiente` -> `activa`. No cambia las
+ * fechas. 409 `LLEGADA_VENCIDA` si ya pasaron los 15 minutos (el servidor la
+ * cancela en ese momento).
  */
 export async function aceptarReserva(id: number): Promise<Reserva> {
   return updateReservaEstado(id, { estado: 'activa' });
 }
 
-/** Rechaza una solicitud `pendiente` o anula una `activa` -> `cancelada`. Libera el cupo. */
+/**
+ * Rechaza una solicitud `pendiente` o anula una `activa` -> `cancelada`. Libera
+ * el cupo. Sin llegada, el precio queda en el cargo de reserva.
+ */
 export async function cancelarReserva(id: number): Promise<Reserva> {
   return updateReservaEstado(id, { estado: 'cancelada' });
 }
 
 /**
- * La placa del vehículo coincide con la de la reserva -> `completada`.
- * Se reenvía el fin actual: sin él, el servidor cortaría la ventana en "ahora"
- * y el historial del conductor mostraría una duración que no reservó.
+ * POST /reservas/:id/llegada -> la placa del vehículo coincide: registra la
+ * llegada (`fecha_real_inicio` = ahora). La reserva sigue `activa` y conserva
+ * su cupo hasta `fecha_fin`. Requiere ADMIN o CONTROLADOR. Con cuerpo `{}`,
+ * `request` usa POST.
  */
-export async function confirmarLlegada(reserva: Reserva): Promise<Reserva> {
-  return updateReservaEstado(reserva.id, {
-    estado: 'completada',
-    ...(reserva.fecha_fin ? { fecha_fin: reserva.fecha_fin } : {}),
-  });
+export async function confirmarLlegada(id: number): Promise<Reserva> {
+  return toReserva(await request<ReservaResponse>(`/reservas/${id}/llegada`, {}));
 }
 
 /*
@@ -275,7 +294,10 @@ export function precioEstimado(horas: number): number {
   return Math.max(0, horas) * TARIFA_HORA + CARGO_RESERVA;
 }
 
-/** Horas (con decimales) entre el inicio de la reserva y un fin dado. */
+/**
+ * Horas (con decimales) entre un inicio y un fin. La ventana de una reserva va
+ * de `fecha_creacion` a `fecha_fin`.
+ */
 export function horasEntre(inicioIso: string, fin: Date): number {
   return (fin.getTime() - new Date(inicioIso).getTime()) / MS_POR_HORA;
 }
@@ -285,12 +307,31 @@ export function limiteLlegada(reserva: Reserva): Date {
   return new Date(new Date(reserva.fecha_creacion).getTime() + MINUTOS_PARA_LLEGAR * 60 * 1000);
 }
 
+/** El encargado ya confirmó la llegada (verificó la placa). */
+export function llego(reserva: Reserva): boolean {
+  return reserva.fecha_real_inicio !== null;
+}
+
 /**
- * La reserva está "en camino": sigue pendiente o activa y aún corren los 15
- * minutos para llegar. Mientras exista una así, el conductor no puede reservar
- * otra zona.
+ * La reserva está "en camino": sigue pendiente o activa, nadie ha confirmado
+ * la llegada y aún corren los 15 minutos. Es cuando se muestra el contador.
  */
 export function estaEnCamino(reserva: Reserva, ahora: Date = new Date()): boolean {
   if (reserva.estado !== 'pendiente' && reserva.estado !== 'activa') return false;
-  return ahora.getTime() < limiteLlegada(reserva).getTime();
+  return !llego(reserva) && ahora.getTime() < limiteLlegada(reserva).getTime();
+}
+
+/** El vehículo llegó y su tiempo no ha terminado: está parqueado en la zona. */
+export function estaParqueada(reserva: Reserva, ahora: Date = new Date()): boolean {
+  if (reserva.estado !== 'activa' || !llego(reserva) || !reserva.fecha_fin) return false;
+  return ahora.getTime() < new Date(reserva.fecha_fin).getTime();
+}
+
+/**
+ * El tiempo para llegar venció sin que se confirmara la llegada. El servidor
+ * la cancela en menos de un minuto; mientras tanto ya no ocupa el cupo.
+ */
+export function llegadaVencida(reserva: Reserva, ahora: Date = new Date()): boolean {
+  if (reserva.estado !== 'pendiente' && reserva.estado !== 'activa') return false;
+  return !llego(reserva) && ahora.getTime() >= limiteLlegada(reserva).getTime();
 }

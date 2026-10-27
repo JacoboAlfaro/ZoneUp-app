@@ -5,15 +5,9 @@
  * negocio en `src/api/*.ts`. Si mañana cambia la forma de hablar con el
  * servidor, se cambia aquí y nada más.
  *
- * El backend son microservicios NestJS sin prefijo global:
- * - auth  (puerto 3000) -> POST /auth/register, POST /auth/login
- * - users (puerto 3001) -> POST /users, GET /users, GET /users/:email,
- *                          POST /users/:documento/vehiculo, PATCH /users/:documento
- * - zonas (puerto 3002) -> POST /zonas, GET /zonas, GET /zonas/:id,
- *                          PATCH /zonas/:id, DELETE /zonas/:id
- * - reservas (puerto 3004) -> POST /reservas, GET /reservas/:id,
- *                          GET /reservas/user/:id, GET /reservas/zona/:idZona,
- *                          PUT /reservas/:id/state, PATCH /reservas/:id/extend
+ * El backend son microservicios NestJS sin prefijo global. Los endpoints de
+ * cada uno están documentados en su archivo: `./auth`, `./users`,
+ * `./vehiculos`, `./zonas` y `./reservas`.
  *
  * En el dispositivo se habla con UN gateway (ver `.env`: EXPO_PUBLIC_API_URL,
  * puerto 3003) que reenvía cada prefijo a su servicio. Sin gateway, define las
@@ -78,15 +72,19 @@ export function getToken(): string | null {
 /**
  * Error con el mensaje legible del servidor y el estado HTTP.
  * Las pantallas muestran `error.message`; pueden ramificar por `error.status`
- * (401 credenciales, 404 no existe, 409 duplicado...).
+ * (401 credenciales, 404 no existe, 409 duplicado...) o, mejor, por `codigo`
+ * cuando el servidor lo manda (p. ej. `ZONA_SIN_CUPO`, `VEHICULO_CON_RESERVA`).
  */
 export class ApiError extends Error {
   readonly status: number;
+  /** Código del caso, si el servidor lo manda: `{ statusCode, error, codigo, message }`. */
+  readonly codigo?: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, codigo?: string) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.codigo = codigo;
   }
 }
 
@@ -156,20 +154,33 @@ export async function request<T>(path: string, body?: unknown, options?: Request
     // Cancelada a propósito (llegó una búsqueda más nueva): quien la canceló la ignora.
     if (options?.signal?.aborted) throw cause;
     // `fetch` solo falla así cuando no hubo respuesta: servidor apagado, URL
-    // equivocada o el dispositivo no alcanza esa dirección (ver .env.example).
+    // equivocada o el dispositivo no alcanza esa dirección (ver "Configuración" en el README).
     throw new ApiError(`No se pudo conectar con ${base}. ¿Está encendido el servidor?`, 0);
   }
 
   // Se lee como texto primero: un 204 o un gateway caído pueden no traer JSON,
   // y `response.json()` reventaría en vez de dejar decidir aquí.
   const text = await response.text().catch(() => '');
-  const data: unknown = text.trim() === '' ? {} : (JSON.parse(text) as unknown);
+  let data: unknown = {};
+  try {
+    if (text.trim() !== '') data = JSON.parse(text) as unknown;
+  } catch {
+    // No es JSON (p. ej. la página HTML de un proxy caído): se reporta como error HTTP.
+    if (response.ok) throw new ApiError(`Respuesta inválida del servidor en ${path}`, response.status);
+  }
 
   if (!response.ok) {
-    throw new ApiError(mensajeDeError(data, response.status, path), response.status);
+    throw new ApiError(mensajeDeError(data, response.status, path), response.status, codigoDeError(data));
   }
 
   return data as T;
+}
+
+/** El `codigo` que manda el servidor en sus errores propios, si es texto. */
+function codigoDeError(data: unknown): string | undefined {
+  if (data === null || typeof data !== 'object') return undefined;
+  const codigo = (data as Record<string, unknown>)['codigo'];
+  return typeof codigo === 'string' && codigo !== '' ? codigo : undefined;
 }
 
 /** Saca el mensaje legible del formato de error de NestJS. */
