@@ -6,7 +6,7 @@
  *  1. Desenfoque del fondo (`BlurView`). En Android solo se puede si la
  *     pantalla está dentro de un `FondoGlass`; si no, se omite.
  *  2. Tinte translúcido con el color del componente.
- *  3. Reflejo de luz en la mitad superior.
+ *  3. Reflejo de luz arriba que se desvanece hacia abajo.
  *  4. Borde fino y luminoso, más brillante arriba, como luz que entra
  *     por el canto del vidrio.
  *
@@ -26,6 +26,15 @@ import {
 
 import { color, withAlpha } from "@/src/theme";
 import { useBlurTarget } from "./FondoGlass";
+
+/**
+ * El reflejo se arma con varias capas apiladas, cada una más corta que la
+ * anterior. Arriba se suman todas y abajo solo queda la más larga, así el
+ * brillo se desvanece sin una línea marcada (sin necesitar un degradado).
+ */
+const CAPAS_REFLEJO = 8;
+/** Hasta qué altura del componente llega el reflejo, en porcentaje. */
+const ALTO_REFLEJO = 60;
 
 interface Props {
   /** Color translúcido del vidrio, normalmente uno de `glass.*`. */
@@ -52,7 +61,8 @@ export function VidrioRespaldo({
     Platform.OS === "ios" || (Platform.OS === "android" && !!target);
 
   const blanco = color.white;
-  const reflejo = withAlpha(blanco, oscuro ? 0.08 : 0.22);
+  const reflejoTotal = oscuro ? 0.12 : 0.24;
+  const capaReflejo = withAlpha(blanco, reflejoTotal / CAPAS_REFLEJO);
   const borde = withAlpha(blanco, oscuro ? 0.22 : 0.45);
   const bordeArriba = withAlpha(blanco, oscuro ? 0.45 : 0.9);
 
@@ -74,10 +84,19 @@ export function VidrioRespaldo({
         style={[StyleSheet.absoluteFill, { backgroundColor: tint }]}
       />
 
-      <View
-        pointerEvents="none"
-        style={[styles.reflejo, { backgroundColor: reflejo }]}
-      />
+      {Array.from({ length: CAPAS_REFLEJO }, (_, i) => (
+        <View
+          key={i}
+          pointerEvents="none"
+          style={[
+            styles.reflejo,
+            {
+              height: `${((i + 1) * ALTO_REFLEJO) / CAPAS_REFLEJO}%` as const,
+              backgroundColor: capaReflejo,
+            },
+          ]}
+        />
+      ))}
 
       <View
         pointerEvents="none"
@@ -103,6 +122,5 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: "45%",
   },
 });

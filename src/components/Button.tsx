@@ -2,11 +2,12 @@ import {
   GlassView,
   isGlassEffectAPIAvailable,
   isLiquidGlassAvailable,
-} from 'expo-glass-effect';
-import type { ComponentType } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+} from "expo-glass-effect";
+import type { ComponentType } from "react";
+import { Platform, Pressable, Text, View } from "react-native";
 
-import { color, glass } from '@/src/theme';
+import { color, glass } from "@/src/theme";
+import { VidrioRespaldo } from "./glass/VidrioRespaldo";
 
 export type Icon = ComponentType<{
   size?: number;
@@ -30,11 +31,11 @@ const RADIO = 16;
 
 /** El botón controla color y radio; de className solo deja margen/flex. */
 function clasesDeLayout(className?: string) {
-  if (!className) return '';
+  if (!className) return "";
   return className
     .split(/\s+/)
     .filter((token) => token && !/^(bg-|border-|rounded-)/.test(token))
-    .join(' ');
+    .join(" ");
 }
 
 export default function Button({
@@ -51,29 +52,28 @@ export default function Button({
   const estilo = destructive
     ? {
         tint: glass.red,
-        fondo: 'bg-zu-red/60',
-        borde: 'border-zu-red',
-        texto: 'text-zu-red-text',
+        oscuro: false,
+        texto: "text-zu-red-text",
         icono: color.redText,
       }
     : secondary
       ? {
           tint: glass.sky,
-          fondo: 'bg-zu-sky-fade/62',
-          borde: 'border-zu-white/55',
-          texto: 'text-zu-navy',
+          oscuro: false,
+          texto: "text-zu-navy",
           icono: color.navy,
         }
       : {
           tint: glass.navy,
-          fondo: 'bg-zu-navy/82',
-          borde: 'border-zu-white/25',
-          texto: 'text-zu-white',
+          oscuro: true,
+          texto: "text-zu-white",
           icono: color.white,
         };
   const colorIcono = iconColor ?? estilo.icono;
   const liquid =
-    Platform.OS === 'ios' && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
+    Platform.OS === "ios" &&
+    isLiquidGlassAvailable() &&
+    isGlassEffectAPIAvailable();
 
   const contenido = (
     <View className="flex-row items-center justify-center gap-2 px-4 py-4">
@@ -88,20 +88,27 @@ export default function Button({
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={text}
-      className={`overflow-hidden rounded-2xl active:scale-95 disabled:opacity-50 ${clasesDeLayout(className)}`}>
+      className={`overflow-hidden rounded-2xl active:scale-95 disabled:opacity-50 ${clasesDeLayout(className)}`}
+    >
       {liquid ? (
         <GlassView
           isInteractive
           colorScheme="light"
           glassEffectStyle="clear"
           tintColor={estilo.tint}
-          style={{ borderRadius: RADIO, overflow: 'hidden' }}>
+          style={{ borderRadius: RADIO, overflow: "hidden" }}
+        >
           {contenido}
         </GlassView>
       ) : (
-        <View className={`rounded-2xl border ${estilo.borde} ${estilo.fondo}`}>
+        // Android (y iOS < 26): vidrio por capas con el mismo tinte.
+        <VidrioRespaldo
+          tint={estilo.tint}
+          radius={RADIO}
+          oscuro={estilo.oscuro}
+        >
           {contenido}
-        </View>
+        </VidrioRespaldo>
       )}
     </Pressable>
   );
