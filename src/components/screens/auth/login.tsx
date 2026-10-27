@@ -1,23 +1,22 @@
-import { useLogin } from '@/src/hooks/auth/useLogin';
-import { Link } from 'expo-router';
-import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
-import Button from '../../Button';
-import Field from '../../Field';
-import { GlassCard } from '../../GlassCard';
+import { useLogin } from "@/src/hooks/auth/useLogin";
+import { Link } from "expo-router";
+import { ScrollView, Text, useWindowDimensions, View } from "react-native";
+import Button from "../../Button";
+import Field from "../../Field";
+import { GlassCard } from "../../GlassCard";
+import { FondoGlass } from "../../glass/FondoGlass";
 const LoginScreen = () => {
-  const {control, handleSubmit, formState, submit} = useLogin();
+  const { control, handleSubmit, formState, submit } = useLogin();
   const { height } = useWindowDimensions();
   return (
-    <View className="flex-1 bg-zu-sky-bottom">
+    <FondoGlass>
       <ScrollView
         className="flex-1"
         contentContainerClassName="justify-center px-5 py-10"
         contentContainerStyle={{ minHeight: height }}
         keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets>
-        <View className="absolute -right-16 top-8 h-72 w-72 rounded-full bg-zu-sky-mid" />
-        <View className="absolute -left-20 bottom-4 h-80 w-80 rounded-full bg-zu-sky-fade" />
-        <View className="absolute right-10 bottom-32 h-40 w-40 rounded-full bg-zu-accent/50" />
+        automaticallyAdjustKeyboardInsets
+      >
         <GlassCard className="gap-6">
           <View className="items-center gap-2">
             <View className="mb-1 h-1 w-10 rounded-full bg-zu-accent" />
@@ -39,9 +38,12 @@ const LoginScreen = () => {
               placeholder="tu@correo.com"
               maxLength={254}
               rules={{
-                required: 'El correo es obligatorio',
-                pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
-                maxLength: { value: 254, message: 'Máximo 254 caracteres' },
+                required: "El correo es obligatorio",
+                pattern: {
+                  value: /^\S+@\S+\.\S+$/,
+                  message: "Correo inválido",
+                },
+                maxLength: { value: 254, message: "Máximo 254 caracteres" },
               }}
             />
             <Field
@@ -53,25 +55,25 @@ const LoginScreen = () => {
               placeholder="Contraseña"
               maxLength={128}
               rules={{
-                required: 'La contraseña es obligatoria',
-                maxLength: { value: 128, message: 'Máximo 128 caracteres' },
+                required: "La contraseña es obligatoria",
+                maxLength: { value: 128, message: "Máximo 128 caracteres" },
               }}
             />
           </View>
           <Button
-            text={formState.isSubmitting ? 'Ingresando…' : 'Ingresar'}
+            text={formState.isSubmitting ? "Ingresando…" : "Ingresar"}
             onPress={handleSubmit(submit)}
             disabled={formState.isSubmitting}
           />
         </GlassCard>
         <Text className="mt-6 text-center text-sm text-zu-slate">
-          ¿Sin cuenta?{' '}
+          ¿Sin cuenta?{" "}
           <Link href="/register" className="font-bold text-zu-navy underline">
             Crea una cuenta
           </Link>
         </Text>
       </ScrollView>
-    </View>
+    </FondoGlass>
   );
-}
-export default LoginScreen
+};
+export default LoginScreen;
