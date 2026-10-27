@@ -68,7 +68,7 @@ export const glass = {
   },
   /** Tarjeta sobre fondo desenfocado: deja ver más el color de atrás. */
   get whiteSoft() {
-    return withAlpha(color.white, 0.48);
+    return withAlpha(color.white, 0.3);
   },
   get border() {
     return withAlpha(color.border, 0.55);
