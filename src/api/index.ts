@@ -26,6 +26,7 @@ export {
   listZonas,
   toZona,
   updateZona,
+  listTodasLasZonas,
 } from './zonas';
 export type { ZonaResponse } from './zonas';
 

@@ -1,17 +1,25 @@
 import { useConductorIndex } from "@/src/hooks/conductor/useConductorIndex";
+import { router } from "expo-router";
+import { User } from "lucide-react-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ParkingMap } from "../../ParkingMap";
-import { User } from "lucide-react-native";
 import { LiquidChip } from "../../LiquidChip";
+import { ParkingMap } from "../../ParkingMap";
+import { ZonaMapPanel } from "../../ZoneMapPanel";
 
 const ConductorIndexScreen = function () {
-  const { user, abrirDrawer } = useConductorIndex();
+  const { user, abrirDrawer, zonas, zonaSeleccionada, seleccionarZona, cerrarZona } =
+    useConductorIndex();
   const insets = useSafeAreaInsets();
 
   return (
     <View className="flex-1">
-      <ParkingMap />
+      <ParkingMap
+        zonas={zonas}
+        zonaSeleccionadaId={zonaSeleccionada?.id}
+        onPressZona={seleccionarZona}
+        onPressMapa={cerrarZona}
+      />
       <View
         style={{
           position: 'absolute',
@@ -26,6 +34,18 @@ const ConductorIndexScreen = function () {
           onPress={abrirDrawer}
         />
       </View>
+      {zonaSeleccionada ? (
+        <ZonaMapPanel
+          zona={zonaSeleccionada}
+          onCerrar={cerrarZona}
+          onReservar={() =>
+            router.push({
+              pathname: '/conductor/(panel)/(reservas)/nueva-reserva',
+              params: { idZona: String(zonaSeleccionada.id) },
+            })
+          }
+        />
+      ) : null}
     </View>
   );
 };

@@ -79,6 +79,22 @@ export async function getResumenZonas(): Promise<ResumenZonas> {
   return request<ResumenZonas>('/zonas/resumen');
 }
 
+/**
+ * Todas las zonas, página a página (el servidor tope es 50).
+ * El mapa necesita cada latitud/longitud; el listado de reserva sigue paginado.
+ */
+export async function listTodasLasZonas(signal?: AbortSignal): Promise<ZonaAzul[]> {
+  const limit = 50;
+  const primera = await listZonas({ limit, offset: 0, signal });
+  const items = [...primera.items];
+  while (items.length < primera.total) {
+    const pagina = await listZonas({ limit, offset: items.length, signal });
+    if (pagina.items.length === 0) break;
+    items.push(...pagina.items);
+  }
+  return items;
+}
+
 /** GET /zonas/:id -> una zona. Sin token. 404 si no existe. */
 export async function getZona(id: number): Promise<ZonaAzul> {
   return toZona(await request<ZonaResponse>(`/zonas/${id}`));
