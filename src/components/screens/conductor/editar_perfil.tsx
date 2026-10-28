@@ -2,6 +2,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-na
 import { useEditarPerfil } from '@/src/hooks/usuarios/useEditarPerfil';
 import Button from '../../Button';
 import Field from '../../Field';
+import { GlassCard } from '../../GlassCard';
 import NoSessionState from '../../NoSessionState';
 
 const EditarPerfilScreen = function() {
@@ -28,7 +29,7 @@ const EditarPerfilScreen = function() {
           </Text>
         </View>
 
-        <View className="gap-3 rounded-2xl bg-white p-5">
+        <GlassCard className="gap-3 p-5">
 
           <Field
             control={control}
@@ -79,7 +80,7 @@ const EditarPerfilScreen = function() {
             rules={reglas.celular}
           />
 
-        </View>
+        </GlassCard>
 
         <Button
           text={guardando ? 'Guardando…' : 'Guardar cambios'}

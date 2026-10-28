@@ -2,6 +2,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, Vi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../Button';
 import Field from '../../Field';
+import { GlassCard } from '../../GlassCard';
 
 import { useDetalle_zona } from '@/src/hooks/admin/useDetalle_zona';
 
@@ -46,7 +47,7 @@ const AdminZonaDetalleScreen = function() {
           contentContainerClassName="gap-4 px-5 pb-8 pt-4"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+          <GlassCard className="p-5">
             <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
               Zona
             </Text>
@@ -55,7 +56,7 @@ const AdminZonaDetalleScreen = function() {
               Disponibles ahora: {zona.capacidad} de {zona.capacidad_total} · ({zona.latitud},{' '}
               {zona.longitud})
             </Text>
-          </View>
+          </GlassCard>
 
           <Field
             control={control}

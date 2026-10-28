@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useVehiculos } from "@/src/hooks/vehiculos/useVehiculos";
 import Button from "../../Button";
+import { GlassCard } from "../../GlassCard";
 import NoSessionState from "../../NoSessionState";
 
 const MisVehiculosScreen = function () {
@@ -50,14 +51,14 @@ const MisVehiculosScreen = function () {
         />
 
         <View className="mt-5 flex-row gap-3">
-          <View className="min-h-28 flex-1 justify-between rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm">
+          <GlassCard className="min-h-28 flex-1 justify-between p-4">
             <Text className="text-3xl font-bold text-zu-navy">
               {vehiculos.length}
             </Text>
             <Text className="mt-2 text-xs leading-4 text-zu-slate">
               Vehículos registrados
             </Text>
-          </View>
+          </GlassCard>
         </View>
 
         <Text className="mb-1 mt-8 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
@@ -85,20 +86,19 @@ const MisVehiculosScreen = function () {
         ) : null}
 
         {!loading && !error && vehiculos.length === 0 ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <Car size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               Todavía no tienes vehículos registrados.{"\n"}Toca “Agregar
               vehículo” para crear el primero.
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error
           ? vehiculos.map((vehiculo) => (
-              <Pressable
+              <GlassCard
                 key={vehiculo.placa}
-                accessibilityRole="button"
                 accessibilityLabel={`Vehículo ${vehiculo.placa}`}
                 onPress={() =>
                   router.push({
@@ -106,7 +106,7 @@ const MisVehiculosScreen = function () {
                     params: { placa: vehiculo.placa },
                   })
                 }
-                className="mt-3 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm active:opacity-80"
+                className="mt-3 p-4"
               >
                 <View className="flex-row items-start justify-between gap-3">
                   <View className="flex-1 flex-row items-center gap-4">
@@ -135,7 +135,7 @@ const MisVehiculosScreen = function () {
                     </Text>
                   </View>
                 </View>
-              </Pressable>
+              </GlassCard>
             ))
           : null}
       </ScrollView>

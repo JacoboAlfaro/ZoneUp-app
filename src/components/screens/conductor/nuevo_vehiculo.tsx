@@ -9,6 +9,7 @@ import {
 import { useNuevoVehiculo } from "@/src/hooks/vehiculos/useNuevoVehiculo";
 import Button from "../../Button";
 import Field from "../../Field";
+import { GlassCard } from "../../GlassCard";
 import NoSessionState from "../../NoSessionState";
 
 const NuevoVehiculoScreen = function () {
@@ -40,7 +41,7 @@ const NuevoVehiculoScreen = function () {
           </Text>
         </View>
 
-        <View className="gap-3 rounded-2xl bg-white p-5">
+        <GlassCard className="gap-3 p-5">
           <Field
             control={control}
             name="placa"
@@ -69,7 +70,7 @@ const NuevoVehiculoScreen = function () {
             autoCapitalize="words"
             rules={reglas.color}
           />
-        </View>
+        </GlassCard>
 
         <Button
           text={guardando ? "Guardando…" : "Registrar vehículo"}

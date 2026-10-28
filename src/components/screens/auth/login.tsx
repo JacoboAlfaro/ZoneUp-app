@@ -17,7 +17,7 @@ const LoginScreen = () => {
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
       >
-        <GlassCard className="gap-6">
+        <GlassCard className="gap-6 p-6">
           <View className="items-center gap-2">
             <View className="mb-1 h-1 w-10 rounded-full bg-zu-accent" />
             <Text className="text-xs font-semibold uppercase tracking-[3px] text-zu-slogan">

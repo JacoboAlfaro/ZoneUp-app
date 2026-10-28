@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDetalle_usuario } from '@/src/hooks/admin/useDetalle_usuario';
 import { ESTADOS_USUARIO, TIPOS_USUARIO, type EstadoUsuario, type TipoUsuario } from '../../../types';
+import { GlassCard } from '../../GlassCard';
 
 const estadoLabel: Record<EstadoUsuario, string> = {
   activo: 'Activo',
@@ -59,7 +60,7 @@ const AdminUsuarioDetalleScreen = function() {
         className="flex-1"
         contentContainerClassName="px-5 pb-8 pt-3"
         showsVerticalScrollIndicator={false}>
-        <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+        <GlassCard className="p-5">
           <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Identificación
           </Text>
@@ -95,9 +96,9 @@ const AdminUsuarioDetalleScreen = function() {
           <Text className="mt-1 text-sm text-zu-slate">
             {formatFecha(usuario.fecha_actualizacion)}
           </Text>
-        </View>
+        </GlassCard>
 
-        <View className="mt-5 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm">
+        <GlassCard className="mt-5 p-4">
           <Text className="text-base font-semibold text-zu-navy">Tipo de usuario</Text>
           <Text className="mt-1 text-sm text-zu-slate">
             Tipo actual: {usuario.tipo_usuario ? tipoLabel[usuario.tipo_usuario] : 'Sin asignar'}.
@@ -126,9 +127,9 @@ const AdminUsuarioDetalleScreen = function() {
               );
             })}
           </View>
-        </View>
+        </GlassCard>
 
-        <View className="mt-5 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm">
+        <GlassCard className="mt-5 p-4">
           <Text className="text-base font-semibold text-zu-navy">Estado de la cuenta</Text>
           <Text className="mt-1 text-sm text-zu-slate">
             Define si el usuario puede acceder al sistema.
@@ -156,7 +157,7 @@ const AdminUsuarioDetalleScreen = function() {
               );
             })}
           </View>
-        </View>
+        </GlassCard>
       </ScrollView>
     </SafeAreaView>
   );

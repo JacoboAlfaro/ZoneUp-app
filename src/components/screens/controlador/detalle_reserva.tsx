@@ -13,6 +13,7 @@ import {
 } from '../../../formato';
 import type { Reserva } from '../../../types';
 import Button from '../../Button';
+import { GlassCard } from '../../GlassCard';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 
 function descripcionEstado(reserva: Reserva, llegada: boolean): string {
@@ -86,7 +87,7 @@ const ControladorReservaDetalleScreen = function() {
             tintColor="#1E3A5F"
           />
         }>
-        <View className="items-center rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+        <GlassCard className="items-center p-5">
           <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Placa de la reserva
           </Text>
@@ -98,7 +99,7 @@ const ControladorReservaDetalleScreen = function() {
               ? [vehiculo.marca, vehiculo.color].filter(Boolean).join(' · ')
               : 'Marca y color sin registrar'}
           </Text>
-        </View>
+        </GlassCard>
 
         {reserva.estado === 'activa' && !llegada && !vencida ? (
           <View className="rounded-2xl border border-zu-white/70 bg-zu-card-cyan p-5 shadow-sm">
@@ -166,7 +167,7 @@ const ControladorReservaDetalleScreen = function() {
           </View>
         ) : null}
 
-        <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+        <GlassCard className="p-5">
           <View className="flex-row items-center justify-between gap-3">
             <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
               Estado
@@ -184,9 +185,9 @@ const ControladorReservaDetalleScreen = function() {
               </Text>
             </View>
           ) : null}
-        </View>
+        </GlassCard>
 
-        <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+        <GlassCard className="p-5">
           <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Conductor
           </Text>
@@ -200,9 +201,9 @@ const ControladorReservaDetalleScreen = function() {
               <Dato label="Correo electrónico">{conductor.email}</Dato>
             </>
           ) : null}
-        </View>
+        </GlassCard>
 
-        <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+        <GlassCard className="p-5">
           <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Zona azul
           </Text>
@@ -230,7 +231,7 @@ const ControladorReservaDetalleScreen = function() {
           <Text className="mt-1 text-sm text-zu-slate">
             {formatFechaHora(reserva.fecha_creacion)}
           </Text>
-        </View>
+        </GlassCard>
 
         {reserva.estado === 'pendiente' ? (
           <>

@@ -6,6 +6,7 @@ import Button from '../../Button';
 import CampoBusqueda from '../../CampoBusqueda';
 import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
+import { GlassCard } from '../../GlassCard';
 
 import { useZonas } from '@/src/hooks/admin/useZonas';
 
@@ -97,30 +98,29 @@ const ZonasScreen = () => {
         ) : null}
 
         {!loading && !error && zonas.length === 0 && !termino ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <MapPin size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               Todavía no hay zonas registradas.
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error && zonas.length === 0 && termino ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               No encontramos zonas que coincidan con “{termino}”.
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error
           ? zonas.map((zona) => {
               const extra = detalleDesdeIndicaciones(zona.indicaciones);
               return (
-                <Pressable
+                <GlassCard
                   key={zona.id}
-                  accessibilityRole="button"
                   accessibilityLabel={`Zona ${tituloDesdeIndicaciones(zona.indicaciones, zona.id)}`}
                   onPress={() =>
                     router.push({
@@ -128,7 +128,7 @@ const ZonasScreen = () => {
                       params: { id: String(zona.id) },
                     })
                   }
-                  className="mt-3 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm active:opacity-80">
+                  className="mt-3 p-4">
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1 pr-2">
                       <Text className="text-lg font-bold text-zu-navy">
@@ -155,7 +155,7 @@ const ZonasScreen = () => {
                       <Text className="text-xs font-semibold text-sky-900">#{zona.id}</Text>
                     </View>
                   </View>
-                </Pressable>
+                </GlassCard>
               );
             })
           : null}

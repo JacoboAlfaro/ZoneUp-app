@@ -16,6 +16,7 @@ import { formatHora, formatHoras, formatPesos, formatVentana } from '../../../fo
 import Button from '../../Button';
 import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
+import { GlassCard } from '../../GlassCard';
 import NoSessionState from '../../NoSessionState';
 import ContadorLlegada from '../../reservas/ContadorLlegada';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
@@ -120,12 +121,12 @@ const MisReservasScreen = function() {
         ) : null}
 
         {!loading && !error && reservas.length === 0 ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <CalendarClock size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               Todavía no has hecho reservas.{'\n'}Toca “Nueva reserva” para elegir una zona azul.
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error
@@ -138,12 +139,11 @@ const MisReservasScreen = function() {
                 : null;
 
               return (
-                <Pressable
+                <GlassCard
                   key={reserva.id}
-                  accessibilityRole="button"
                   accessibilityLabel={`Reserva ${reserva.id} en ${titulo}`}
                   onPress={() => abrirDetalle(reserva)}
-                  className="mt-3 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm active:opacity-80">
+                  className="mt-3 p-4">
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1 pr-2">
                       <Text className="text-lg font-bold text-zu-navy">{titulo}</Text>
@@ -176,7 +176,7 @@ const MisReservasScreen = function() {
                       </View>
                     </View>
                   </View>
-                </Pressable>
+                </GlassCard>
               );
             })
           : null}

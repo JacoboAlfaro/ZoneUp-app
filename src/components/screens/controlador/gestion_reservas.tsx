@@ -24,6 +24,7 @@ import { estaEnCamino, limiteLlegada, llegadaVencida, llego } from '../../../api
 import { formatHora, formatVentana } from '../../../formato';
 import CampoBusqueda from '../../CampoBusqueda';
 import CargarMas from '../../CargarMas';
+import { GlassCard } from '../../GlassCard';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 
 const GestionReservasScreen = function() {
@@ -132,23 +133,23 @@ const GestionReservasScreen = function() {
         ) : null}
 
         {!loading && !error && items.length === 0 && !termino && filtro === 'todas' ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <ClipboardCheck size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               Todavía no hay reservas en las zonas azules.
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error && items.length === 0 && (termino || filtro !== 'todas') ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               {termino
                 ? `No encontramos reservas que coincidan con “${termino}”.`
                 : 'No hay reservas con este estado.'}
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error
@@ -161,12 +162,11 @@ const GestionReservasScreen = function() {
               const parqueado = reserva.estado === 'activa' && llego(reserva);
 
               return (
-                <Pressable
+                <GlassCard
                   key={reserva.id}
-                  accessibilityRole="button"
                   accessibilityLabel={`Reserva ${reserva.id}, placa ${reserva.id_vehiculo ?? 'sin registrar'}`}
                   onPress={() => abrirDetalle(item)}
-                  className="mt-3 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm active:opacity-80">
+                  className="mt-3 p-4">
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1 pr-2">
                       <Text className="text-lg font-bold text-zu-navy">{titulo}</Text>
@@ -253,7 +253,7 @@ const GestionReservasScreen = function() {
                       </Text>
                     </View>
                   )}
-                </Pressable>
+                </GlassCard>
               );
             })
           : null}

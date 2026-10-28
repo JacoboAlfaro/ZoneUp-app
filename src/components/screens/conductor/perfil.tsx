@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 import { useSession } from '../../../session/context';
 import Button from '../../Button';
+import { GlassCard } from '../../GlassCard';
 import NoSessionState from '../../NoSessionState';
 
 const PerfilScreen = function() {
@@ -28,7 +29,7 @@ const PerfilScreen = function() {
           </Text>
         </View>
 
-        <View className="gap-5 rounded-2xl bg-white p-5">
+        <GlassCard className="gap-5 p-5">
 
           <View>
             <Text className="text-sm font-semibold text-neutral-500">
@@ -91,7 +92,7 @@ const PerfilScreen = function() {
               {user.estado}
             </Text>
           </View>
-        </View>
+        </GlassCard>
 
         <Button
           text="Editar perfil"

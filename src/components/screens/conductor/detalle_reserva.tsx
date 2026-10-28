@@ -20,6 +20,7 @@ import {
 } from '../../../formato';
 import type { Reserva } from '../../../types';
 import Button from '../../Button';
+import { GlassCard } from '../../GlassCard';
 import NoSessionState from '../../NoSessionState';
 import ContadorLlegada from '../../reservas/ContadorLlegada';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
@@ -114,7 +115,7 @@ const DetalleReservaScreen = function() {
           <ContadorLlegada reserva={reserva} zonaTitulo={titulo} onFin={alTerminarLlegada} />
         ) : null}
 
-        <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+        <GlassCard className="p-5">
           <View className="flex-row items-center justify-between gap-3">
             <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
               Estado
@@ -169,10 +170,10 @@ const DetalleReservaScreen = function() {
           <Text className="mt-1 text-sm text-zu-slate">
             {formatFechaHora(reserva.fecha_creacion)}
           </Text>
-        </View>
+        </GlassCard>
 
         {extensible ? (
-          <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm">
+          <GlassCard className="p-4">
             <Text className="text-base font-semibold text-zu-navy">Extender reserva</Text>
             <Text className="mt-1 text-sm text-zu-slate">
               Agrega horas a tu ventana de parqueo (máximo {HORAS_MAX} h en total desde que
@@ -231,7 +232,7 @@ const DetalleReservaScreen = function() {
               disabled={!horasExtra || extendiendo}
               className="mt-4 bg-zu-navy"
             />
-          </View>
+          </GlassCard>
         ) : null}
       </ScrollView>
     </SafeAreaView>

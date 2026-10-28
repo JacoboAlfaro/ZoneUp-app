@@ -15,6 +15,7 @@ import Button from '../../Button';
 import CampoBusqueda from '../../CampoBusqueda';
 import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
+import { GlassCard } from '../../GlassCard';
 import SelectFiltro from '../../SelectFiltro';
 
 const AdminUsuariosScreen = function() {
@@ -118,30 +119,29 @@ const AdminUsuariosScreen = function() {
         ) : null}
 
         {!loading && !error && usuarios.length === 0 && !termino && filtroEstado === 'todos' ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <Users size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               Todavía no hay usuarios registrados.
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error && usuarios.length === 0 && (termino || filtroEstado !== 'todos') ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               {termino
                 ? `No encontramos usuarios que coincidan con “${termino}”.`
                 : 'No hay usuarios con este estado.'}
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error
           ? usuarios.map((usuario) => (
-              <Pressable
+              <GlassCard
                 key={usuario.id}
-                accessibilityRole="button"
                 accessibilityLabel={`Ver usuario ${usuario.name}`}
                 onPress={() =>
                   router.push({
@@ -149,7 +149,7 @@ const AdminUsuariosScreen = function() {
                     params: { email: usuario.email },
                   })
                 }
-                className="mt-3 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm active:opacity-80">
+                className="mt-3 p-4">
                 <View className="flex-row items-start justify-between gap-3">
                   <View className="flex-1">
                     <Text className="text-lg font-bold text-zu-navy">{usuario.name}</Text>
@@ -172,7 +172,7 @@ const AdminUsuariosScreen = function() {
                     </View>
                   </View>
                 </View>
-              </Pressable>
+              </GlassCard>
             ))
           : null}
 

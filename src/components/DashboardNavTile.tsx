@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react-native';
 import type { ComponentType } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { GlassCard } from './GlassCard';
 
 type IconComponent = ComponentType<{
   size?: number;
@@ -25,11 +26,7 @@ export default function DashboardNavTile({
   iconBgClassName = 'bg-zu-sky-mid/45',
 }: Props) {
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      onPress={onPress}
-      className="flex-row items-center rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm active:opacity-80">
+    <GlassCard onPress={onPress} accessibilityLabel={title} className="flex-row items-center p-4">
       <View className={`h-12 w-12 items-center justify-center rounded-2xl ${iconBgClassName}`}>
         <Icon size={25} color={iconColor} />
       </View>
@@ -40,6 +37,6 @@ export default function DashboardNavTile({
       </View>
 
       <ChevronRight size={22} color="#6B8698" />
-    </Pressable>
+    </GlassCard>
   );
 }

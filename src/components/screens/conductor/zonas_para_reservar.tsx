@@ -15,6 +15,7 @@ import { detalleZona, tituloZona } from '../../../formato';
 import CampoBusqueda from '../../CampoBusqueda';
 import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
+import { GlassCard } from '../../GlassCard';
 import DisponibilidadBadge from '../../reservas/DisponibilidadBadge';
 
 const ReservarZonaScreen = function() {
@@ -98,21 +99,21 @@ const ReservarZonaScreen = function() {
         ) : null}
 
         {!loading && !error && zonas.length === 0 && !termino ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <MapPin size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               Todavía no hay zonas azules registradas.
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error && zonas.length === 0 && termino ? (
-          <View className="mt-4 items-center rounded-2xl bg-zu-white/80 p-8">
+          <GlassCard className="mt-4 items-center p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               No encontramos zonas que coincidan con “{termino}”.
             </Text>
-          </View>
+          </GlassCard>
         ) : null}
 
         {!loading && !error
@@ -122,11 +123,9 @@ const ReservarZonaScreen = function() {
               const sinCupo = zona.capacidad <= 0;
 
               return (
-                <Pressable
+                <GlassCard
                   key={zona.id}
-                  accessibilityRole="button"
                   accessibilityLabel={`Reservar en ${titulo}`}
-                  accessibilityState={{ disabled: sinCupo }}
                   disabled={sinCupo}
                   onPress={() =>
                     router.push({
@@ -134,9 +133,7 @@ const ReservarZonaScreen = function() {
                       params: { idZona: String(zona.id) },
                     })
                   }
-                  className={`mt-3 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-4 shadow-sm active:opacity-80 ${
-                    sinCupo ? 'opacity-60' : ''
-                  }`}>
+                  className={`mt-3 p-4 ${sinCupo ? 'opacity-60' : ''}`}>
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1 pr-2">
                       <Text className="text-lg font-bold text-zu-navy">{titulo}</Text>
@@ -170,7 +167,7 @@ const ReservarZonaScreen = function() {
                       </View>
                     </View>
                   </View>
-                </Pressable>
+                </GlassCard>
               );
             })
           : null}

@@ -25,6 +25,7 @@ import {
 import { formatMomento, formatPesos } from '../../../formato';
 import Button from '../../Button';
 import Field from '../../Field';
+import { GlassCard } from '../../GlassCard';
 import NoSessionState from '../../NoSessionState';
 import DisponibilidadBadge from '../../reservas/DisponibilidadBadge';
 
@@ -43,7 +44,7 @@ function Aviso({
   children: ReactNode;
 }) {
   return (
-    <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+    <GlassCard className="p-5">
       <View className="flex-row items-center">
         <View className="h-11 w-11 items-center justify-center rounded-full bg-amber-100">
           <Icon size={22} color="#92400E" />
@@ -51,7 +52,7 @@ function Aviso({
         <Text className="ml-3 flex-1 text-base font-semibold text-zu-navy">{title}</Text>
       </View>
       {children}
-    </View>
+    </GlassCard>
   );
 }
 
@@ -125,7 +126,7 @@ const NuevaReservaScreen = function() {
           contentContainerClassName="gap-4 px-5 pb-8 pt-4"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+          <GlassCard className="p-5">
             <View className="flex-row items-start justify-between gap-3">
               <View className="flex-1">
                 <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
@@ -145,7 +146,7 @@ const NuevaReservaScreen = function() {
               </Text>{' '}
               disponibles / total
             </Text>
-          </View>
+          </GlassCard>
 
           {reservaEnCurso ? (
             <Aviso icon={TriangleAlert} title="Todos tus vehículos tienen una reserva en curso">
@@ -191,7 +192,7 @@ const NuevaReservaScreen = function() {
             </Aviso>
           ) : (
             <>
-              <View className="gap-4 rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+              <GlassCard className="gap-4 p-5">
                 <Controller
                   control={control}
                   name="placa"
@@ -279,9 +280,9 @@ const NuevaReservaScreen = function() {
                   maxLength={2}
                   rules={reglas.horas}
                 />
-              </View>
+              </GlassCard>
 
-              <View className="rounded-2xl border border-zu-white/70 bg-zu-white/90 p-5 shadow-sm">
+              <GlassCard className="p-5">
                 <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
                   Resumen
                 </Text>
@@ -303,16 +304,16 @@ const NuevaReservaScreen = function() {
                     ? `Fin estimado de la reserva: ${formatMomento(finEstimado)}`
                     : 'Elige las horas para ver cuándo termina la reserva.'}
                 </Text>
-              </View>
+              </GlassCard>
 
-              <View className="flex-row gap-3 rounded-2xl bg-zu-white/80 p-4">
+              <GlassCard className="flex-row gap-3 p-4">
                 <Info size={20} color="#4A8EC4" />
                 <Text className="flex-1 text-sm leading-5 text-zu-slate">
                   Después de reservar tienes {MINUTOS_PARA_LLEGAR} minutos para llegar a la zona.
                   El encargado acepta tu solicitud y verifica la placa cuando llegas. Si no llegas
                   a tiempo, la reserva se cancela y se cobra el cargo de reserva.
                 </Text>
-              </View>
+              </GlassCard>
 
               <Button
                 text={reservando ? 'Reservando…' : 'Reservar'}

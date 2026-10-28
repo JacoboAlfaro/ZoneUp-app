@@ -12,6 +12,7 @@ import { useEditarVehiculo } from "@/src/hooks/vehiculos/useEditarVehiculo";
 import { useEliminarVehiculo } from "@/src/hooks/vehiculos/useEliminarVehiculo";
 import Button from "../../Button";
 import Field from "../../Field";
+import { GlassCard } from "../../GlassCard";
 import NoSessionState from "../../NoSessionState";
 
 const DetalleVehiculoScreen = function () {
@@ -57,7 +58,7 @@ const DetalleVehiculoScreen = function () {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="gap-1 rounded-2xl bg-white p-5">
+        <GlassCard className="gap-1 p-5">
           <Text className="text-sm font-semibold text-neutral-500">Placa</Text>
           <Text className="text-2xl font-bold text-neutral-900">
             {vehiculo.placa}
@@ -66,9 +67,9 @@ const DetalleVehiculoScreen = function () {
             La placa no se puede editar; para cambiarla, elimina el vehículo y
             registra uno nuevo.
           </Text>
-        </View>
+        </GlassCard>
 
-        <View className="gap-3 rounded-2xl bg-white p-5">
+        <GlassCard className="gap-3 p-5">
           <Field
             control={control}
             name="marca"
@@ -86,7 +87,7 @@ const DetalleVehiculoScreen = function () {
             autoCapitalize="words"
             rules={reglas.color}
           />
-        </View>
+        </GlassCard>
 
         <Button
           text={guardando ? "Guardando…" : "Guardar cambios"}

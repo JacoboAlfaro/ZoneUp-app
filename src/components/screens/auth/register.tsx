@@ -25,7 +25,7 @@ const RegisterScreen = () => {
           keyboardShouldPersistTaps="handled"
         >
           <View className="mt-7">
-            <GlassCard className="gap-5">
+            <GlassCard className="gap-5 p-6">
               <View className="items-center gap-1.5">
                 <View className="mb-1 h-1 w-10 rounded-full bg-zu-accent" />
                 <Text className="text-xs font-semibold uppercase tracking-[3px] text-zu-slogan">
