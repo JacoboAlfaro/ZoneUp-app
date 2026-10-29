@@ -2,18 +2,13 @@ import {
   GlassView,
   isGlassEffectAPIAvailable,
   isLiquidGlassAvailable,
-} from 'expo-glass-effect';
-import { Check, ChevronDown } from 'lucide-react-native';
-import { useState } from 'react';
-import {
-  Modal,
-  Platform,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+} from "expo-glass-effect";
+import { Check, ChevronDown } from "lucide-react-native";
+import { useState } from "react";
+import { Modal, Platform, Pressable, Text, View } from "react-native";
 
-import { color, glass } from '@/src/theme';
+import { color, glass } from "@/src/theme";
+import { VidrioRespaldo } from "./glass/VidrioRespaldo";
 
 const RADIO = 16;
 
@@ -34,19 +29,18 @@ export default function SelectFiltro<T extends string>({
   valor,
   opciones,
   onChange,
-  etiqueta = 'Filtrar',
+  etiqueta = "Filtrar",
   className,
 }: Props<T>) {
   const [abierto, setAbierto] = useState(false);
 
   const liquid =
-    Platform.OS === 'ios' &&
+    Platform.OS === "ios" &&
     isLiquidGlassAvailable() &&
     isGlassEffectAPIAvailable();
 
   const actual =
-    opciones.find((opcion) => opcion.valor === valor)?.label ??
-    valor;
+    opciones.find((opcion) => opcion.valor === valor)?.label ?? valor;
 
   const selector = (
     <Pressable
@@ -55,9 +49,7 @@ export default function SelectFiltro<T extends string>({
       onPress={() => setAbierto(true)}
       className="flex-row items-center justify-between px-4 py-3.5"
     >
-      <Text className="flex-1 text-base text-zu-navy">
-        {actual}
-      </Text>
+      <Text className="flex-1 text-base text-zu-navy">{actual}</Text>
 
       <ChevronDown size={20} color="#1E3A5F" />
     </Pressable>
@@ -65,9 +57,7 @@ export default function SelectFiltro<T extends string>({
 
   return (
     <View className={className}>
-      <Text className="mb-1.5 font-medium text-zu-navy">
-        {etiqueta}
-      </Text>
+      <Text className="mb-1.5 font-medium text-zu-navy">{etiqueta}</Text>
 
       {liquid ? (
         <View className="overflow-hidden rounded-2xl border border-zu-border">
@@ -78,15 +68,18 @@ export default function SelectFiltro<T extends string>({
             tintColor={glass.white}
             style={{
               borderRadius: RADIO,
-              overflow: 'hidden',
+              overflow: "hidden",
             }}
           >
             {selector}
           </GlassView>
         </View>
       ) : (
-        <View className="overflow-hidden rounded-2xl border border-zu-border bg-zu-white/95">
-          {selector}
+        // Android (y iOS < 26): el mismo vidrio por capas que los inputs.
+        <View className="overflow-hidden rounded-2xl border border-zu-border">
+          <VidrioRespaldo tint={glass.white} radius={RADIO} intensity={30}>
+            {selector}
+          </VidrioRespaldo>
         </View>
       )}
 
@@ -134,10 +127,8 @@ export default function SelectFiltro<T extends string>({
                   >
                     {opcion.label}
                   </Text>
-              
-                  {active ? (
-                    <Check size={20} color={color.navy} />
-                  ) : null}
+
+                  {active ? <Check size={20} color={color.navy} /> : null}
                 </Pressable>
               );
 
@@ -149,47 +140,31 @@ export default function SelectFiltro<T extends string>({
                   <GlassView
                     isInteractive
                     colorScheme="light"
-                    glassEffectStyle={active ? 'regular' : 'clear'}
-                    tintColor={
-                      active ? glass.sky : glass.white
-                    }
+                    glassEffectStyle={active ? "regular" : "clear"}
+                    tintColor={active ? glass.sky : glass.white}
                     style={{
                       borderRadius: RADIO,
-                      overflow: 'hidden',
+                      overflow: "hidden",
                     }}
                   >
                     {fila}
                   </GlassView>
                 </View>
               ) : (
-                <View key={opcion.valor}>
-                  <Pressable
-                    accessibilityRole="menuitem"
-                    accessibilityState={{ selected: active }}
-                    onPress={() => {
-                      onChange(opcion.valor);
-                      setAbierto(false);
-                    }}
-                    className={`mb-2 flex-row items-center justify-between rounded-2xl border px-4 py-3.5 active:opacity-70 ${
-                      active
-                        ? 'border-zu-navy bg-zu-navy/10'
-                        : 'border-zu-border bg-zu-white'
-                    }`}
+                // Android: cada opción es una lámina de vidrio; la elegida, en
+                // tono cielo con borde azul.
+                <View
+                  key={opcion.valor}
+                  className={`mb-2 overflow-hidden rounded-2xl border ${
+                    active ? "border-zu-navy" : "border-zu-border"
+                  }`}
+                >
+                  <VidrioRespaldo
+                    tint={active ? glass.sky : glass.white}
+                    radius={RADIO}
                   >
-                    <Text
-                      className={`flex-1 text-base font-semibold ${
-                        active
-                          ? 'text-zu-navy'
-                          : 'text-zu-slate'
-                      }`}
-                    >
-                      {opcion.label}
-                    </Text>
-
-                    {active ? (
-                      <Check size={20} color="#1E3A5F" />
-                    ) : null}
-                  </Pressable>
+                    {fila}
+                  </VidrioRespaldo>
                 </View>
               );
             })}
