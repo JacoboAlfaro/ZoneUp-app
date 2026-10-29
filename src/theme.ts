@@ -70,6 +70,12 @@ export const glass = {
   get whiteSoft() {
     return withAlpha(color.white, 0.3);
   },
+
+  /** Paneles sobre el mapa: más opacos para que el texto se lea bien. */
+  get panel() {
+    return withAlpha(color.white, 0.94);
+  },
+
   get border() {
     return withAlpha(color.border, 0.55);
   },
