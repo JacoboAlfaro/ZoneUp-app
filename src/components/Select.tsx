@@ -2,16 +2,17 @@ import {
   GlassView,
   isGlassEffectAPIAvailable,
   isLiquidGlassAvailable,
-} from 'expo-glass-effect';
+} from "expo-glass-effect";
 import {
   Controller,
   type Control,
   type FieldValues,
   type Path,
-} from 'react-hook-form';
-import { Platform, Pressable, Text, View } from 'react-native';
+} from "react-hook-form";
+import { Platform, Pressable, Text, View } from "react-native";
 
-import { color, glass } from '@/src/theme';
+import { color, glass } from "@/src/theme";
+import { VidrioRespaldo } from "./glass/VidrioRespaldo";
 
 const RADIO = 999;
 
@@ -29,7 +30,7 @@ export default function Select<T extends FieldValues>({
   options,
 }: Props<T>) {
   const liquid =
-    Platform.OS === 'ios' &&
+    Platform.OS === "ios" &&
     isLiquidGlassAvailable() &&
     isGlassEffectAPIAvailable();
 
@@ -39,14 +40,12 @@ export default function Select<T extends FieldValues>({
       name={name}
       render={({ field: { onChange, value } }) => (
         <View className="gap-1.5">
-          <Text className="font-semibold text-zu-navy">
-            {label}
-          </Text>
+          <Text className="font-semibold text-zu-navy">{label}</Text>
 
           <View className="flex-row flex-wrap gap-2">
             {options.map((option) => {
               const active = option === value;
-              const texto = option.replace(/_/g, ' ');
+              const texto = option.replace(/_/g, " ");
 
               const boton = (
                 <Pressable
@@ -65,13 +64,41 @@ export default function Select<T extends FieldValues>({
                       color: active ? color.white : color.slate,
                     }}
                   >
-                    {option.replace(/_/g, ' ')}
+                    {texto}
                   </Text>
                 </Pressable>
               );
 
               if (!liquid) {
-                return <View key={option}>{boton}</View>;
+                // Android (y iOS < 26): cápsula de vidrio. La elegida es vidrio
+                // azul oscuro con texto blanco; las demás, vidrio claro.
+                return (
+                  <View
+                    key={option}
+                    className="overflow-hidden rounded-full border"
+                    style={{ borderColor: active ? color.navy : color.border }}
+                  >
+                    <VidrioRespaldo
+                      tint={active ? glass.navy : glass.white}
+                      radius={RADIO}
+                      oscuro={active}
+                    >
+                      <Pressable
+                        onPress={() => onChange(option)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: active }}
+                        className="px-4 py-2"
+                      >
+                        <Text
+                          className="text-xs font-semibold"
+                          style={{ color: active ? color.white : color.slate }}
+                        >
+                          {texto}
+                        </Text>
+                      </Pressable>
+                    </VidrioRespaldo>
+                  </View>
+                );
               }
 
               return (
@@ -82,13 +109,11 @@ export default function Select<T extends FieldValues>({
                   <GlassView
                     isInteractive
                     colorScheme="light"
-                    glassEffectStyle={active ? 'regular' : 'clear'}
-                    tintColor={
-                      active ? glass.sky : glass.white
-                    }
+                    glassEffectStyle={active ? "regular" : "clear"}
+                    tintColor={active ? glass.sky : glass.white}
                     style={{
                       borderRadius: RADIO,
-                      overflow: 'hidden',
+                      overflow: "hidden",
                     }}
                   >
                     {boton}
