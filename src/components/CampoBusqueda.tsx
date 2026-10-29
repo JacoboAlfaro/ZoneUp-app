@@ -1,24 +1,33 @@
+import {
+  GlassView,
+  isGlassEffectAPIAvailable,
+  isLiquidGlassAvailable,
+} from 'expo-glass-effect';
 import { Search, X } from 'lucide-react-native';
-import { ActivityIndicator, Pressable, TextInput, View, type TextInputProps } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  TextInput,
+  View,
+  type TextInputProps,
+} from 'react-native';
+
+import { glass } from '@/src/theme';
 
 interface Props {
   value: string;
   onChangeText: (texto: string) => void;
-  /** Busca sin esperar a que el usuario deje de escribir (tecla "buscar" del teclado). */
   onBuscar: () => void;
-  /** Borra el texto y vuelve al listado completo. */
   onLimpiar: () => void;
   placeholder: string;
-  /** Muestra que el servidor está respondiendo una búsqueda. */
   buscando?: boolean;
   autoCapitalize?: TextInputProps['autoCapitalize'];
   className?: string;
 }
 
-/**
- * Buscador de los listados. Solo maneja el texto: la búsqueda la hace el
- * servidor cuando el usuario termina de escribir (ver `useListaPaginada`).
- */
+const RADIO = 16;
+
 export default function CampoBusqueda({
   value,
   onChangeText,
@@ -29,10 +38,15 @@ export default function CampoBusqueda({
   autoCapitalize = 'none',
   className,
 }: Props) {
-  return (
-    <View
-      className={`flex-row items-center rounded-2xl border border-zu-border bg-zu-white/90 px-4 ${className ?? ''}`}>
+  const liquid =
+    Platform.OS === 'ios' &&
+    isLiquidGlassAvailable() &&
+    isGlassEffectAPIAvailable();
+
+  const contenido = (
+    <View className="flex-row items-center px-4">
       <Search size={20} color="#6B8698" />
+
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -46,17 +60,53 @@ export default function CampoBusqueda({
         returnKeyType="search"
         className="flex-1 py-3.5 pl-3 text-base text-zu-navy"
       />
-      {buscando ? <ActivityIndicator size="small" color="#6B8698" className="mr-2" /> : null}
+
+      {buscando ? (
+        <ActivityIndicator
+          size="small"
+          color="#6B8698"
+          className="mr-2"
+        />
+      ) : null}
+
       {value ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Limpiar búsqueda"
           hitSlop={10}
           onPress={onLimpiar}
-          className="p-1">
+          className="p-1"
+        >
           <X size={19} color="#6B8698" />
         </Pressable>
       ) : null}
+    </View>
+  );
+
+  return (
+    <View className={className}>
+      {liquid ? (
+        <View className="overflow-hidden rounded-2xl border border-zu-border">
+          <GlassView
+            isInteractive
+            colorScheme="light"
+            glassEffectStyle="clear"
+            tintColor={glass.white}
+            style={{
+              borderRadius: RADIO,
+              overflow: 'hidden',
+            }}
+          >
+            <View style={{ backgroundColor: 'transparent' }}>
+              {contenido}
+            </View>
+          </GlassView>
+        </View>
+      ) : (
+        <View className="rounded-2xl border border-zu-border bg-zu-white/90">
+          {contenido}
+        </View>
+      )}
     </View>
   );
 }
