@@ -2,14 +2,15 @@ import {
   GlassView,
   isGlassEffectAPIAvailable,
   isLiquidGlassAvailable,
-} from 'expo-glass-effect';
-import { Car } from 'lucide-react-native';
-import { useEffect, useRef, useState } from 'react';
-import { Platform, View } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+} from "expo-glass-effect";
+import { Car } from "lucide-react-native";
+import { useEffect, useRef, useState } from "react";
+import { Platform, View } from "react-native";
+import MapView, { Marker } from "react-native-maps";
 
-import { color, glass, withAlpha } from '@/src/theme';
-import type { ZonaAzul } from '@/src/types';
+import { color, glass, withAlpha } from "@/src/theme";
+import type { ZonaAzul } from "@/src/types";
+import { VidrioRespaldo } from "./glass/VidrioRespaldo";
 
 const MANIZALES = {
   latitude: 5.0766,
@@ -24,20 +25,21 @@ function tieneCoordenadas(zona: ZonaAzul) {
 
 function estiloDeCupo(zona: ZonaAzul) {
   if (zona.capacidad <= 0) {
-    return { tint: withAlpha(color.slate, 0.72), fondo: 'bg-zu-slate/72' };
+    return { tint: withAlpha(color.slate, 0.72), fondo: "bg-zu-slate/72" };
   }
   if (zona.capacidad <= 2 || zona.capacidad <= zona.capacidad_total * 0.25) {
-    return { tint: withAlpha('#D97706', 0.72), fondo: 'bg-amber-600/72' };
+    return { tint: withAlpha("#D97706", 0.72), fondo: "bg-amber-600/72" };
   }
-  return { tint: glass.navy, fondo: 'bg-zu-navy/82' };
+  return { tint: glass.navy, fondo: "bg-zu-navy/82" };
 }
 
 const LIQUID =
-  Platform.OS === 'ios' && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
+  Platform.OS === "ios" &&
+  isLiquidGlassAvailable() &&
+  isGlassEffectAPIAvailable();
 
 function MarcadorCarrito({
   tint,
-  fondo,
   seleccionado,
   sinCupo,
 }: {
@@ -47,10 +49,10 @@ function MarcadorCarrito({
   sinCupo: boolean;
 }) {
   const lado = seleccionado ? 46 : 40;
-  const caja = seleccionado ? 'h-[46px] w-[46px]' : 'h-10 w-10';
+  const caja = seleccionado ? "h-[46px] w-[46px]" : "h-10 w-10";
   const interior = (
     <View className={`items-center justify-center ${caja}`}>
-      <Car size={seleccionado ? 20 : 18} color={color.white || '#ffffff'} />
+      <Car size={seleccionado ? 20 : 18} color={color.white || "#ffffff"} />
       {sinCupo ? (
         <View className="absolute h-0.75 w-7 rounded-sm bg-zu-white -rotate-45" />
       ) : null}
@@ -63,16 +65,24 @@ function MarcadorCarrito({
         colorScheme="light"
         glassEffectStyle="clear"
         tintColor={tint}
-        style={{ height: lado, width: lado, borderRadius: lado / 2, overflow: 'hidden' }}>
+        style={{
+          height: lado,
+          width: lado,
+          borderRadius: lado / 2,
+          overflow: "hidden",
+        }}
+      >
         {interior}
       </GlassView>
     );
   }
 
+  // Android (y iOS < 26): marcador de vidrio por capas con el color del cupo.
+  // Sin desenfoque: el mapa de Google no se puede capturar para desenfocarlo.
   return (
-    <View className={`overflow-hidden rounded-full border border-zu-white/45 ${caja} ${fondo}`}>
+    <VidrioRespaldo tint={tint} radius={lado / 2} oscuro>
       {interior}
-    </View>
+    </VidrioRespaldo>
   );
 }
 
@@ -137,7 +147,7 @@ export function ParkingMap({
     <View className="flex-1">
       <MapView
         ref={mapa}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: "100%", height: "100%" }}
         initialRegion={MANIZALES}
         showsMyLocationButton={false}
         mapType="standard"
@@ -147,7 +157,8 @@ export function ParkingMap({
             return;
           }
           onPressMapa?.();
-        }}>
+        }}
+      >
         {visibles.map((zona) => {
           const seleccionado = zona.id === zonaSeleccionadaId;
           const estilo = estiloDeCupo(zona);
@@ -160,7 +171,8 @@ export function ParkingMap({
               onPress={() => {
                 tocandoMarcador.current = true;
                 onPressZona?.(zona);
-              }}>
+              }}
+            >
               <MarcadorCarrito
                 tint={estilo.tint}
                 fondo={estilo.fondo}
