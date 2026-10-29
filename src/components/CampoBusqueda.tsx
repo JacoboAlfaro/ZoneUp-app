@@ -2,8 +2,8 @@ import {
   GlassView,
   isGlassEffectAPIAvailable,
   isLiquidGlassAvailable,
-} from 'expo-glass-effect';
-import { Search, X } from 'lucide-react-native';
+} from "expo-glass-effect";
+import { Search, X } from "lucide-react-native";
 import {
   ActivityIndicator,
   Platform,
@@ -11,9 +11,10 @@ import {
   TextInput,
   View,
   type TextInputProps,
-} from 'react-native';
+} from "react-native";
 
-import { glass } from '@/src/theme';
+import { glass } from "@/src/theme";
+import { VidrioRespaldo } from "./glass/VidrioRespaldo";
 
 interface Props {
   value: string;
@@ -22,7 +23,7 @@ interface Props {
   onLimpiar: () => void;
   placeholder: string;
   buscando?: boolean;
-  autoCapitalize?: TextInputProps['autoCapitalize'];
+  autoCapitalize?: TextInputProps["autoCapitalize"];
   className?: string;
 }
 
@@ -35,11 +36,11 @@ export default function CampoBusqueda({
   onLimpiar,
   placeholder,
   buscando,
-  autoCapitalize = 'none',
+  autoCapitalize = "none",
   className,
 }: Props) {
   const liquid =
-    Platform.OS === 'ios' &&
+    Platform.OS === "ios" &&
     isLiquidGlassAvailable() &&
     isGlassEffectAPIAvailable();
 
@@ -62,11 +63,7 @@ export default function CampoBusqueda({
       />
 
       {buscando ? (
-        <ActivityIndicator
-          size="small"
-          color="#6B8698"
-          className="mr-2"
-        />
+        <ActivityIndicator size="small" color="#6B8698" className="mr-2" />
       ) : null}
 
       {value ? (
@@ -94,17 +91,18 @@ export default function CampoBusqueda({
             tintColor={glass.white}
             style={{
               borderRadius: RADIO,
-              overflow: 'hidden',
+              overflow: "hidden",
             }}
           >
-            <View style={{ backgroundColor: 'transparent' }}>
-              {contenido}
-            </View>
+            <View style={{ backgroundColor: "transparent" }}>{contenido}</View>
           </GlassView>
         </View>
       ) : (
-        <View className="rounded-2xl border border-zu-border bg-zu-white/90">
-          {contenido}
+        // Android (y iOS < 26): vidrio por capas, igual que tarjetas e inputs.
+        <View className="overflow-hidden rounded-2xl border border-zu-border">
+          <VidrioRespaldo tint={glass.white} radius={RADIO} intensity={30}>
+            {contenido}
+          </VidrioRespaldo>
         </View>
       )}
     </View>
