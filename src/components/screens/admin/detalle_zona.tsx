@@ -1,14 +1,21 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../Button';
 import Field from '../../Field';
 import { GlassCard } from '../../GlassCard';
 
 import { useDetalle_zona } from '@/src/hooks/admin/useDetalle_zona';
+import { ESTADOS_ZONA, type EstadoZona } from '../../../types';
+
+const estadoLabel: Record<EstadoZona, string> = {
+  operativa: 'Operativa',
+  mantenimiento: 'Mantenimiento',
+  inactiva: 'Inactiva',
+};
 
 const AdminZonaDetalleScreen = function() {
 
-  const { zona, control, handleSubmit, formState, loading, deleting, cargaError, guardar, eliminar, aNumero, aEntero } = useDetalle_zona();
+  const { zona, control, handleSubmit, formState, loading, deleting, cambiandoEstado, cargaError, guardar, cambiarEstado, eliminar, aNumero, aEntero } = useDetalle_zona();
 
   if (loading) {
     return (
@@ -56,6 +63,38 @@ const AdminZonaDetalleScreen = function() {
               Disponibles ahora: {zona.capacidad} de {zona.capacidad_total} · ({zona.latitud},{' '}
               {zona.longitud})
             </Text>
+          </GlassCard>
+
+          <GlassCard className="p-4">
+            <Text className="text-base font-semibold text-zu-navy">Estado de la zona</Text>
+            <Text className="mt-1 text-sm text-zu-slate">
+              Solo las zonas operativas reciben reservas nuevas. Las reservas en curso no cambian.
+            </Text>
+            <View className="mt-4 flex-row flex-wrap gap-2">
+              {ESTADOS_ZONA.map((estado) => {
+                const active = zona.estado === estado;
+                return (
+                  <Pressable
+                    key={estado}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: active, disabled: cambiandoEstado }}
+                    disabled={cambiandoEstado}
+                    onPress={() => void cambiarEstado(estado)}
+                    className={`rounded-xl border px-3 py-2.5 ${
+                      active
+                        ? 'border-zu-navy bg-zu-navy/10'
+                        : 'border-zu-border bg-zu-white'
+                    } disabled:opacity-50`}>
+                    <Text
+                      className={`text-sm font-semibold ${
+                        active ? 'text-zu-navy' : 'text-zu-slate'
+                      }`}>
+                      {estadoLabel[estado]}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </GlassCard>
 
           <Field

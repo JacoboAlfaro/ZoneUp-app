@@ -3,6 +3,8 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 
 import { ApiError } from '@/src/api/client';
 import {
+  cancelarMiReserva,
+  CARGO_RESERVA,
   estaEnCamino,
   estaParqueada,
   extendReserva,
@@ -10,6 +12,7 @@ import {
   HORAS_MAX,
   horasEntre,
   TARIFA_HORA,
+  terminarMiReserva,
 } from '@/src/api/reservas';
 import { getZona } from '@/src/api/zonas';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
@@ -23,7 +26,7 @@ const MS_POR_HORA = 60 * 60 * 1000;
  * Lógica de la pantalla "Detalle de la reserva" del conductor: lee el id de la
  * ruta, carga la reserva y su zona, pone el número como título del encabezado,
  * lleva la referencia de "ahora" para el contador de llegada y permite extender
- * la reserva unas horas más.
+ * la reserva unas horas más, cancelarla o terminarla.
  */
 export function useDetalleReserva() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,6 +38,8 @@ export function useDetalleReserva() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [extendiendo, setExtendiendo] = useState(false);
+  /** La reserva se está cancelando o terminando. */
+  const [cerrando, setCerrando] = useState(false);
   const [horasExtra, setHorasExtra] = useState<number | null>(null);
   /** Error al cargar la reserva. Los demás errores se muestran en una alerta. */
   const [error, setError] = useState<string | null>(null);
@@ -101,9 +106,12 @@ export function useDetalleReserva() {
 
   // Se puede extender mientras la reserva sigue en curso: en camino o parqueada.
   // Las horas se suman al fin actual, sin pasar de HORAS_MAX desde la creación.
-  const extensible =
-    reserva !== null && reserva.fecha_fin !== null && (enCamino || estaParqueada(reserva, ahora));
-  const finConExtra = (horas: number) =>
+  const parqueada = reserva !== null && estaParqueada(reserva, ahora);
+  const extensible = reserva !== null && reserva.fecha_fin !== null && (enCamino || parqueada);
+  // Antes de verificar la placa se puede cancelar ($5.000); después, terminar (precio completo).
+  const cancelable = enCamino;
+  const terminable = parqueada;
+  const finConExtra =(horas: number) =>
     reserva?.fecha_fin ? new Date(new Date(reserva.fecha_fin).getTime() + horas * MS_POR_HORA) : null;
   const superaMaximo = (horas: number) => {
     const fin = finConExtra(horas);
@@ -149,6 +157,45 @@ export function useDetalleReserva() {
     }
   };
 
+  const cerrar = async (accion: 'cancelar' | 'terminar') => {
+    if (!reserva || cerrando) return;
+    const cancela = accion === 'cancelar';
+
+    const confirmado = await alerta.confirmar({
+      titulo: cancela ? 'Cancelar reserva' : 'Terminar reserva',
+      mensaje: cancela
+        ? `El cupo quedará libre y se cobra solo el cargo de reserva (${formatPesos(CARGO_RESERVA)}).`
+        : `El cupo quedará libre y se cobra el precio completo (${formatPesos(reserva.precio)}), aunque no hayas usado todo el tiempo.`,
+      textoConfirmar: cancela ? 'Cancelar reserva' : 'Terminar reserva',
+      textoCancelar: 'Volver',
+      destructiva: true,
+    });
+    if (!confirmado) return;
+
+    setCerrando(true);
+    try {
+      const actualizada = await (cancela ? cancelarMiReserva : terminarMiReserva)(reserva.id);
+      setReserva(actualizada);
+      setHorasExtra(null);
+      void alerta.mostrar({
+        tipo: 'exito',
+        titulo: cancela ? 'Reserva cancelada' : 'Reserva terminada',
+        mensaje: `El cupo quedó libre. Total: ${formatPesos(actualizada.precio)}.`,
+      });
+    } catch (cause) {
+      // 409: la reserva cambió entretanto (el encargado verificó la placa, o venció su tiempo).
+      const conflicto = cause instanceof ApiError && cause.status === 409;
+      void alerta.mostrar({
+        tipo: conflicto ? 'advertencia' : 'error',
+        titulo: cancela ? 'No se pudo cancelar la reserva' : 'No se pudo terminar la reserva',
+        mensaje: (cause as Error).message,
+      });
+      if (conflicto) void cargar(true);
+    } finally {
+      setCerrando(false);
+    }
+  };
+
   return {
     user,
     reserva,
@@ -169,5 +216,9 @@ export function useDetalleReserva() {
     nuevoPrecio,
     extendiendo,
     extender,
+    cancelable,
+    terminable,
+    cerrando,
+    cerrar,
   };
 }

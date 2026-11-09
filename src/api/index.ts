@@ -29,6 +29,7 @@ export {
   listZonasDeControlador,
   sePuedeReservar,
   toZona,
+  updateEstadoZona,
   updateZona,
   listTodasLasZonas,
 } from './zonas';
@@ -37,6 +38,7 @@ export type { ZonaResponse } from './zonas';
 export {
   aceptarReserva,
   buscarReservas,
+  cancelarMiReserva,
   cancelarReserva,
   CARGO_RESERVA,
   confirmarLlegada,
@@ -58,6 +60,7 @@ export {
   MINUTOS_PARA_LLEGAR,
   precioEstimado,
   TARIFA_HORA,
+  terminarMiReserva,
   toReserva,
   updateReservaEstado,
 } from './reservas';

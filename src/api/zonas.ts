@@ -128,6 +128,14 @@ export async function updateZona(id: number, dto: UpdateZonaDto): Promise<ZonaAz
   return toZona(await request<ZonaResponse>(`/zonas/${id}`, dto, { method: 'PATCH' }));
 }
 
+/**
+ * PATCH /zonas/:id/estado -> zona con el nuevo estado. Requiere token de ADMIN.
+ * Solo afecta las reservas nuevas: las que están en curso siguen igual.
+ */
+export async function updateEstadoZona(id: number, estado: EstadoZona): Promise<ZonaAzul> {
+  return toZona(await request<ZonaResponse>(`/zonas/${id}/estado`, { estado }, { method: 'PATCH' }));
+}
+
 /** DELETE /zonas/:id -> { message: "Zona eliminada" }. Requiere token de ADMIN. */
 export async function deleteZona(id: number): Promise<DeleteZonaResponse> {
   return request<DeleteZonaResponse>(`/zonas/${id}`, undefined, { method: 'DELETE' });

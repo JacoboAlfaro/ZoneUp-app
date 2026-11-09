@@ -15,7 +15,8 @@
  * - reservas :3004 -> POST /reservas, GET /reservas, GET /reservas/resumen,
  *                  GET /reservas/:id, GET /reservas/:id/completa, GET /reservas/user/:id,
  *                  GET /reservas/user/:id/resumen, PUT /reservas/:id/state,
- *                  POST /reservas/:id/llegada, PATCH /reservas/:id/extend
+ *                  POST /reservas/:id/llegada, PATCH /reservas/:id/extend,
+ *                  POST /reservas/:id/cancelar, POST /reservas/:id/terminar
  *                  (ver src/api/reservas.ts)
  *
  * Los listados (GET /users, /zonas, /reservas y /reservas/user/:id) buscan y
@@ -161,7 +162,8 @@ export interface UserWithVehiculos extends User {
 }
 
 /** Valores de `estado_zona` en Postgres. Solo se puede reservar en las `operativa`. */
-export type EstadoZona = 'operativa' | 'mantenimiento' | 'inactiva';
+export const ESTADOS_ZONA = ['operativa', 'mantenimiento', 'inactiva'] as const;
+export type EstadoZona = (typeof ESTADOS_ZONA)[number];
 
 /** Zona azul. En la app latitud/longitud son número. */
 export interface ZonaAzul {
@@ -220,7 +222,8 @@ export interface DeleteZonaResponse {
  * encargado la pasa a `activa` (acepta) o `cancelada` (rechaza o cancela).
  * Verificar la placa registra la llegada y la deja `activa`. El servidor la
  * pasa solo a `completada` cuando termina su tiempo, o a `cancelada` si el
- * conductor no llegó en 15 minutos.
+ * conductor no llegó en 15 minutos. El conductor puede cancelarla mientras no
+ * le hayan verificado la placa, y terminarla antes de tiempo cuando ya se la verificaron.
  */
 export const ESTADOS_RESERVA = ['pendiente', 'activa', 'cancelada', 'completada'] as const;
 export type EstadoReserva = (typeof ESTADOS_RESERVA)[number];

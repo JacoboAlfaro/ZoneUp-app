@@ -23,6 +23,12 @@
  * - GET   /reservas/user/:id/resumen (ADMIN, el propio CONDUCTOR) -> conteo por estado
  * - PATCH /reservas/:id/extend { horas } (CONDUCTOR dueño) -> reserva con `fecha_fin` + horas
  *   | 403 RESERVA_AJENA | 409 RESERVA_TERMINADA | 400 DURACION_MAXIMA (más de 24 h)
+ * - POST  /reservas/:id/cancelar (CONDUCTOR dueño) -> reserva `cancelada` con solo el
+ *   cargo de reserva. Solo si la placa aún no se ha verificado
+ *   | 403 RESERVA_AJENA | 409 LLEGADA_YA_CONFIRMADA | 409 LLEGADA_VENCIDA | 409 TRANSICION_INVALIDA
+ * - POST  /reservas/:id/terminar (CONDUCTOR dueño) -> reserva `completada` con el
+ *   precio completo. Solo con la placa verificada (`fecha_real_inicio`)
+ *   | 403 RESERVA_AJENA | 409 LLEGADA_SIN_CONFIRMAR | 409 TRANSICION_INVALIDA
  *
  * Endpoints que usa el encargado (controlador). El servidor lo limita a sus zonas
  * asignadas: fuera de ellas responde 403 ZONA_NO_ASIGNADA. El admin ve todas:
@@ -157,6 +163,16 @@ export async function extendReserva(id: number, horas: number): Promise<Reserva>
   return toReserva(
     await request<ReservaResponse>(`/reservas/${id}/extend`, { horas }, { method: 'PATCH' }),
   );
+}
+
+/** El conductor cancela su reserva antes de que le verifiquen la placa. Libera el cupo y queda solo el cargo de reserva. */
+export async function cancelarMiReserva(id: number): Promise<Reserva> {
+  return toReserva(await request<ReservaResponse>(`/reservas/${id}/cancelar`, {}));
+}
+
+/** El conductor termina su reserva con la placa verificada. Libera el cupo y conserva el precio completo. */
+export async function terminarMiReserva(id: number): Promise<Reserva> {
+  return toReserva(await request<ReservaResponse>(`/reservas/${id}/terminar`, {}));
 }
 
 /** Conductor tal como llega junto a la reserva (sin contraseña). */

@@ -1,6 +1,6 @@
-import { ApiError, deleteZona, getZona, updateZona } from '@/src/api';
+import { ApiError, deleteZona, getZona, updateEstadoZona, updateZona } from '@/src/api';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
-import { ZonaAzul } from '@/src/types';
+import { EstadoZona, ZonaAzul } from '@/src/types';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useLayoutEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
@@ -37,6 +37,7 @@ export function useDetalle_zona() {
   const [zona, setZona] = useState<ZonaAzul | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [cambiandoEstado, setCambiandoEstado] = useState(false);
   const [cargaError, setCargaError] = useState<string | null>(null);
 
   const { control, handleSubmit, reset, formState } = useForm<ZonaForm>({
@@ -100,6 +101,24 @@ export function useDetalle_zona() {
     }
   };
 
+  // Va aparte del formulario: no guarda ni borra lo que el admin esté editando.
+  const cambiarEstado = async (estado: EstadoZona) => {
+    if (!zona || cambiandoEstado || estado === zona.estado) return;
+
+    setCambiandoEstado(true);
+    try {
+      setZona(await updateEstadoZona(zona.id, estado));
+    } catch (cause) {
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo cambiar el estado',
+        mensaje: (cause as Error).message,
+      });
+    } finally {
+      setCambiandoEstado(false);
+    }
+  };
+
   const eliminar = async () => {
     if (!zona || deleting) return;
 
@@ -129,5 +148,5 @@ export function useDetalle_zona() {
       setDeleting(false);
     }
   };
-    return { zona, control, handleSubmit, formState, loading, deleting, cargaError, guardar, eliminar, aNumero, aEntero }
+    return { zona, control, handleSubmit, formState, loading, deleting, cambiandoEstado, cargaError, guardar, cambiarEstado, eliminar, aNumero, aEntero }
 }

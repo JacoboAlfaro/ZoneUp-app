@@ -40,7 +40,7 @@ function descripcionEstado(reserva: Reserva): string {
     case 'cancelada':
       return llego(reserva)
         ? 'El encargado canceló la reserva después de tu llegada.'
-        : 'La reserva se canceló (rechazada o no llegaste a tiempo). Se cobra el cargo de reserva.';
+        : 'La reserva se canceló. Se cobra solo el cargo de reserva.';
   }
 }
 
@@ -67,6 +67,10 @@ const DetalleReservaScreen = function() {
     nuevoPrecio,
     extendiendo,
     extender,
+    cancelable,
+    terminable,
+    cerrando,
+    cerrar,
   } = useDetalleReserva();
 
   if (!user) {
@@ -233,6 +237,24 @@ const DetalleReservaScreen = function() {
               className="mt-4 bg-zu-navy"
             />
           </GlassCard>
+        ) : null}
+
+        {cancelable ? (
+          <Button
+            text={cerrando ? 'Cancelando…' : 'Cancelar reserva'}
+            onPress={() => void cerrar('cancelar')}
+            disabled={cerrando || extendiendo}
+            destructive
+          />
+        ) : null}
+
+        {terminable ? (
+          <Button
+            text={cerrando ? 'Terminando…' : 'Terminar reserva'}
+            onPress={() => void cerrar('terminar')}
+            disabled={cerrando || extendiendo}
+            destructive
+          />
         ) : null}
       </ScrollView>
     </SafeAreaView>
