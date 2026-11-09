@@ -14,7 +14,8 @@
  *
  * Endpoints que usa el conductor:
  * - POST  /reservas { id_zona, id_vehiculo, horas } (CONDUCTOR) -> reserva `pendiente`
- *   | 403 VEHICULO_AJENO | 409 VEHICULO_CON_RESERVA | 404 ZONA_NO_EXISTE | 409 ZONA_SIN_CUPO
+ *   | 403 VEHICULO_AJENO | 409 VEHICULO_CON_RESERVA | 404 ZONA_NO_EXISTE
+ *   | 409 ZONA_NO_OPERATIVA | 409 ZONA_SIN_CUPO
  * - GET   /reservas/:id        (ADMIN, CONDUCTOR dueño) -> una reserva | 404 | 403 RESERVA_AJENA
  * - GET   /reservas/user/:id?limit&offset&en_curso (ADMIN, el propio CONDUCTOR) -> una
  *   página del historial del conductor (uuid), la más reciente primero, cada una
@@ -23,10 +24,11 @@
  * - PATCH /reservas/:id/extend { horas } (CONDUCTOR dueño) -> reserva con `fecha_fin` + horas
  *   | 403 RESERVA_AJENA | 409 RESERVA_TERMINADA | 400 DURACION_MAXIMA (más de 24 h)
  *
- * Endpoints que usa el encargado (controlador):
+ * Endpoints que usa el encargado (controlador). El servidor lo limita a sus zonas
+ * asignadas: fuera de ellas responde 403 ZONA_NO_ASIGNADA. El admin ve todas:
  * - GET   /reservas?q&estado&limit&offset (ADMIN, CONTROLADOR) -> una página de las
- *   reservas de todas las zonas con su conductor, vehículo y zona; primero las
- *   pendientes, luego las activas. Busca en el servidor.
+ *   reservas con su conductor, vehículo y zona; primero las pendientes, luego las
+ *   activas. Busca en el servidor.
  * - GET   /reservas/resumen      (ADMIN, CONTROLADOR) -> conteo por estado
  * - GET   /reservas/:id/completa (ADMIN, CONTROLADOR) -> una reserva con su conductor,
  *   vehículo y zona | 404
@@ -92,8 +94,8 @@ export function toReserva(data: ReservaResponse): Reserva {
  * POST /reservas -> reserva creada en estado `pendiente`. Requiere token de
  * CONDUCTOR: el servidor toma al conductor del token, calcula el fin (ahora +
  * horas) y el precio, y revisa en una sola transacción que el vehículo sea suyo,
- * que no tenga otra reserva en curso y que la zona tenga cupo. La placa se
- * normaliza a mayúsculas, como en `./vehiculos`.
+ * que no tenga otra reserva en curso y que la zona esté operativa y con cupo.
+ * La placa se normaliza a mayúsculas, como en `./vehiculos`.
  */
 export async function createReserva(dto: CreateReservaDto): Promise<Reserva> {
   const body: CreateReservaDto = {
@@ -198,10 +200,10 @@ function toReservaDeZona(data: ReservaDeZonaResponse): ReservaDeZona {
 }
 
 /**
- * GET /reservas -> una página de las reservas de todas las zonas, primero las
- * pendientes y luego las activas. Requiere token de ADMIN o CONTROLADOR. `q`
- * busca en el servidor por placa, conductor (nombre o documento), indicaciones
- * de la zona, "#12" (número de reserva) o "zona 3".
+ * GET /reservas -> una página de reservas, primero las pendientes y luego las
+ * activas. Requiere token de ADMIN (todas las zonas) o CONTROLADOR (sus zonas
+ * asignadas). `q` busca en el servidor por placa, conductor (nombre o
+ * documento), indicaciones de la zona, "#12" (número de reserva) o "zona 3".
  */
 export async function buscarReservas({
   q,

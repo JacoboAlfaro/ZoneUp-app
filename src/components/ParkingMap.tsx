@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Platform, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
+import { sePuedeReservar } from "@/src/api/zonas";
 import { color, glass, withAlpha } from "@/src/theme";
 import type { ZonaAzul } from "@/src/types";
 import { VidrioRespaldo } from "./glass/VidrioRespaldo";
@@ -24,7 +25,7 @@ function tieneCoordenadas(zona: ZonaAzul) {
 }
 
 function estiloDeCupo(zona: ZonaAzul) {
-  if (zona.capacidad <= 0) {
+  if (!sePuedeReservar(zona)) {
     return { tint: withAlpha(color.slate, 0.72), fondo: "bg-zu-slate/72" };
   }
   if (zona.capacidad <= 2 || zona.capacidad <= zona.capacidad_total * 0.25) {
@@ -41,19 +42,19 @@ const LIQUID =
 function MarcadorCarrito({
   tint,
   seleccionado,
-  sinCupo,
+  noReservable,
 }: {
   tint: string;
   fondo: string;
   seleccionado: boolean;
-  sinCupo: boolean;
+  noReservable: boolean;
 }) {
   const lado = seleccionado ? 46 : 40;
   const caja = seleccionado ? "h-[46px] w-[46px]" : "h-10 w-10";
   const interior = (
     <View className={`items-center justify-center ${caja}`}>
       <Car size={seleccionado ? 20 : 18} color={color.white || "#ffffff"} />
-      {sinCupo ? (
+      {noReservable ? (
         <View className="absolute h-0.75 w-7 rounded-sm bg-zu-white -rotate-45" />
       ) : null}
     </View>
@@ -177,7 +178,7 @@ export function ParkingMap({
                 tint={estilo.tint}
                 fondo={estilo.fondo}
                 seleccionado={seleccionado}
-                sinCupo={zona.capacidad <= 0}
+                noReservable={!sePuedeReservar(zona)}
               />
             </Marker>
           );

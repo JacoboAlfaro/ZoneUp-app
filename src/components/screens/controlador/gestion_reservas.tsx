@@ -136,7 +136,8 @@ const GestionReservasScreen = function() {
           <GlassCard className="mt-4 items-center p-8">
             <ClipboardCheck size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
-              Todavía no hay reservas en las zonas azules.
+              Todavía no hay reservas en tus zonas azules. Si aún no tienes zonas asignadas,
+              pídeselas a un administrador.
             </Text>
           </GlassCard>
         ) : null}

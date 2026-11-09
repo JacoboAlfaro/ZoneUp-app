@@ -5,7 +5,7 @@ import { getResumenZonas, listZonas } from '@/src/api/zonas';
 import type { ResumenZonas, ZonaAzul } from '@/src/types';
 import { type CargarPagina, useListaPaginada } from '../useListaPaginada';
 
-/** Primero las zonas con cupo: son las únicas donde se puede reservar. El servidor las ordena. */
+/** Primero las zonas operativas con cupo: son las únicas donde se puede reservar. El servidor las ordena. */
 const cargarZonas: CargarPagina<ZonaAzul> = (consulta) =>
   listZonas({ ...consulta, orden: 'disponibles' });
 

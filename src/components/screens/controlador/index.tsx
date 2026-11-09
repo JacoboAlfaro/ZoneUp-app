@@ -22,8 +22,8 @@ const ControladorPanelScreen = function() {
         </Text>
         <Text className="mt-2 text-3xl font-bold text-zu-navy">Hola, {user?.name}</Text>
         <Text className="mt-2 text-base leading-6 text-zu-slate">
-          Atiende las solicitudes de reserva de las zonas azules y confirma la llegada de los
-          vehículos.
+          Atiende las solicitudes de reserva de tus zonas azules asignadas y confirma la llegada de
+          los vehículos.
         </Text>
 
         <View className="mt-6 flex-row gap-3">

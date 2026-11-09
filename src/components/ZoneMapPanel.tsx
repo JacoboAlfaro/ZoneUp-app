@@ -1,5 +1,11 @@
 import { TARIFA_HORA } from "@/src/api/reservas";
-import { detalleZona, formatPesos, tituloZona } from "@/src/formato";
+import { sePuedeReservar } from "@/src/api/zonas";
+import {
+  detalleZona,
+  etiquetaNoOperativa,
+  formatPesos,
+  tituloZona,
+} from "@/src/formato";
 import { color, glass } from "@/src/theme";
 import type { ZonaAzul } from "@/src/types";
 import {
@@ -29,6 +35,7 @@ export function ZonaMapPanel({
   const extra = detalleZona(zona.indicaciones);
   const cupos = Math.max(0, zona.capacidad);
   const sinCupo = cupos <= 0;
+  const noOperativa = etiquetaNoOperativa(zona.estado);
   const liquid =
     Platform.OS === "ios" &&
     isLiquidGlassAvailable() &&
@@ -59,14 +66,20 @@ export function ZonaMapPanel({
         <Text className="mt-3 text-sm leading-5 text-zu-slate">{extra}</Text>
       ) : null}
 
-      <Text className="mt-4 text-sm text-zu-slate">
-        Plazas disponibles{" "}
-        <Text
-          className={`font-bold ${sinCupo ? "text-zu-slate" : "text-emerald-600"}`}
-        >
-          {cupos} cupos
+      {noOperativa ? (
+        <Text className="mt-4 text-sm font-bold text-zu-slate">
+          {noOperativa}. Por ahora no recibe reservas.
         </Text>
-      </Text>
+      ) : (
+        <Text className="mt-4 text-sm text-zu-slate">
+          Plazas disponibles{" "}
+          <Text
+            className={`font-bold ${sinCupo ? "text-zu-slate" : "text-emerald-600"}`}
+          >
+            {cupos} cupos
+          </Text>
+        </Text>
+      )}
       <Text className="mt-1 text-sm text-zu-slate">
         Tarifa {formatPesos(TARIFA_HORA)} / hora
       </Text>
@@ -75,7 +88,7 @@ export function ZonaMapPanel({
         className="mt-5"
         text="Reservar"
         onPress={onReservar}
-        disabled={sinCupo}
+        disabled={!sePuedeReservar(zona)}
       />
     </View>
   );

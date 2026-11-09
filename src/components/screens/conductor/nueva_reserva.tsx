@@ -82,6 +82,7 @@ const NuevaReservaScreen = function() {
     titulo,
     extra,
     sinCupo,
+    noOperativa,
     finEstimado,
     reservando,
     reservar,
@@ -139,13 +140,15 @@ const NuevaReservaScreen = function() {
               </View>
               <DisponibilidadBadge zona={zona} />
             </View>
-            <Text className="mt-3 text-sm font-medium text-zu-navy">
-              Cupos:{' '}
-              <Text className="font-bold text-blue-700">
-                {Math.max(0, zona.capacidad)}/{zona.capacidad_total}
-              </Text>{' '}
-              disponibles / total
-            </Text>
+            {noOperativa ? null : (
+              <Text className="mt-3 text-sm font-medium text-zu-navy">
+                Cupos:{' '}
+                <Text className="font-bold text-blue-700">
+                  {Math.max(0, zona.capacidad)}/{zona.capacidad_total}
+                </Text>{' '}
+                disponibles / total
+              </Text>
+            )}
           </GlassCard>
 
           {reservaEnCurso ? (
@@ -163,6 +166,18 @@ const NuevaReservaScreen = function() {
                   })
                 }
                 className="mt-4 bg-zu-navy"
+              />
+            </Aviso>
+          ) : noOperativa ? (
+            <Aviso icon={TriangleAlert} title={noOperativa}>
+              <Text className="mt-3 text-sm leading-5 text-zu-slate">
+                Por ahora esta zona no recibe reservas. Elige otra zona o intenta más tarde.
+              </Text>
+              <Button
+                text="Elegir otra zona"
+                onPress={() => router.back()}
+                secondary
+                className="mt-4"
               />
             </Aviso>
           ) : sinCupo ? (

@@ -10,9 +10,18 @@
  * - PATCH  /zonas/:id (ADMIN)   -> zona actualizada | 404 | 400 CAPACIDAD_TOTAL_INVALIDA
  *   | 409 CAPACIDAD_MENOR_A_OCUPADOS (capacidad total por debajo de las reservas en curso)
  * - DELETE /zonas/:id (ADMIN)   -> { message: "Zona eliminada" } | 404
+ * - PATCH  /zonas/:id/estado { estado } (ADMIN) -> zona | 404 | 400 ESTADO_ZONA_INVALIDO
+ * - GET    /zonas/controlador/:idControlador?q&limit&offset (ADMIN) -> todas las zonas,
+ *   primero las asignadas, cada una con `asignada`, y `total_asignadas`
+ *   | 404 CONTROLADOR_NO_EXISTE
+ * - PUT    /zonas/:id/controladores/:idControlador (ADMIN) -> asigna la zona | 404
+ * - DELETE /zonas/:id/controladores/:idControlador (ADMIN) -> quita la zona
  *
  * `capacidad` son los cupos disponibles AHORA: el servidor los calcula
  * (capacidad total − reservas en curso). La app nunca los manda.
+ *
+ * `estado`: solo se puede reservar en una zona `operativa`. Los totales de
+ * `/zonas/resumen` solo cuentan los cupos de las zonas operativas.
  *
  * Las lecturas son públicas: el mapa puede usarlas sin sesión.
  * La escritura exige token de ADMIN (el de conductor devuelve 403).
@@ -22,7 +31,9 @@ import type {
   ConsultaPagina,
   CreateZonaDto,
   DeleteZonaResponse,
+  EstadoZona,
   Pagina,
+  PaginaZonasDeControlador,
   ResumenZonas,
   UpdateZonaDto,
   ZonaAzul,
@@ -40,6 +51,7 @@ export interface ZonaResponse {
   indicaciones: string | null;
   capacidad: number;
   capacidad_total: number;
+  estado: EstadoZona;
 }
 
 /** El único lugar donde se convierte la respuesta del servidor al tipo de la app. */
@@ -51,7 +63,13 @@ export function toZona(data: ZonaResponse): ZonaAzul {
     indicaciones: data.indicaciones,
     capacidad: data.capacidad,
     capacidad_total: data.capacidad_total,
+    estado: data.estado,
   };
+}
+
+/** Se puede reservar en la zona: está operativa y le quedan cupos. El servidor lo revisa de nuevo. */
+export function sePuedeReservar(zona: ZonaAzul): boolean {
+  return zona.estado === 'operativa' && zona.capacidad > 0;
 }
 
 /**
@@ -113,4 +131,39 @@ export async function updateZona(id: number, dto: UpdateZonaDto): Promise<ZonaAz
 /** DELETE /zonas/:id -> { message: "Zona eliminada" }. Requiere token de ADMIN. */
 export async function deleteZona(id: number): Promise<DeleteZonaResponse> {
   return request<DeleteZonaResponse>(`/zonas/${id}`, undefined, { method: 'DELETE' });
+}
+
+/**
+ * GET /zonas/controlador/:id -> una página de todas las zonas, primero las
+ * asignadas a ese controlador (uuid). Requiere token de ADMIN.
+ */
+export async function listZonasDeControlador(
+  idControlador: string,
+  { q, limit, offset, signal }: ConsultaPagina = {},
+): Promise<PaginaZonasDeControlador> {
+  const pagina = await request<
+    Pagina<ZonaResponse & { asignada: boolean }> & { total_asignadas: number }
+  >(
+    conParametros(`/zonas/controlador/${encodeURIComponent(idControlador)}`, { q, limit, offset }),
+    undefined,
+    { signal },
+  );
+  return {
+    ...pagina,
+    items: pagina.items.map((zona) => ({ ...toZona(zona), asignada: zona.asignada })),
+  };
+}
+
+function rutaAsignacion(idZona: number, idControlador: string): string {
+  return `/zonas/${idZona}/controladores/${encodeURIComponent(idControlador)}`;
+}
+
+/** PUT /zonas/:id/controladores/:idControlador. Requiere token de ADMIN. */
+export async function asignarZona(idZona: number, idControlador: string): Promise<void> {
+  await request(rutaAsignacion(idZona, idControlador), undefined, { method: 'PUT' });
+}
+
+/** DELETE /zonas/:id/controladores/:idControlador. Requiere token de ADMIN. */
+export async function desasignarZona(idZona: number, idControlador: string): Promise<void> {
+  await request(rutaAsignacion(idZona, idControlador), undefined, { method: 'DELETE' });
 }

@@ -1,8 +1,8 @@
-import { getUserByEmail, updateUser } from "@/src/api";
+import { getUserByEmail, listZonasDeControlador, updateUser } from "@/src/api";
 import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { EstadoUsuario, TipoUsuario, User } from "@/src/types";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 
 export  function useDetalle_usuario() {
     const { email } = useLocalSearchParams<{ email: string }>();
@@ -13,6 +13,38 @@ export  function useDetalle_usuario() {
   const [saving, setSaving] = useState(false);
   /** Error al cargar el usuario. Los errores al guardar se muestran en una alerta. */
   const [error, setError] = useState<string | null>(null);
+  /** Cuántas zonas atiende, si es controlador. */
+  const [zonasAsignadas, setZonasAsignadas] = useState<number | null>(null);
+
+  const idControlador = usuario?.tipo_usuario === 'controlador' ? usuario.id : null;
+
+  // Al enfocar: el número cambia al volver de la pantalla de asignación.
+  useFocusEffect(
+    useCallback(() => {
+      if (!idControlador) return;
+
+      let active = true;
+      listZonasDeControlador(idControlador, { limit: 1 })
+        .then((pagina) => {
+          if (active) setZonasAsignadas(pagina.total_asignadas);
+        })
+        .catch(() => {
+          if (active) setZonasAsignadas(null);
+        });
+
+      return () => {
+        active = false;
+      };
+    }, [idControlador]),
+  );
+
+  const abrirZonasAsignadas = () => {
+    if (!usuario) return;
+    router.push({
+      pathname: '/admin/zonas-controlador/[id]',
+      params: { id: usuario.id, nombre: usuario.name },
+    });
+  };
 
   useEffect(() => {
     if (!email) return;
@@ -63,5 +95,5 @@ export  function useDetalle_usuario() {
     });
     if (confirmado) void actualizar({ estado });
   };
-  return { usuario, loading, saving, error, actualizar, cambiarEstado }
+  return { usuario, loading, saving, error, actualizar, cambiarEstado, zonasAsignadas, abrirZonasAsignadas }
 }

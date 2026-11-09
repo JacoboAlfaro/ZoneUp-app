@@ -4,6 +4,8 @@
  * Solo formatean valores; no llaman a la API ni leen la sesión.
  */
 
+import type { EstadoZona } from './types';
+
 /** 8500 -> "$8.500" (pesos colombianos, sin decimales). */
 export function formatPesos(valor: number): string {
   const entero = Math.round(valor)
@@ -74,6 +76,13 @@ export function tituloZona(indicaciones: string | null | undefined, id: number |
   const linea = indicaciones?.trim().split('\n')[0]?.trim();
   if (linea) return linea;
   return id === null ? 'Zona sin asignar' : `Zona #${id}`;
+}
+
+/** "Zona en mantenimiento" o "Zona inactiva"; null si la zona está operativa. */
+export function etiquetaNoOperativa(estado: EstadoZona): string | null {
+  if (estado === 'mantenimiento') return 'Zona en mantenimiento';
+  if (estado === 'inactiva') return 'Zona inactiva';
+  return null;
 }
 
 /** Las líneas de `indicaciones` después del título, o null si no hay más. */

@@ -1,8 +1,10 @@
+import { MapPin } from 'lucide-react-native';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDetalle_usuario } from '@/src/hooks/admin/useDetalle_usuario';
 import { ESTADOS_USUARIO, TIPOS_USUARIO, type EstadoUsuario, type TipoUsuario } from '../../../types';
+import DashboardNavTile from '../../DashboardNavTile';
 import { GlassCard } from '../../GlassCard';
 
 const estadoLabel: Record<EstadoUsuario, string> = {
@@ -25,9 +27,15 @@ function formatFecha(iso: string): string {
   return Number.isNaN(fecha.getTime()) ? iso : fecha.toLocaleString('es-CO');
 }
 
+function resumenZonasAsignadas(total: number | null): string {
+  if (total === null) return 'Asigna o quita las zonas que atiende';
+  if (total === 0) return 'Sin zonas asignadas: no verá ninguna reserva';
+  return `${total} ${total === 1 ? 'zona asignada' : 'zonas asignadas'} · asignar o quitar`;
+}
+
 const AdminUsuarioDetalleScreen = function() {
 
-  const { usuario, loading, saving, error, actualizar, cambiarEstado } = useDetalle_usuario();
+  const { usuario, loading, saving, error, actualizar, cambiarEstado, zonasAsignadas, abrirZonasAsignadas } = useDetalle_usuario();
 
   if (loading) {
     return (
@@ -128,6 +136,17 @@ const AdminUsuarioDetalleScreen = function() {
             })}
           </View>
         </GlassCard>
+
+        {usuario.tipo_usuario === 'controlador' ? (
+          <View className="mt-5">
+            <DashboardNavTile
+              icon={MapPin}
+              title="Zonas azules"
+              subtitle={resumenZonasAsignadas(zonasAsignadas)}
+              onPress={abrirZonasAsignadas}
+            />
+          </View>
+        ) : null}
 
         <GlassCard className="mt-5 p-4">
           <Text className="text-base font-semibold text-zu-navy">Estado de la cuenta</Text>

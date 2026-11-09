@@ -4,11 +4,13 @@ import type { ZonaAzul } from '../../types';
 
 /**
  * Los mismos colores del mapa descritos en el manual: azul con varios cupos,
- * amarillo con pocos y gris sin cupo (no se puede reservar).
+ * amarillo con pocos y gris cuando no se puede reservar: sin cupo, en
+ * mantenimiento o inactiva.
  */
-type Disponibilidad = 'varios' | 'pocos' | 'sin_cupo';
+type Disponibilidad = 'varios' | 'pocos' | 'sin_cupo' | 'mantenimiento' | 'inactiva';
 
 function disponibilidadDe(zona: ZonaAzul): Disponibilidad {
+  if (zona.estado !== 'operativa') return zona.estado;
   if (zona.capacidad <= 0) return 'sin_cupo';
   if (zona.capacidad <= 2 || zona.capacidad <= zona.capacidad_total * 0.25) return 'pocos';
   return 'varios';
@@ -18,6 +20,8 @@ const estilos: Record<Disponibilidad, { label: string; fondo: string; texto: str
   varios: { label: 'Con cupos', fondo: 'bg-sky-100', texto: 'text-sky-900' },
   pocos: { label: 'Pocos cupos', fondo: 'bg-amber-100', texto: 'text-amber-800' },
   sin_cupo: { label: 'Sin cupo', fondo: 'bg-slate-200', texto: 'text-slate-700' },
+  mantenimiento: { label: 'Mantenimiento', fondo: 'bg-slate-200', texto: 'text-slate-700' },
+  inactiva: { label: 'Inactiva', fondo: 'bg-slate-200', texto: 'text-slate-700' },
 };
 
 interface Props {

@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { sePuedeReservar } from '@/src/api/zonas';
 import { useZonasParaReservar } from '@/src/hooks/reservas/useZonasParaReservar';
-import { detalleZona, tituloZona } from '../../../formato';
+import { detalleZona, etiquetaNoOperativa, tituloZona } from '../../../formato';
 import CampoBusqueda from '../../CampoBusqueda';
 import CargarMas from '../../CargarMas';
 import DashboardStat from '../../DashboardStat';
@@ -120,36 +121,41 @@ const ReservarZonaScreen = function() {
           ? zonas.map((zona) => {
               const titulo = tituloZona(zona.indicaciones, zona.id);
               const extra = detalleZona(zona.indicaciones);
-              const sinCupo = zona.capacidad <= 0;
+              const noReservable = !sePuedeReservar(zona);
+              const noOperativa = etiquetaNoOperativa(zona.estado);
 
               return (
                 <GlassCard
                   key={zona.id}
                   accessibilityLabel={`Reservar en ${titulo}`}
-                  disabled={sinCupo}
+                  disabled={noReservable}
                   onPress={() =>
                     router.push({
                       pathname: '/conductor/(panel)/(reservas)/nueva-reserva',
                       params: { idZona: String(zona.id) },
                     })
                   }
-                  className={`mt-3 p-4 ${sinCupo ? 'opacity-60' : ''}`}>
+                  className={`mt-3 p-4 ${noReservable ? 'opacity-60' : ''}`}>
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1 pr-2">
                       <Text className="text-lg font-bold text-zu-navy">{titulo}</Text>
                       {extra ? (
                         <Text className="mt-1 text-sm leading-5 text-zu-slate">{extra}</Text>
                       ) : null}
-                      <Text className="mt-3 text-sm font-medium text-zu-navy">
-                        Cupos:{' '}
-                        <Text className="font-bold text-blue-700">
-                          {Math.max(0, zona.capacidad)}/{zona.capacidad_total}
-                        </Text>{' '}
-                        disponibles / total
-                      </Text>
-                      {sinCupo ? (
+                      {noOperativa ? null : (
+                        <Text className="mt-3 text-sm font-medium text-zu-navy">
+                          Cupos:{' '}
+                          <Text className="font-bold text-blue-700">
+                            {Math.max(0, zona.capacidad)}/{zona.capacidad_total}
+                          </Text>{' '}
+                          disponibles / total
+                        </Text>
+                      )}
+                      {noReservable ? (
                         <Text className="mt-3.5 text-sm text-zu-slate">
-                          Sin cupos por ahora. Intenta más tarde.
+                          {noOperativa
+                            ? `${noOperativa}. Por ahora no recibe reservas.`
+                            : 'Sin cupos por ahora. Intenta más tarde.'}
                         </Text>
                       ) : (
                         <View className="mt-3.5 flex-row items-center gap-1.5 self-start rounded-full border border-zu-navy/10 bg-white/80 py-2 pl-3.5 pr-3 shadow-sm">

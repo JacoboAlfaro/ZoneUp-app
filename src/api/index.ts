@@ -19,11 +19,15 @@ export { addVehiculo, deleteVehiculo, getVehiculos, toVehiculo, updateVehiculo }
 export type { VehiculoResponse } from './vehiculos';
 
 export {
+  asignarZona,
   createZona,
   deleteZona,
+  desasignarZona,
   getResumenZonas,
   getZona,
   listZonas,
+  listZonasDeControlador,
+  sePuedeReservar,
   toZona,
   updateZona,
   listTodasLasZonas,

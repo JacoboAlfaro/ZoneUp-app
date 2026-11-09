@@ -9,7 +9,9 @@
  *                  PATCH /users/:documento
  *                  (ver src/api/users.ts y src/api/vehiculos.ts)
  * - zonas :3002 -> POST /zonas, GET /zonas, GET /zonas/resumen, GET /zonas/:id,
- *                  PATCH /zonas/:id, DELETE /zonas/:id (ver src/api/zonas.ts)
+ *                  PATCH /zonas/:id, DELETE /zonas/:id, PATCH /zonas/:id/estado,
+ *                  GET /zonas/controlador/:idControlador,
+ *                  PUT|DELETE /zonas/:id/controladores/:idControlador (ver src/api/zonas.ts)
  * - reservas :3004 -> POST /reservas, GET /reservas, GET /reservas/resumen,
  *                  GET /reservas/:id, GET /reservas/:id/completa, GET /reservas/user/:id,
  *                  GET /reservas/user/:id/resumen, PUT /reservas/:id/state,
@@ -158,6 +160,9 @@ export interface UserWithVehiculos extends User {
   vehiculos: Vehiculo[];
 }
 
+/** Valores de `estado_zona` en Postgres. Solo se puede reservar en las `operativa`. */
+export type EstadoZona = 'operativa' | 'mantenimiento' | 'inactiva';
+
 /** Zona azul. En la app latitud/longitud son número. */
 export interface ZonaAzul {
   id: number;
@@ -172,6 +177,17 @@ export interface ZonaAzul {
   capacidad: number;
   /** Cupos físicos de la zona. Es lo único que define el admin. */
   capacidad_total: number;
+  estado: EstadoZona;
+}
+
+/** Zona en la pantalla de asignación: dice si la atiende el controlador consultado. */
+export interface ZonaDeControlador extends ZonaAzul {
+  asignada: boolean;
+}
+
+/** GET /zonas/controlador/:id: todas las zonas y cuántas tiene asignadas el controlador. */
+export interface PaginaZonasDeControlador extends Pagina<ZonaDeControlador> {
+  total_asignadas: number;
 }
 
 /**

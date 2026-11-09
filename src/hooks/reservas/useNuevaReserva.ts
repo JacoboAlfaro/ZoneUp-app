@@ -13,7 +13,7 @@ import {
 import { getVehiculos } from '@/src/api/vehiculos';
 import { getZona } from '@/src/api/zonas';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
-import { detalleZona, tituloZona } from '@/src/formato';
+import { detalleZona, etiquetaNoOperativa, tituloZona } from '@/src/formato';
 import { useSession } from '@/src/session/context';
 import type { Reserva, Vehiculo, ZonaAzul } from '@/src/types';
 
@@ -45,7 +45,8 @@ const reglas: Record<keyof NuevaReservaForm, RegisterOptions<NuevaReservaForm>> 
  * Lógica de la pantalla "Nueva reserva": lee la zona de la ruta, carga la zona,
  * los vehículos del conductor y sus reservas en curso (una por vehículo como
  * máximo); maneja el formulario (vehículo y horas) y crea la reserva. El
- * servidor revisa el cupo y el vehículo en el mismo momento de reservar.
+ * servidor revisa el estado de la zona, el cupo y el vehículo en el mismo
+ * momento de reservar.
  */
 export function useNuevaReserva() {
   const { idZona } = useLocalSearchParams<{ idZona: string }>();
@@ -137,6 +138,7 @@ export function useNuevaReserva() {
   const titulo = tituloZona(zona?.indicaciones, zona?.id ?? null);
   const extra = detalleZona(zona?.indicaciones);
   const sinCupo = zona !== null && zona.capacidad <= 0;
+  const noOperativa = zona ? etiquetaNoOperativa(zona.estado) : null;
   // Fin estimado: el servidor lo calcula igual, desde el momento de reservar.
   const finEstimado = horas ? new Date(Date.now() + horas * MS_POR_HORA) : null;
   const todosOcupados =
@@ -179,6 +181,14 @@ export function useNuevaReserva() {
           mensaje: 'Alguien tomó el último cupo antes que tú. Elige otra zona.',
         });
         setRecargas((n) => n + 1);
+      } else if (codigo === 'ZONA_NO_OPERATIVA') {
+        // La zona cambió de estado mientras el conductor llenaba el formulario.
+        void alerta.mostrar({
+          tipo: 'advertencia',
+          titulo: 'La zona dejó de recibir reservas',
+          mensaje: 'Esta zona ya no está operativa. Elige otra zona.',
+        });
+        setRecargas((n) => n + 1);
       } else if (codigo === 'VEHICULO_CON_RESERVA') {
         void alerta.mostrar({
           tipo: 'advertencia',
@@ -212,6 +222,7 @@ export function useNuevaReserva() {
     titulo,
     extra,
     sinCupo,
+    noOperativa,
     finEstimado,
     reservando: formState.isSubmitting,
     reservar: handleSubmit(guardar),
