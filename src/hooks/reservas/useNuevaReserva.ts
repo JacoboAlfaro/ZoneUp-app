@@ -14,6 +14,7 @@ import { getVehiculos } from '@/src/api/vehiculos';
 import { getZona } from '@/src/api/zonas';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { detalleZona, etiquetaNoOperativa, tituloZona } from '@/src/formato';
+import { usePermisoAvisos } from '@/src/notificaciones/usePermisoAvisos';
 import { useSession } from '@/src/session/context';
 import type { Reserva, Vehiculo, ZonaAzul } from '@/src/types';
 
@@ -52,6 +53,7 @@ export function useNuevaReserva() {
   const { idZona } = useLocalSearchParams<{ idZona: string }>();
   const { user } = useSession();
   const alerta = useAlerta();
+  const { pedirEnContexto } = usePermisoAvisos();
   const [zona, setZona] = useState<ZonaAzul | null>(null);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   /** Reserva en curso de cada vehículo (por placa). Esos vehículos no pueden reservar. */
@@ -172,6 +174,9 @@ export function useNuevaReserva() {
         pathname: '/conductor/(panel)/(reservas)/reserva/[id]',
         params: { id: String(reserva.id) },
       });
+      // Ahora que tiene un plazo, el conductor entiende para qué sirven los avisos. La
+      // pregunta sale sobre el detalle de la reserva (solo si aún no dio permiso).
+      void pedirEnContexto('reserva');
     } catch (cause) {
       const codigo = cause instanceof ApiError ? cause.codigo : undefined;
       if (codigo === 'ZONA_SIN_CUPO') {

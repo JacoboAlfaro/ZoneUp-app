@@ -14,8 +14,7 @@
  * varias alertas a la vez se muestran una detrás de otra.
  *
  * Se dibuja como una capa encima de la app y no con `<Modal>`: así no hay
- * problemas al abrir una alerta justo después de cerrar otra, y también
- * funciona en web, donde `Alert.alert` no muestra nada.
+ * problemas al abrir una alerta justo después de cerrar otra.
  */
 
 import {
@@ -32,7 +31,6 @@ import {
   Animated,
   BackHandler,
   Keyboard,
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -92,8 +90,8 @@ export function useAlerta(): Alertas {
   return value;
 }
 
-// En web no existe el driver nativo de animaciones y React Native avisa por consola.
-const useNativeDriver = Platform.OS !== 'web';
+/** Las animaciones de la alerta corren en el hilo nativo, sin pasar por JavaScript. */
+const useNativeDriver = true;
 
 export function AlertaProvider({ children }: PropsWithChildren) {
   const [cola, setCola] = useState<Pendiente[]>([]);
@@ -258,8 +256,7 @@ export function AlertaProvider({ children }: PropsWithChildren) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  // Los toques fuera de la tarjeta llegan al fondo (que cierra la alerta). Tiene que
-  // ir en StyleSheet.create: en web, 'box-none' en un estilo en línea se ignora.
+  // Los toques fuera de la tarjeta llegan al fondo (que cierra la alerta).
   dejaPasarToques: { pointerEvents: 'box-none' },
   tarjeta: { width: '100%', alignItems: 'center' },
 });

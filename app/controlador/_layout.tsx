@@ -2,6 +2,9 @@ import { Stack } from 'expo-router';
 
 import { headerGlassScreenOptions } from '@/src/components/HeaderGlassBackground';
 
+/** Al abrir una reserva desde un aviso, "atrás" vuelve al panel. */
+export const unstable_settings = { anchor: 'index' };
+
 export default function ControladorLayout() {
   return (
     <Stack

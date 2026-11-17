@@ -27,6 +27,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Clave privada de Firebase: se sube a EAS como credencial, no dentro del proyecto.
+*firebase-adminsdk*.json
+firebase-cuenta-servicio*.json
+
 .env*.local
 
 *.tsbuildinfo

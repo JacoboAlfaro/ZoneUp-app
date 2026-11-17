@@ -2,6 +2,7 @@ import { ApiError, buscarReservas, getResumenReservas } from "@/src/api";
 import { useAlerta } from "@/src/components/alerta/AlertaProvider";
 import { AccionReserva, ejecutarAccionReserva } from "@/src/components/reservas/accionesReserva";
 import { tituloZona } from "@/src/formato";
+import { useAlRecibirAviso } from "@/src/notificaciones/useAlRecibirAviso";
 import { EstadoReserva, ReservaDeZona, ResumenReservas } from "@/src/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
@@ -58,6 +59,9 @@ export function useGestion_reserva() {
     void lista.recargar(true);
     cargarResumen();
   };
+
+  // Llegó una reserva nueva o el conductor canceló una: la lista y los conteos cambiaron.
+  useAlRecibirAviso(refrescar);
 
   const ejecutar = async (accion: AccionReserva, item: ReservaDeZona) => {
     if (procesando !== null) return;

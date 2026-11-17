@@ -22,6 +22,7 @@ import type { Reserva } from '../../../types';
 import Button from '../../Button';
 import { GlassCard } from '../../GlassCard';
 import NoSessionState from '../../NoSessionState';
+import AvisosDesactivados from '../../reservas/AvisosDesactivados';
 import ContadorLlegada from '../../reservas/ContadorLlegada';
 import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
 
@@ -118,6 +119,9 @@ const DetalleReservaScreen = function() {
         {enCamino ? (
           <ContadorLlegada reserva={reserva} zonaTitulo={titulo} onFin={alTerminarLlegada} />
         ) : null}
+
+        {/* Los recordatorios solo importan mientras la reserva sigue en curso. */}
+        {cancelable || terminable ? <AvisosDesactivados /> : null}
 
         <GlassCard className="p-5">
           <View className="flex-row items-center justify-between gap-3">

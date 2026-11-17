@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "217175711283",
+    "project_id": "zoneapp-7ca18",
+    "storage_bucket": "zoneapp-7ca18.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:217175711283:android:d4ef0a4ba9c743774e8d46",
+        "android_client_info": {
+          "package_name": "com.jacoboalfarosteam.zoneupapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBCmZ9VZ2EszJrcuDBo5g5mzL51HUnq_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

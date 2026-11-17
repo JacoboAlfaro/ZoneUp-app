@@ -1,6 +1,6 @@
 # ZoneUp — App de zonas azules
 
-App con **Expo + React Native** para reservar cupos de parqueo en **zonas azules** (caso inicial: Manizales). El mismo código corre en Android, iOS y web.
+App con **Expo + React Native** para reservar cupos de parqueo en **zonas azules** (caso inicial: Manizales). Es una app móvil: el mismo código corre en Android e iOS.
 
 - Los **conductores** se registran, gestionan su perfil y sus vehículos, y reservan cupos por horas.
 - Los **encargados de zona** (`controlador`) aceptan o rechazan las solicitudes y verifican la placa cuando llega el vehículo.
@@ -132,20 +132,21 @@ EXPO_PUBLIC_API_URL=https://zoneup.online
 
 ## Puesta en marcha
 
-Requisitos: Node 22.13 o superior + npm, y la app **Expo Go** en el teléfono (misma red Wi-Fi), un emulador o el navegador.
+Requisitos: Node 22.13 o superior + npm, y en el teléfono (misma red Wi-Fi) la app **Expo Go** o el *development build* de ZoneUp. Los avisos push solo llegan al development build o al APK: Expo Go ya no los recibe desde el SDK 53.
+
+La app es solo móvil (Android e iOS): `app.json` declara `"platforms": ["ios", "android"]`.
 
 ```bash
 npm install
-npm start        # expo start: QR + menú (a = Android, i = iOS, w = web)
+npm start        # expo start: QR + menú (a = Android, i = iOS)
 npm run android
 npm run ios
-npm run web      # puerto 8081
 npx tsc --noEmit # revisar tipos (incluye las rutas tipadas)
 ```
 
 Flujo típico:
 1. Ajusta `.env` para que apunte al gateway.
-2. `npm start` y abre la app con Expo Go o en el navegador.
+2. `npm start` y abre la app con Expo Go o con el development build.
 3. Regístrate como conductor, o entra con un usuario admin o encargado.
 
 Para compilar instalables se usa EAS (`eas.json`): `eas build -p android --profile preview` genera un APK; `--profile production`, un AAB para Google Play.

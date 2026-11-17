@@ -1,7 +1,7 @@
 /**
  * Layout raíz: envuelve TODA la app.
  *
- * Hace tres cosas:
+ * Hace cuatro cosas:
  *  1. Pone el proveedor de sesión, para que cualquier pantalla pueda saber
  *     quién entró.
  *  2. Pone el proveedor de alertas, para que cualquier pantalla pueda abrir
@@ -9,14 +9,25 @@
  *  3. Declara la navegación y decide, con `Stack.Protected`, qué pantallas
  *     existen según haya sesión o no. Sin sesión, las rutas privadas ni
  *     siquiera están registradas: no hay forma de llegar a ellas.
+ *  4. Prepara los avisos push: crea los canales de Android al arrancar y, con
+ *     sesión, registra el teléfono y abre la reserva de un aviso tocado.
  */
 
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
 import '../global.css';
 import { AlertaProvider } from '../src/components/alerta/AlertaProvider';
+import { crearCanales } from '../src/notificaciones/dispositivo';
+import { useAvisosPush } from '../src/notificaciones/useAvisosPush';
 import { SessionProvider, useSession } from '../src/session/context';
 
 export default function RootLayout() {
+  // Los canales tienen que existir antes de que llegue un aviso (Android no muestra
+  // los de un canal desconocido)
+  useEffect(() => {
+    crearCanales().catch(() => {});
+  }, []);
+
   return (
     <AlertaProvider>
       <SessionProvider>
@@ -28,6 +39,7 @@ export default function RootLayout() {
 
 function Navigator() {
   const { user } = useSession();
+  useAvisosPush(user);
 
   return (
     <Stack

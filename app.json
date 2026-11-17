@@ -2,6 +2,7 @@
   "expo": {
     "name": "zone-up-app",
     "slug": "zoneup-app",
+    "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -17,7 +18,8 @@
         "monochromeImage": "./assets/images/icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.jacoboalfarosteam.zoneupapp"
+      "package": "com.jacoboalfarosteam.zoneupapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +39,14 @@
       "expo-font",
       "expo-status-bar",
       "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#1E3A5F",
+          "defaultChannel": "reservas"
+        }
+      ],
       [
         "expo-build-properties",
         {

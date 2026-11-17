@@ -9,6 +9,7 @@
 import { createContext, use, useState, type PropsWithChildren } from 'react';
 import * as api from '../api/auth';
 import { setToken } from '../api/client';
+import { olvidarEsteTelefono } from '../notificaciones/dispositivo';
 import type { Register, User } from '../types';
 
 interface Session {
@@ -17,7 +18,8 @@ interface Session {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (dto: Register) => Promise<void>;
   updateCurrentUser: (user: User) => void;
-  signOut: () => void;
+  /** Nunca falla: aunque no haya red, la sesión se cierra igual. */
+  signOut: () => Promise<void>;
 }
 
 const SessionContext = createContext<Session | null>(null);
@@ -57,7 +59,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
           setUser(session.user);
         },
         updateCurrentUser: setUser,
-        signOut: () => {
+        // Primero se desasocia el teléfono: el servidor deja de enviarle los avisos de
+        // esta cuenta. Va ANTES de borrar el token, porque esa petición necesita la
+        // sesión. Se hace aquí (y no en cada pantalla) porque hay tres botones de salir.
+        signOut: async () => {
+          await olvidarEsteTelefono();
           setToken(null);
           setUser(null);
         },

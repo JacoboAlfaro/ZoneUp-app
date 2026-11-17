@@ -7,6 +7,7 @@ import {
   listReservasConductor,
 } from '@/src/api/reservas';
 import { tituloZona } from '@/src/formato';
+import { useAlRecibirAviso } from '@/src/notificaciones/useAlRecibirAviso';
 import { useSession } from '@/src/session/context';
 import type { Reserva, ReservaConZona, ResumenReservas } from '@/src/types';
 import { type CargarPagina, useListaPaginada } from '../useListaPaginada';
@@ -50,6 +51,9 @@ export function useMisReservas() {
     void lista.recargar(true);
     cargarResumen();
   };
+
+  // Cualquier aviso es de una de mis reservas: los estados y totales cambiaron.
+  useAlRecibirAviso(refrescar);
 
   const alTerminarLlegada = useCallback(() => setAhora(new Date()), []);
 

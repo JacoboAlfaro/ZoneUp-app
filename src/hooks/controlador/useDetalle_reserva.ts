@@ -14,6 +14,7 @@ import {
 import { detalleZona, tituloZona } from '@/src/formato';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { AccionReserva, ejecutarAccionReserva } from '@/src/components/reservas/accionesReserva';
+import { useAlRecibirAviso } from '@/src/notificaciones/useAlRecibirAviso';
 
 export default function useDetalle_reserva() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -63,6 +64,16 @@ export default function useDetalle_reserva() {
   useEffect(() => {
     void cargar();
   }, [cargar]);
+
+  // Un aviso de esta reserva (p. ej. el conductor la canceló) la recarga.
+  useAlRecibirAviso(
+    useCallback(
+      (datos) => {
+        if (datos.reservaId === String(idNumerico)) void cargar(true);
+      },
+      [idNumerico, cargar],
+    ),
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({

@@ -17,6 +17,7 @@ import {
 import { getZona } from '@/src/api/zonas';
 import { useAlerta } from '@/src/components/alerta/AlertaProvider';
 import { detalleZona, formatMomento, formatPesos, tituloZona } from '@/src/formato';
+import { useAlRecibirAviso } from '@/src/notificaciones/useAlRecibirAviso';
 import { useSession } from '@/src/session/context';
 import type { Reserva, ZonaAzul } from '@/src/types';
 
@@ -87,6 +88,16 @@ export function useDetalleReserva() {
   useEffect(() => {
     void cargar();
   }, [cargar]);
+
+  // Un aviso de esta reserva (el encargado la aceptó, confirmó la llegada...) la recarga.
+  useAlRecibirAviso(
+    useCallback(
+      (datos) => {
+        if (datos.reservaId === String(idNumerico)) void cargar(true);
+      },
+      [idNumerico, cargar],
+    ),
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({

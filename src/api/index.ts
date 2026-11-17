@@ -3,8 +3,8 @@
  *
  *   import { login, listZonas, addVehiculo } from '../api';
  *
- * Cada recurso vive en su archivo (auth, users, vehiculos, zonas, reservas); este índice
- * solo los reexporta para no memorizar rutas internas.
+ * Cada recurso vive en su archivo (auth, notificaciones, users, vehiculos, zonas,
+ * reservas); este índice solo los reexporta para no memorizar rutas internas.
  */
 
 export { ApiError, conParametros, getBaseUrl, getToken, request, setToken } from './client';
@@ -12,6 +12,8 @@ export type { ApiBase, HttpMethod, RequestOptions } from './client';
 
 export { login, register, toRegisterDto, toUser } from './auth';
 export type { UserResponse } from './auth';
+
+export { quitarTelefono, registrarTelefono } from './notificaciones';
 
 export { createUser, getResumenUsuarios, getUserByEmail, listUsers, updateUser } from './users';
 
