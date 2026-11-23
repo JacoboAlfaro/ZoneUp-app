@@ -1,3 +1,4 @@
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
 import { router } from "expo-router";
 import { Car, Plus, RefreshCw } from "lucide-react-native";
 import {
@@ -8,7 +9,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useVehiculos } from "@/src/hooks/vehiculos/useVehiculos";
 import Button from "../../Button";
@@ -24,10 +24,7 @@ const MisVehiculosScreen = function () {
   }
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#EEF8FC" }}
-      edges={["bottom"]}
-    >
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-5 pb-8 pt-3"
@@ -46,7 +43,9 @@ const MisVehiculosScreen = function () {
         <Button
           text="Agregar vehículo"
           icon={Plus}
-          onPress={() => router.push("/conductor/(panel)/(vehiculos)/nuevo-vehiculo")}
+          onPress={() =>
+            router.push("/conductor/(panel)/(vehiculos)/nuevo-vehiculo")
+          }
           className="mt-5 rounded-2xl bg-zu-navy"
         />
 
@@ -139,7 +138,7 @@ const MisVehiculosScreen = function () {
             ))
           : null}
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
 };
 

@@ -1,27 +1,32 @@
-import { router } from 'expo-router';
-import { CalendarClock, Plus, RefreshCw, Ticket } from 'lucide-react-native';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { router } from "expo-router";
+import { CalendarClock, Plus, RefreshCw, Ticket } from "lucide-react-native";
 import {
-    ActivityIndicator,
-    Pressable,
-    RefreshControl,
-    ScrollView,
-    Text,
-    View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
-import { useMisReservas } from '@/src/hooks/reservas/useMisReservas';
-import { horasEntre } from '../../../api/reservas';
-import { formatHora, formatHoras, formatPesos, formatVentana } from '../../../formato';
-import Button from '../../Button';
-import CargarMas from '../../CargarMas';
-import DashboardStat from '../../DashboardStat';
-import { GlassCard } from '../../GlassCard';
-import NoSessionState from '../../NoSessionState';
-import ContadorLlegada from '../../reservas/ContadorLlegada';
-import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
+import { useMisReservas } from "@/src/hooks/reservas/useMisReservas";
+import { horasEntre } from "../../../api/reservas";
+import {
+  formatHora,
+  formatHoras,
+  formatPesos,
+  formatVentana,
+} from "../../../formato";
+import Button from "../../Button";
+import CargarMas from "../../CargarMas";
+import DashboardStat from "../../DashboardStat";
+import { GlassCard } from "../../GlassCard";
+import NoSessionState from "../../NoSessionState";
+import ContadorLlegada from "../../reservas/ContadorLlegada";
+import EstadoReservaBadge from "../../reservas/EstadoReservaBadge";
 
-const MisReservasScreen = function() {
+const MisReservasScreen = function () {
   const {
     user,
     items: reservas,
@@ -45,7 +50,7 @@ const MisReservasScreen = function() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-5 pb-8 pt-3"
@@ -56,10 +61,11 @@ const MisReservasScreen = function() {
             onRefresh={refrescar}
             tintColor="#1E3A5F"
           />
-        }>
+        }
+      >
         <Text className="text-base leading-6 text-zu-slate">
-          Consulta el estado de tus reservas. Desliza hacia abajo para ver si el encargado ya
-          respondió.
+          Consulta el estado de tus reservas. Desliza hacia abajo para ver si el
+          encargado ya respondió.
         </Text>
 
         {!loading && enCamino.length > 0 ? (
@@ -84,14 +90,17 @@ const MisReservasScreen = function() {
         <Button
           text="Nueva reserva"
           icon={Plus}
-          onPress={() => router.push('/conductor/(panel)/(reservas)/zonas')}
+          onPress={() => router.push("/conductor/(panel)/(reservas)/zonas")}
           className="mt-5 rounded-2xl bg-zu-navy"
         />
 
         <View className="mt-5 flex-row gap-3">
-          <DashboardStat value={resumen?.total ?? '…'} label="Reservas realizadas" />
           <DashboardStat
-            value={resumen?.completada ?? '…'}
+            value={resumen?.total ?? "…"}
+            label="Reservas realizadas"
+          />
+          <DashboardStat
+            value={resumen?.completada ?? "…"}
             label="Reservas completadas"
             valueClassName="text-emerald-700"
           />
@@ -113,7 +122,8 @@ const MisReservasScreen = function() {
             <Text className="text-center text-red-700">{error}</Text>
             <Pressable
               onPress={() => void recargar()}
-              className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2">
+              className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2"
+            >
               <RefreshCw size={18} color="#1E3A5F" />
               <Text className="font-semibold text-zu-navy">Reintentar</Text>
             </Pressable>
@@ -124,7 +134,8 @@ const MisReservasScreen = function() {
           <GlassCard className="mt-4 items-center p-8">
             <CalendarClock size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
-              Todavía no has hecho reservas.{'\n'}Toca “Nueva reserva” para elegir una zona azul.
+              Todavía no has hecho reservas.{"\n"}Toca “Nueva reserva” para
+              elegir una zona azul.
             </Text>
           </GlassCard>
         ) : null}
@@ -135,7 +146,10 @@ const MisReservasScreen = function() {
               const titulo = tituloDe(fila);
               // La ventana va desde que se hizo la reserva hasta su fin.
               const duracion = reserva.fecha_fin
-                ? horasEntre(reserva.fecha_creacion, new Date(reserva.fecha_fin))
+                ? horasEntre(
+                    reserva.fecha_creacion,
+                    new Date(reserva.fecha_fin),
+                  )
                 : null;
 
               return (
@@ -143,16 +157,22 @@ const MisReservasScreen = function() {
                   key={reserva.id}
                   accessibilityLabel={`Reserva ${reserva.id} en ${titulo}`}
                   onPress={() => abrirDetalle(reserva)}
-                  className="mt-3 p-4">
+                  className="mt-3 p-4"
+                >
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1 pr-2">
-                      <Text className="text-lg font-bold text-zu-navy">{titulo}</Text>
-                      <Text className="mt-1 text-sm leading-5 text-zu-slate">
-                        Placa {reserva.id_vehiculo ?? 'sin registrar'}
-                        {duracion !== null ? ` · ${formatHoras(duracion)}` : ''}
+                      <Text className="text-lg font-bold text-zu-navy">
+                        {titulo}
                       </Text>
                       <Text className="mt-1 text-sm leading-5 text-zu-slate">
-                        {formatVentana(reserva.fecha_creacion, reserva.fecha_fin)}
+                        Placa {reserva.id_vehiculo ?? "sin registrar"}
+                        {duracion !== null ? ` · ${formatHoras(duracion)}` : ""}
+                      </Text>
+                      <Text className="mt-1 text-sm leading-5 text-zu-slate">
+                        {formatVentana(
+                          reserva.fecha_creacion,
+                          reserva.fecha_fin,
+                        )}
                       </Text>
                       {reserva.fecha_real_inicio ? (
                         <Text className="mt-1 text-sm leading-5 text-zu-slate">
@@ -160,7 +180,10 @@ const MisReservasScreen = function() {
                         </Text>
                       ) : null}
                       <Text className="mt-3 text-sm font-medium text-zu-navy">
-                        Total: <Text className="font-bold">{formatPesos(reserva.precio)}</Text>
+                        Total:{" "}
+                        <Text className="font-bold">
+                          {formatPesos(reserva.precio)}
+                        </Text>
                       </Text>
                       <View className="mt-3.5 flex-row items-center gap-1.5 self-start rounded-full border border-zu-navy/10 bg-white/80 py-2 pl-3.5 pr-3 shadow-sm">
                         <Ticket size={16} color="#1E3A5F" />
@@ -172,7 +195,9 @@ const MisReservasScreen = function() {
                     <View className="items-end gap-2">
                       <EstadoReservaBadge estado={reserva.estado} />
                       <View className="rounded-full bg-sky-100 px-2.5 py-1">
-                        <Text className="text-xs font-semibold text-sky-900">#{reserva.id}</Text>
+                        <Text className="text-xs font-semibold text-sky-900">
+                          #{reserva.id}
+                        </Text>
                       </View>
                     </View>
                   </View>
@@ -190,8 +215,8 @@ const MisReservasScreen = function() {
           />
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default MisReservasScreen;

@@ -1,53 +1,57 @@
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
 import {
-    ActivityIndicator,
-    Pressable,
-    RefreshControl,
-    ScrollView,
-    Text,
-    View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
-import { useDetalleReserva } from '@/src/hooks/reservas/useDetalleReserva';
-import { CARGO_RESERVA, HORAS_MAX, llego, TARIFA_HORA } from '../../../api/reservas';
+import { useDetalleReserva } from "@/src/hooks/reservas/useDetalleReserva";
 import {
-    formatFechaHora,
-    formatHora,
-    formatHoras,
-    formatMomento,
-    formatPesos,
-    formatVentana,
-} from '../../../formato';
-import type { Reserva } from '../../../types';
-import Button from '../../Button';
-import { GlassCard } from '../../GlassCard';
-import NoSessionState from '../../NoSessionState';
-import AvisosDesactivados from '../../reservas/AvisosDesactivados';
-import ContadorLlegada from '../../reservas/ContadorLlegada';
-import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
-
+  CARGO_RESERVA,
+  HORAS_MAX,
+  llego,
+  TARIFA_HORA,
+} from "../../../api/reservas";
+import {
+  formatFechaHora,
+  formatHora,
+  formatHoras,
+  formatMomento,
+  formatPesos,
+  formatVentana,
+} from "../../../formato";
+import type { Reserva } from "../../../types";
+import Button from "../../Button";
+import { GlassCard } from "../../GlassCard";
+import NoSessionState from "../../NoSessionState";
+import AvisosDesactivados from "../../reservas/AvisosDesactivados";
+import ContadorLlegada from "../../reservas/ContadorLlegada";
+import EstadoReservaBadge from "../../reservas/EstadoReservaBadge";
 function descripcionEstado(reserva: Reserva): string {
   switch (reserva.estado) {
-    case 'pendiente':
-      return 'Esperando a que el encargado acepte tu solicitud. Tienes 15 minutos para llegar.';
-    case 'activa':
+    case "pendiente":
+      return "Esperando a que el encargado acepte tu solicitud. Tienes 15 minutos para llegar.";
+    case "activa":
       return llego(reserva)
         ? `Llegada confirmada. Tu reserva termina a las ${
-            reserva.fecha_fin ? formatHora(reserva.fecha_fin) : '—'
+            reserva.fecha_fin ? formatHora(reserva.fecha_fin) : "—"
           }.`
-        : 'El encargado aceptó tu reserva. Al llegar verificará la placa de tu vehículo.';
-    case 'completada':
-      return 'Terminó tu reserva.';
-    case 'cancelada':
+        : "El encargado aceptó tu reserva. Al llegar verificará la placa de tu vehículo.";
+    case "completada":
+      return "Terminó tu reserva.";
+    case "cancelada":
       return llego(reserva)
-        ? 'El encargado canceló la reserva después de tu llegada.'
-        : 'La reserva se canceló. Se cobra solo el cargo de reserva.';
+        ? "El encargado canceló la reserva después de tu llegada."
+        : "La reserva se canceló. Se cobra solo el cargo de reserva.";
   }
 }
 
 const HORAS_EXTRA = [1, 2, 3] as const;
 
-const DetalleReservaScreen = function() {
+const DetalleReservaScreen = function () {
   const {
     user,
     reserva,
@@ -80,31 +84,38 @@ const DetalleReservaScreen = function() {
 
   if (loading) {
     return (
-      <SafeAreaView
+      <FondoPantalla
         style={{
           flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#EEF8FC',
+          alignItems: "center",
+          justifyContent: "center",
         }}
-        edges={['bottom']}>
+        edges={["bottom"]}
+      >
         <ActivityIndicator size="large" color="#1E3A5F" />
-      </SafeAreaView>
+      </FondoPantalla>
     );
   }
 
   if (!reserva) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: '#EEF8FC', paddingHorizontal: 20, paddingTop: 20 }}
-        edges={['bottom']}>
-        <Text className="text-base text-red-700">{error ?? 'No se encontró la reserva.'}</Text>
-      </SafeAreaView>
+      <FondoPantalla
+        style={{
+          flex: 1,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+        }}
+        edges={["bottom"]}
+      >
+        <Text className="text-base text-red-700">
+          {error ?? "No se encontró la reserva."}
+        </Text>
+      </FondoPantalla>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-4 px-5 pb-8 pt-4"
@@ -115,9 +126,14 @@ const DetalleReservaScreen = function() {
             onRefresh={() => void cargar(true)}
             tintColor="#1E3A5F"
           />
-        }>
+        }
+      >
         {enCamino ? (
-          <ContadorLlegada reserva={reserva} zonaTitulo={titulo} onFin={alTerminarLlegada} />
+          <ContadorLlegada
+            reserva={reserva}
+            zonaTitulo={titulo}
+            onFin={alTerminarLlegada}
+          />
         ) : null}
 
         {/* Los recordatorios solo importan mientras la reserva sigue en curso. */}
@@ -138,13 +154,17 @@ const DetalleReservaScreen = function() {
             Zona azul
           </Text>
           <Text className="mt-1 text-lg font-bold text-zu-navy">{titulo}</Text>
-          {extra ? <Text className="mt-1 text-sm leading-5 text-zu-slate">{extra}</Text> : null}
+          {extra ? (
+            <Text className="mt-1 text-sm leading-5 text-zu-slate">
+              {extra}
+            </Text>
+          ) : null}
 
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Vehículo
           </Text>
           <Text className="mt-1 text-base text-zu-navy">
-            {reserva.id_vehiculo ?? 'Sin registrar'}
+            {reserva.id_vehiculo ?? "Sin registrar"}
           </Text>
 
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
@@ -154,7 +174,9 @@ const DetalleReservaScreen = function() {
             {formatVentana(reserva.fecha_creacion, reserva.fecha_fin)}
           </Text>
           {duracion !== null ? (
-            <Text className="mt-1 text-sm text-zu-slate">Duración: {formatHoras(duracion)}</Text>
+            <Text className="mt-1 text-sm text-zu-slate">
+              Duración: {formatHoras(duracion)}
+            </Text>
           ) : null}
           {reserva.fecha_real_inicio ? (
             <Text className="mt-1 text-sm text-zu-slate">
@@ -165,9 +187,11 @@ const DetalleReservaScreen = function() {
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Total
           </Text>
-          <Text className="mt-1 text-2xl font-bold text-zu-navy">{formatPesos(reserva.precio)}</Text>
+          <Text className="mt-1 text-2xl font-bold text-zu-navy">
+            {formatPesos(reserva.precio)}
+          </Text>
           <Text className="mt-1 text-sm text-zu-slate">
-            {reserva.estado === 'cancelada' && !llego(reserva)
+            {reserva.estado === "cancelada" && !llego(reserva)
               ? `Solo el cargo de reserva: ${formatPesos(CARGO_RESERVA)}.`
               : `${formatPesos(TARIFA_HORA)} por hora + ${formatPesos(CARGO_RESERVA)} de reserva.`}
           </Text>
@@ -182,10 +206,13 @@ const DetalleReservaScreen = function() {
 
         {extensible ? (
           <GlassCard className="p-4">
-            <Text className="text-base font-semibold text-zu-navy">Extender reserva</Text>
+            <Text className="text-base font-semibold text-zu-navy">
+              Extender reserva
+            </Text>
             <Text className="mt-1 text-sm text-zu-slate">
-              Agrega horas a tu ventana de parqueo (máximo {HORAS_MAX} h en total desde que
-              reservaste). Cada hora extra cuesta {formatPesos(TARIFA_HORA)}.
+              Agrega horas a tu ventana de parqueo (máximo {HORAS_MAX} h en
+              total desde que reservaste). Cada hora extra cuesta{" "}
+              {formatPesos(TARIFA_HORA)}.
             </Text>
 
             <View className="mt-4 flex-row gap-2">
@@ -199,12 +226,16 @@ const DetalleReservaScreen = function() {
                     disabled={extendiendo || superaMaximo(horas)}
                     onPress={() => setHorasExtra(active ? null : horas)}
                     className={`flex-1 rounded-xl border px-2 py-3 active:opacity-70 ${
-                      active ? 'border-zu-navy bg-zu-navy/10' : 'border-zu-border bg-zu-white'
-                    } disabled:opacity-50`}>
+                      active
+                        ? "border-zu-navy bg-zu-navy/10"
+                        : "border-zu-border bg-zu-white"
+                    } disabled:opacity-50`}
+                  >
                     <Text
                       className={`text-center text-sm font-semibold ${
-                        active ? 'text-zu-navy' : 'text-zu-slate'
-                      }`}>
+                        active ? "text-zu-navy" : "text-zu-slate"
+                      }`}
+                    >
                       +{horas} h
                     </Text>
                   </Pressable>
@@ -215,15 +246,19 @@ const DetalleReservaScreen = function() {
             {nuevoFin && nuevoPrecio !== null ? (
               <View className="mt-4 rounded-xl bg-zu-sky-fade p-3">
                 <Text className="text-sm text-zu-slate">
-                  Nuevo fin:{' '}
-                  <Text className="font-semibold text-zu-navy">{formatMomento(nuevoFin)}</Text>
+                  Nuevo fin:{" "}
+                  <Text className="font-semibold text-zu-navy">
+                    {formatMomento(nuevoFin)}
+                  </Text>
                 </Text>
                 <Text className="mt-1 text-sm text-zu-slate">
-                  Nuevo total estimado:{' '}
-                  <Text className="font-semibold text-zu-navy">{formatPesos(nuevoPrecio)}</Text>
+                  Nuevo total estimado:{" "}
+                  <Text className="font-semibold text-zu-navy">
+                    {formatPesos(nuevoPrecio)}
+                  </Text>
                   {nuevoPrecio > reserva.precio
                     ? ` (+${formatPesos(nuevoPrecio - reserva.precio)})`
-                    : ''}
+                    : ""}
                 </Text>
               </View>
             ) : null}
@@ -231,10 +266,10 @@ const DetalleReservaScreen = function() {
             <Button
               text={
                 extendiendo
-                  ? 'Extendiendo…'
+                  ? "Extendiendo…"
                   : horasExtra
                     ? `Extender ${horasExtra} h`
-                    : 'Elige cuántas horas agregar'
+                    : "Elige cuántas horas agregar"
               }
               onPress={() => void extender()}
               disabled={!horasExtra || extendiendo}
@@ -245,8 +280,8 @@ const DetalleReservaScreen = function() {
 
         {cancelable ? (
           <Button
-            text={cerrando ? 'Cancelando…' : 'Cancelar reserva'}
-            onPress={() => void cerrar('cancelar')}
+            text={cerrando ? "Cancelando…" : "Cancelar reserva"}
+            onPress={() => void cerrar("cancelar")}
             disabled={cerrando || extendiendo}
             destructive
           />
@@ -254,15 +289,15 @@ const DetalleReservaScreen = function() {
 
         {terminable ? (
           <Button
-            text={cerrando ? 'Terminando…' : 'Terminar reserva'}
-            onPress={() => void cerrar('terminar')}
+            text={cerrando ? "Terminando…" : "Terminar reserva"}
+            onPress={() => void cerrar("terminar")}
             disabled={cerrando || extendiendo}
             destructive
           />
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default DetalleReservaScreen;

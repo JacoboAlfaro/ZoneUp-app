@@ -2,23 +2,23 @@ import {
   GlassView,
   isGlassEffectAPIAvailable,
   isLiquidGlassAvailable,
-} from 'expo-glass-effect';
-import type { ReactNode } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+} from "expo-glass-effect";
+import type { ReactNode } from "react";
+import { Platform, Pressable, View } from "react-native";
 
-import { glass } from '@/src/theme';
-import { VidrioRespaldo } from './glass/VidrioRespaldo';
+import { glass } from "@/src/theme";
+import { VidrioRespaldo } from "./glass/VidrioRespaldo";
 
 const RADIO = 16;
 
 /** Color, borde y radio los pone el vidrio; className es margen, padding y flex. */
 function partirClases(className?: string) {
-  const tokens = (className ?? '').split(/\s+/).filter(Boolean);
+  const tokens = (className ?? "").split(/\s+/).filter(Boolean);
   const cromo = /^(bg-|border-|rounded-|shadow-)/;
   const fuera = /^(m[trblxy]?-|flex-1$|min-h-|opacity-|self-|w-full$)/;
   return {
-    exterior: tokens.filter((t) => !cromo.test(t) && fuera.test(t)).join(' '),
-    interior: tokens.filter((t) => !cromo.test(t) && !fuera.test(t)).join(' '),
+    exterior: tokens.filter((t) => !cromo.test(t) && fuera.test(t)).join(" "),
+    interior: tokens.filter((t) => !cromo.test(t) && !fuera.test(t)).join(" "),
   };
 }
 
@@ -36,9 +36,19 @@ export function GlassCard({
   accessibilityLabel?: string;
 }) {
   const liquid =
-    Platform.OS === 'ios' && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
+    Platform.OS === "ios" &&
+    isLiquidGlassAvailable() &&
+    isGlassEffectAPIAvailable();
   const { exterior, interior } = partirClases(className);
-  const contenido = <View className={interior}>{children}</View>;
+  // En Android el vidrio tiene que estirarse con la tarjeta (min-h, flex-1),
+  // o el contorno queda más alto que el vidrio y se ve doble.
+  const contenido = (
+    <View className={liquid ? interior : `grow ${interior}`}>{children}</View>
+  );
+  // Android (y iOS < 26): sin vidrio nativo no hay sombra ni brillo de Apple,
+  // y la tarjeta casi blanca se pierde sobre el fondo claro. Un borde azul muy
+  // suave le da contorno sin ensuciar el vidrio.
+  const contorno = liquid ? "" : "border border-zu-navy/10";
 
   const cromo = liquid ? (
     <GlassView
@@ -46,11 +56,17 @@ export function GlassCard({
       colorScheme="light"
       glassEffectStyle="clear"
       tintColor={glass.white}
-      style={{ borderRadius: RADIO, overflow: 'hidden' }}>
+      style={{ borderRadius: RADIO, overflow: "hidden" }}
+    >
       {contenido}
     </GlassView>
   ) : (
-    <VidrioRespaldo tint={glass.white} radius={RADIO} intensity={40}>
+    <VidrioRespaldo
+      tint={glass.white}
+      radius={RADIO}
+      intensity={40}
+      style={{ flexGrow: 1 }}
+    >
       {contenido}
     </VidrioRespaldo>
   );
@@ -63,11 +79,16 @@ export function GlassCard({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={disabled ? { disabled: true } : undefined}
-        className={`overflow-hidden rounded-2xl active:opacity-80 disabled:opacity-50 ${exterior}`}>
+        className={`overflow-hidden rounded-2xl active:opacity-80 disabled:opacity-50 ${contorno} ${exterior}`}
+      >
         {cromo}
       </Pressable>
     );
   }
 
-  return <View className={`overflow-hidden rounded-2xl ${exterior}`}>{cromo}</View>;
+  return (
+    <View className={`overflow-hidden rounded-2xl ${contorno} ${exterior}`}>
+      {cromo}
+    </View>
+  );
 }

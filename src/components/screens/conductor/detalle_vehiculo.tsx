@@ -1,12 +1,11 @@
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Text,
-  View,
 } from "react-native";
 
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
 import { useDetalleVehiculo } from "@/src/hooks/vehiculos/useDetalleVehiculo";
 import { useEditarVehiculo } from "@/src/hooks/vehiculos/useEditarVehiculo";
 import { useEliminarVehiculo } from "@/src/hooks/vehiculos/useEliminarVehiculo";
@@ -30,79 +29,83 @@ const DetalleVehiculoScreen = function () {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="large" color="#2563EB" />
-      </View>
+      <FondoPantalla style={{ alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" color="#1E3A5F" />
+      </FondoPantalla>
     );
   }
 
   if (!vehiculo) {
     return (
-      <View className="flex-1 bg-neutral-50 px-6 pt-6">
+      <FondoPantalla style={{ paddingHorizontal: 24, paddingTop: 24 }}>
         <Text className="text-base text-red-700">
           {cargaError ?? "No se encontró el vehículo."}
         </Text>
-      </View>
+      </FondoPantalla>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-neutral-50"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
-    >
-      <ScrollView
+    <FondoPantalla>
+      {/* "padding" en las dos plataformas: en Android (edge-to-edge) la
+          ventana no se encoge con el teclado, así que hay que dejarle espacio. */}
+      <KeyboardAvoidingView
         className="flex-1"
-        contentContainerClassName="gap-4 p-6"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+        behavior="padding"
+        keyboardVerticalOffset={100}
       >
-        <GlassCard className="gap-1 p-5">
-          <Text className="text-sm font-semibold text-neutral-500">Placa</Text>
-          <Text className="text-2xl font-bold text-neutral-900">
-            {vehiculo.placa}
-          </Text>
-          <Text className="mt-1 text-xs text-neutral-400">
-            La placa no se puede editar; para cambiarla, elimina el vehículo y
-            registra uno nuevo.
-          </Text>
-        </GlassCard>
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="gap-4 p-6"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <GlassCard className="gap-1 p-5">
+            <Text className="text-sm font-semibold text-zu-slate">Placa</Text>
+            <Text className="text-2xl font-bold text-zu-navy">
+              {vehiculo.placa}
+            </Text>
+            <Text className="mt-1 text-xs text-zu-slate">
+              La placa no se puede editar; para cambiarla, elimina el vehículo y
+              registra uno nuevo.
+            </Text>
+          </GlassCard>
 
-        <GlassCard className="gap-3 p-5">
-          <Field
-            control={control}
-            name="marca"
-            label="Marca"
-            placeholder="Chevrolet, Mazda, Renault…"
-            autoCapitalize="words"
-            rules={reglas.marca}
+          <GlassCard className="gap-3 p-5">
+            <Field
+              control={control}
+              name="marca"
+              label="Marca"
+              placeholder="Chevrolet, Mazda, Renault…"
+              autoCapitalize="words"
+              rules={reglas.marca}
+            />
+
+            <Field
+              control={control}
+              name="color"
+              label="Color"
+              placeholder="Blanco, negro, gris…"
+              autoCapitalize="words"
+              rules={reglas.color}
+            />
+          </GlassCard>
+
+          <Button
+            text={guardando ? "Guardando…" : "Guardar cambios"}
+            onPress={guardarCambios}
+            disabled={guardando || eliminando}
           />
 
-          <Field
-            control={control}
-            name="color"
-            label="Color"
-            placeholder="Blanco, negro, gris…"
-            autoCapitalize="words"
-            rules={reglas.color}
+          <Button
+            text={eliminando ? "Eliminando…" : "Eliminar vehículo"}
+            onPress={() => void eliminar()}
+            disabled={guardando || eliminando}
+            destructive
           />
-        </GlassCard>
-
-        <Button
-          text={guardando ? "Guardando…" : "Guardar cambios"}
-          onPress={guardarCambios}
-          disabled={guardando || eliminando}
-        />
-
-        <Button
-          text={eliminando ? "Eliminando…" : "Eliminar vehículo"}
-          onPress={() => void eliminar()}
-          disabled={guardando || eliminando}
-          destructive
-        />
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </FondoPantalla>
   );
 };
 

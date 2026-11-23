@@ -1,33 +1,39 @@
-import { Car, Check, ShieldCheck, Timer, X } from 'lucide-react-native';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { Car, Check, ShieldCheck, Timer, X } from "lucide-react-native";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
-import useDetalle_reserva from '@/src/hooks/controlador/useDetalle_reserva';
-import { limiteLlegada } from '../../../api/reservas';
+import useDetalle_reserva from "@/src/hooks/controlador/useDetalle_reserva";
+import { limiteLlegada } from "../../../api/reservas";
 import {
   formatFechaHora,
   formatHora,
   formatHoras,
   formatPesos,
   formatVentana,
-} from '../../../formato';
-import type { Reserva } from '../../../types';
-import Button from '../../Button';
-import { GlassCard } from '../../GlassCard';
-import EstadoReservaBadge from '../../reservas/EstadoReservaBadge';
+} from "../../../formato";
+import type { Reserva } from "../../../types";
+import Button from "../../Button";
+import { GlassCard } from "../../GlassCard";
+import EstadoReservaBadge from "../../reservas/EstadoReservaBadge";
 
 function descripcionEstado(reserva: Reserva, llegada: boolean): string {
   switch (reserva.estado) {
-    case 'pendiente':
-      return 'Llegó una nueva solicitud. Acéptala o recházala antes de que pasen 15 minutos.';
-    case 'activa':
+    case "pendiente":
+      return "Llegó una nueva solicitud. Acéptala o recházala antes de que pasen 15 minutos.";
+    case "activa":
       return llegada
-        ? 'Llegada confirmada. El vehículo está parqueado hasta el fin de la reserva.'
-        : 'Ya la aceptaste. Falta confirmar la placa cuando llegue el vehículo.';
-    case 'completada':
-      return 'Terminó el tiempo de la reserva. El cupo quedó libre.';
-    case 'cancelada':
-      return 'Rechazada, anulada o el conductor no llegó a tiempo. El cupo quedó libre.';
+        ? "Llegada confirmada. El vehículo está parqueado hasta el fin de la reserva."
+        : "Ya la aceptaste. Falta confirmar la placa cuando llegue el vehículo.";
+    case "completada":
+      return "Terminó el tiempo de la reserva. El cupo quedó libre.";
+    case "cancelada":
+      return "Rechazada, anulada o el conductor no llegó a tiempo. El cupo quedó libre.";
   }
 }
 
@@ -42,40 +48,63 @@ function Dato({ label, children }: { label: string; children: string }) {
   );
 }
 
-const ControladorReservaDetalleScreen = function() {
-
+const ControladorReservaDetalleScreen = function () {
   const {
-    item, loading, refreshing, procesando, error, cargar,
-    reserva, conductor, vehiculo, placa, titulo, extra, llegada, enCamino, vencida, parqueada, duracion, ejecutar, placaNoCoincide
-  } = useDetalle_reserva()
-  
+    item,
+    loading,
+    refreshing,
+    procesando,
+    error,
+    cargar,
+    reserva,
+    conductor,
+    vehiculo,
+    placa,
+    titulo,
+    extra,
+    llegada,
+    enCamino,
+    vencida,
+    parqueada,
+    duracion,
+    ejecutar,
+    placaNoCoincide,
+  } = useDetalle_reserva();
+
   if (loading) {
     return (
-      <SafeAreaView
+      <FondoPantalla
         style={{
           flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#EEF8FC',
+          alignItems: "center",
+          justifyContent: "center",
         }}
-        edges={['bottom']}>
+        edges={["bottom"]}
+      >
         <ActivityIndicator size="large" color="#1E3A5F" />
-      </SafeAreaView>
+      </FondoPantalla>
     );
   }
 
   if (!item) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: '#EEF8FC', paddingHorizontal: 20, paddingTop: 20 }}
-        edges={['bottom']}>
-        <Text className="text-base text-red-700">{error ?? 'No se encontró la reserva.'}</Text>
-      </SafeAreaView>
+      <FondoPantalla
+        style={{
+          flex: 1,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+        }}
+        edges={["bottom"]}
+      >
+        <Text className="text-base text-red-700">
+          {error ?? "No se encontró la reserva."}
+        </Text>
+      </FondoPantalla>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-4 px-5 pb-8 pt-4"
@@ -86,22 +115,25 @@ const ControladorReservaDetalleScreen = function() {
             onRefresh={() => void cargar(true)}
             tintColor="#1E3A5F"
           />
-        }>
+        }
+      >
         <GlassCard className="items-center p-5">
           <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Placa de la reserva
           </Text>
           <View className="mt-3 rounded-xl border-2 border-zu-navy bg-zu-white px-6 py-3">
-            <Text className="text-3xl font-bold tracking-[6px] text-zu-navy">{placa}</Text>
+            <Text className="text-3xl font-bold tracking-[6px] text-zu-navy">
+              {placa}
+            </Text>
           </View>
           <Text className="mt-3 text-sm text-zu-slate">
             {vehiculo && (vehiculo.marca || vehiculo.color)
-              ? [vehiculo.marca, vehiculo.color].filter(Boolean).join(' · ')
-              : 'Marca y color sin registrar'}
+              ? [vehiculo.marca, vehiculo.color].filter(Boolean).join(" · ")
+              : "Marca y color sin registrar"}
           </Text>
         </GlassCard>
 
-        {reserva.estado === 'activa' && !llegada && !vencida ? (
+        {reserva.estado === "activa" && !llegada && !vencida ? (
           <View className="rounded-2xl border border-zu-white/70 bg-zu-card-cyan p-5 shadow-sm">
             <View className="flex-row items-center">
               <View className="h-11 w-11 items-center justify-center rounded-full bg-zu-sky-mid/45">
@@ -112,13 +144,13 @@ const ControladorReservaDetalleScreen = function() {
               </Text>
             </View>
             <Text className="mt-3 text-sm leading-5 text-zu-slate">
-              Compara la placa física del vehículo frente a ti con la placa de la reserva. Si
-              coinciden, confirma la llegada.
+              Compara la placa física del vehículo frente a ti con la placa de
+              la reserva. Si coinciden, confirma la llegada.
             </Text>
             <Button
               text="Sí, coincide"
               icon={Check}
-              onPress={() => void ejecutar('confirmar_llegada')}
+              onPress={() => void ejecutar("confirmar_llegada")}
               disabled={procesando}
               className="mt-4 bg-zu-navy"
             />
@@ -142,13 +174,14 @@ const ControladorReservaDetalleScreen = function() {
               </Text>
             </View>
             <Text className="mt-2 text-sm leading-5 text-amber-800">
-              Nadie confirmó la llegada antes de las {formatHora(limiteLlegada(reserva))}. La reserva
-              se cancelará automáticamente y el cupo ya quedó libre.
+              Nadie confirmó la llegada antes de las{" "}
+              {formatHora(limiteLlegada(reserva))}. La reserva se cancelará
+              automáticamente y el cupo ya quedó libre.
             </Text>
           </View>
         ) : null}
 
-        {reserva.estado === 'activa' && llegada && reserva.fecha_real_inicio ? (
+        {reserva.estado === "activa" && llegada && reserva.fecha_real_inicio ? (
           <View className="rounded-2xl border border-zu-white/70 bg-zu-card-cyan p-5 shadow-sm">
             <View className="flex-row items-center">
               <View className="h-11 w-11 items-center justify-center rounded-full bg-zu-sky-mid/45">
@@ -156,7 +189,9 @@ const ControladorReservaDetalleScreen = function() {
               </View>
               <Text className="ml-3 flex-1 text-base font-semibold text-zu-navy">
                 Llegó a las {formatHora(reserva.fecha_real_inicio)}
-                {reserva.fecha_fin ? ` · parqueado hasta las ${formatHora(reserva.fecha_fin)}` : ''}
+                {reserva.fecha_fin
+                  ? ` · parqueado hasta las ${formatHora(reserva.fecha_fin)}`
+                  : ""}
               </Text>
             </View>
             {!parqueada ? (
@@ -181,7 +216,8 @@ const ControladorReservaDetalleScreen = function() {
             <View className="mt-3 flex-row items-center gap-1.5">
               <Timer size={16} color="#4A8EC4" />
               <Text className="flex-1 text-sm text-zu-slate">
-                El conductor debe llegar antes de las {formatHora(limiteLlegada(reserva))}.
+                El conductor debe llegar antes de las{" "}
+                {formatHora(limiteLlegada(reserva))}.
               </Text>
             </View>
           ) : null}
@@ -192,7 +228,7 @@ const ControladorReservaDetalleScreen = function() {
             Conductor
           </Text>
           <Text className="mt-1 text-lg font-bold text-zu-navy">
-            {conductor?.name ?? 'Sin registrar'}
+            {conductor?.name ?? "Sin registrar"}
           </Text>
           {conductor ? (
             <>
@@ -208,13 +244,19 @@ const ControladorReservaDetalleScreen = function() {
             Zona azul
           </Text>
           <Text className="mt-1 text-lg font-bold text-zu-navy">{titulo}</Text>
-          {extra ? <Text className="mt-1 text-sm leading-5 text-zu-slate">{extra}</Text> : null}
+          {extra ? (
+            <Text className="mt-1 text-sm leading-5 text-zu-slate">
+              {extra}
+            </Text>
+          ) : null}
 
           <Dato label="Ventana de la reserva">
             {formatVentana(reserva.fecha_creacion, reserva.fecha_fin)}
           </Dato>
           {duracion !== null ? (
-            <Text className="mt-1 text-sm text-zu-slate">Duración: {formatHoras(duracion)}</Text>
+            <Text className="mt-1 text-sm text-zu-slate">
+              Duración: {formatHoras(duracion)}
+            </Text>
           ) : null}
           {reserva.fecha_real_inicio ? (
             <Dato label="Llegada">{`Llegó: ${formatFechaHora(reserva.fecha_real_inicio)}`}</Dato>
@@ -223,7 +265,9 @@ const ControladorReservaDetalleScreen = function() {
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Total
           </Text>
-          <Text className="mt-1 text-2xl font-bold text-zu-navy">{formatPesos(reserva.precio)}</Text>
+          <Text className="mt-1 text-2xl font-bold text-zu-navy">
+            {formatPesos(reserva.precio)}
+          </Text>
 
           <Text className="mt-5 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Solicitada
@@ -233,36 +277,36 @@ const ControladorReservaDetalleScreen = function() {
           </Text>
         </GlassCard>
 
-        {reserva.estado === 'pendiente' ? (
+        {reserva.estado === "pendiente" ? (
           <>
             <Button
-              text={procesando ? 'Guardando…' : 'Aceptar reserva'}
+              text={procesando ? "Guardando…" : "Aceptar reserva"}
               icon={Check}
-              onPress={() => void ejecutar('aceptar')}
+              onPress={() => void ejecutar("aceptar")}
               disabled={procesando}
               className="bg-zu-navy"
             />
             <Button
               text="Rechazar"
               icon={X}
-              onPress={() => void ejecutar('rechazar')}
+              onPress={() => void ejecutar("rechazar")}
               disabled={procesando}
               destructive
             />
           </>
         ) : null}
 
-        {reserva.estado === 'activa' ? (
+        {reserva.estado === "activa" ? (
           <Button
             text="Cancelar reserva"
-            onPress={() => void ejecutar('cancelar')}
+            onPress={() => void ejecutar("cancelar")}
             disabled={procesando}
             destructive
           />
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default ControladorReservaDetalleScreen;

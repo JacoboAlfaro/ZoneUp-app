@@ -1,5 +1,6 @@
-import { router } from 'expo-router';
-import { CalendarPlus, MapPin, RefreshCw, Search } from 'lucide-react-native';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { router } from "expo-router";
+import { CalendarPlus, MapPin, RefreshCw, Search } from "lucide-react-native";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,19 +8,18 @@ import {
   ScrollView,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
 
-import { sePuedeReservar } from '@/src/api/zonas';
-import { useZonasParaReservar } from '@/src/hooks/reservas/useZonasParaReservar';
-import { detalleZona, etiquetaNoOperativa, tituloZona } from '../../../formato';
-import CampoBusqueda from '../../CampoBusqueda';
-import CargarMas from '../../CargarMas';
-import DashboardStat from '../../DashboardStat';
-import { GlassCard } from '../../GlassCard';
-import DisponibilidadBadge from '../../reservas/DisponibilidadBadge';
+import { sePuedeReservar } from "@/src/api/zonas";
+import { useZonasParaReservar } from "@/src/hooks/reservas/useZonasParaReservar";
+import { detalleZona, etiquetaNoOperativa, tituloZona } from "../../../formato";
+import CampoBusqueda from "../../CampoBusqueda";
+import CargarMas from "../../CargarMas";
+import DashboardStat from "../../DashboardStat";
+import { GlassCard } from "../../GlassCard";
+import DisponibilidadBadge from "../../reservas/DisponibilidadBadge";
 
-const ReservarZonaScreen = function() {
+const ReservarZonaScreen = function () {
   const {
     items: zonas,
     total,
@@ -39,7 +39,7 @@ const ReservarZonaScreen = function() {
   } = useZonasParaReservar();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-5 pb-8 pt-3"
@@ -51,16 +51,20 @@ const ReservarZonaScreen = function() {
             onRefresh={refrescar}
             tintColor="#1E3A5F"
           />
-        }>
+        }
+      >
         <Text className="text-base leading-6 text-zu-slate">
-          Elige una zona azul con cupo para reservar tu espacio. Desliza hacia abajo para
-          actualizar los cupos.
+          Elige una zona azul con cupo para reservar tu espacio. Desliza hacia
+          abajo para actualizar los cupos.
         </Text>
 
         <View className="mt-5 flex-row gap-3">
-          <DashboardStat value={resumen?.con_cupo ?? '…'} label="Zonas con cupo" />
           <DashboardStat
-            value={resumen?.cupos_disponibles ?? '…'}
+            value={resumen?.con_cupo ?? "…"}
+            label="Zonas con cupo"
+          />
+          <DashboardStat
+            value={resumen?.cupos_disponibles ?? "…"}
             label="Cupos disponibles en total"
             valueClassName="text-emerald-700"
           />
@@ -92,7 +96,8 @@ const ReservarZonaScreen = function() {
             <Text className="text-center text-red-700">{error}</Text>
             <Pressable
               onPress={() => void recargar()}
-              className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2">
+              className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2"
+            >
               <RefreshCw size={18} color="#1E3A5F" />
               <Text className="font-semibold text-zu-navy">Reintentar</Text>
             </Pressable>
@@ -131,23 +136,28 @@ const ReservarZonaScreen = function() {
                   disabled={noReservable}
                   onPress={() =>
                     router.push({
-                      pathname: '/conductor/(panel)/(reservas)/nueva-reserva',
+                      pathname: "/conductor/(panel)/(reservas)/nueva-reserva",
                       params: { idZona: String(zona.id) },
                     })
                   }
-                  className={`mt-3 p-4 ${noReservable ? 'opacity-60' : ''}`}>
+                  className={`mt-3 p-4 ${noReservable ? "opacity-60" : ""}`}
+                >
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1 pr-2">
-                      <Text className="text-lg font-bold text-zu-navy">{titulo}</Text>
+                      <Text className="text-lg font-bold text-zu-navy">
+                        {titulo}
+                      </Text>
                       {extra ? (
-                        <Text className="mt-1 text-sm leading-5 text-zu-slate">{extra}</Text>
+                        <Text className="mt-1 text-sm leading-5 text-zu-slate">
+                          {extra}
+                        </Text>
                       ) : null}
                       {noOperativa ? null : (
                         <Text className="mt-3 text-sm font-medium text-zu-navy">
-                          Cupos:{' '}
+                          Cupos:{" "}
                           <Text className="font-bold text-blue-700">
                             {Math.max(0, zona.capacidad)}/{zona.capacidad_total}
-                          </Text>{' '}
+                          </Text>{" "}
                           disponibles / total
                         </Text>
                       )}
@@ -155,7 +165,7 @@ const ReservarZonaScreen = function() {
                         <Text className="mt-3.5 text-sm text-zu-slate">
                           {noOperativa
                             ? `${noOperativa}. Por ahora no recibe reservas.`
-                            : 'Sin cupos por ahora. Intenta más tarde.'}
+                            : "Sin cupos por ahora. Intenta más tarde."}
                         </Text>
                       ) : (
                         <View className="mt-3.5 flex-row items-center gap-1.5 self-start rounded-full border border-zu-navy/10 bg-white/80 py-2 pl-3.5 pr-3 shadow-sm">
@@ -169,7 +179,9 @@ const ReservarZonaScreen = function() {
                     <View className="items-end gap-2">
                       <DisponibilidadBadge zona={zona} />
                       <View className="rounded-full bg-sky-100 px-2.5 py-1">
-                        <Text className="text-xs font-semibold text-sky-900">#{zona.id}</Text>
+                        <Text className="text-xs font-semibold text-sky-900">
+                          #{zona.id}
+                        </Text>
                       </View>
                     </View>
                   </View>
@@ -187,8 +199,8 @@ const ReservarZonaScreen = function() {
           />
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default ReservarZonaScreen;

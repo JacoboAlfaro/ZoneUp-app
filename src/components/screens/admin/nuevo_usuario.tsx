@@ -1,24 +1,34 @@
-import { KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
 
-import { useNuevo_usuario } from '@/src/hooks/admin/useNuevo_usuario';
-import Button from '../../Button';
-import Field from '../../Field';
-import Select from '../../Select';
+import { useNuevo_usuario } from "@/src/hooks/admin/useNuevo_usuario";
+import Button from "../../Button";
+import Field from "../../Field";
+import Select from "../../Select";
 
-const NuevoUsuarioScreen = function() {
-  const { tipos, estados, control, getValues, handleSubmit, formState, guardar } = useNuevo_usuario();
+const NuevoUsuarioScreen = function () {
+  const {
+    tipos,
+    estados,
+    control,
+    getValues,
+    handleSubmit,
+    formState,
+    guardar,
+  } = useNuevo_usuario();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <ScrollView
           className="flex-1"
           contentContainerClassName="gap-4 px-5 pb-8 pt-4"
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
           <Text className="mb-1 text-sm leading-5 text-zu-slate">
             Registra un conductor o controlador desde el panel administrativo.
           </Text>
@@ -30,7 +40,7 @@ const NuevoUsuarioScreen = function() {
             placeholder="Ej. 1234567890"
             keyboardType="number-pad"
             maxLength={20}
-            rules={{ required: 'El documento es obligatorio' }}
+            rules={{ required: "El documento es obligatorio" }}
           />
           <Field
             control={control}
@@ -38,7 +48,7 @@ const NuevoUsuarioScreen = function() {
             label="Nombres"
             placeholder="Todos los nombres"
             autoCapitalize="words"
-            rules={{ required: 'Los nombres son obligatorios' }}
+            rules={{ required: "Los nombres son obligatorios" }}
           />
           <Field
             control={control}
@@ -46,7 +56,7 @@ const NuevoUsuarioScreen = function() {
             label="Apellidos"
             placeholder="Todos los apellidos"
             autoCapitalize="words"
-            rules={{ required: 'Los apellidos son obligatorios' }}
+            rules={{ required: "Los apellidos son obligatorios" }}
           />
           <Field
             control={control}
@@ -56,8 +66,8 @@ const NuevoUsuarioScreen = function() {
             keyboardType="email-address"
             autoComplete="email"
             rules={{
-              required: 'El correo es obligatorio',
-              pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
+              required: "El correo es obligatorio",
+              pattern: { value: /^\S+@\S+\.\S+$/, message: "Correo inválido" },
             }}
           />
           <Field
@@ -68,8 +78,11 @@ const NuevoUsuarioScreen = function() {
             keyboardType="phone-pad"
             maxLength={13}
             rules={{
-              required: 'El celular es obligatorio',
-              pattern: { value: /^\d{10,13}$/, message: 'Debe tener entre 10 y 13 dígitos' },
+              required: "El celular es obligatorio",
+              pattern: {
+                value: /^\d{10,13}$/,
+                message: "Debe tener entre 10 y 13 dígitos",
+              },
             }}
           />
           <Field
@@ -80,8 +93,8 @@ const NuevoUsuarioScreen = function() {
             secureTextEntry
             autoComplete="new-password"
             rules={{
-              required: 'La contraseña es obligatoria',
-              minLength: { value: 8, message: 'Mínimo 8 caracteres' },
+              required: "La contraseña es obligatoria",
+              minLength: { value: 8, message: "Mínimo 8 caracteres" },
             }}
           />
           <Field
@@ -92,25 +105,36 @@ const NuevoUsuarioScreen = function() {
             secureTextEntry
             autoComplete="new-password"
             rules={{
-              required: 'Confirma la contraseña',
+              required: "Confirma la contraseña",
               validate: (value) =>
-                value === getValues('contrasena') || 'Las contraseñas no coinciden',
+                value === getValues("contrasena") ||
+                "Las contraseñas no coinciden",
             }}
           />
 
-          <Select control={control} name="tipo_usuario" label="Tipo de usuario" options={tipos} />
-          <Select control={control} name="estado" label="Estado inicial" options={estados} />
+          <Select
+            control={control}
+            name="tipo_usuario"
+            label="Tipo de usuario"
+            options={tipos}
+          />
+          <Select
+            control={control}
+            name="estado"
+            label="Estado inicial"
+            options={estados}
+          />
 
           <Button
-            text={formState.isSubmitting ? 'Guardando…' : 'Guardar usuario'}
+            text={formState.isSubmitting ? "Guardando…" : "Guardar usuario"}
             onPress={handleSubmit(guardar)}
             disabled={formState.isSubmitting}
             className="mt-2 bg-zu-navy"
           />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default NuevoUsuarioScreen;

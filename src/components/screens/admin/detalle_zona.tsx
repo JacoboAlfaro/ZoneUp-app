@@ -1,74 +1,107 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Button from '../../Button';
-import Field from '../../Field';
-import { GlassCard } from '../../GlassCard';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import Button from "../../Button";
+import Field from "../../Field";
+import { GlassCard } from "../../GlassCard";
 
-import { useDetalle_zona } from '@/src/hooks/admin/useDetalle_zona';
-import { ESTADOS_ZONA, type EstadoZona } from '../../../types';
+import { useDetalle_zona } from "@/src/hooks/admin/useDetalle_zona";
+import { ESTADOS_ZONA, type EstadoZona } from "../../../types";
 
 const estadoLabel: Record<EstadoZona, string> = {
-  operativa: 'Operativa',
-  mantenimiento: 'Mantenimiento',
-  inactiva: 'Inactiva',
+  operativa: "Operativa",
+  mantenimiento: "Mantenimiento",
+  inactiva: "Inactiva",
 };
 
-const AdminZonaDetalleScreen = function() {
-
-  const { zona, control, handleSubmit, formState, loading, deleting, cambiandoEstado, cargaError, guardar, cambiarEstado, eliminar, aNumero, aEntero } = useDetalle_zona();
+const AdminZonaDetalleScreen = function () {
+  const {
+    zona,
+    control,
+    handleSubmit,
+    formState,
+    loading,
+    deleting,
+    cambiandoEstado,
+    cargaError,
+    guardar,
+    cambiarEstado,
+    eliminar,
+    aNumero,
+    aEntero,
+  } = useDetalle_zona();
 
   if (loading) {
     return (
-      <SafeAreaView
+      <FondoPantalla
         style={{
           flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#EEF8FC',
+          alignItems: "center",
+          justifyContent: "center",
         }}
-        edges={['bottom']}>
+        edges={["bottom"]}
+      >
         <ActivityIndicator size="large" color="#1E3A5F" />
-      </SafeAreaView>
+      </FondoPantalla>
     );
   }
 
   if (!zona) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: '#EEF8FC', paddingHorizontal: 20, paddingTop: 20 }}
-        edges={['bottom']}>
+      <FondoPantalla
+        style={{
+          flex: 1,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+        }}
+        edges={["bottom"]}
+      >
         <Text className="text-base text-red-700">
-          {cargaError ?? 'No se encontró la zona.'}
+          {cargaError ?? "No se encontró la zona."}
         </Text>
-      </SafeAreaView>
+      </FondoPantalla>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <ScrollView
           className="flex-1"
           contentContainerClassName="gap-4 px-5 pb-8 pt-4"
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
           <GlassCard className="p-5">
             <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
               Zona
             </Text>
-            <Text className="mt-1 text-lg font-bold text-zu-navy">#{zona.id}</Text>
+            <Text className="mt-1 text-lg font-bold text-zu-navy">
+              #{zona.id}
+            </Text>
             <Text className="mt-1 text-sm text-zu-slate">
-              Disponibles ahora: {zona.capacidad} de {zona.capacidad_total} · ({zona.latitud},{' '}
-              {zona.longitud})
+              Disponibles ahora: {zona.capacidad} de {zona.capacidad_total} · (
+              {zona.latitud}, {zona.longitud})
             </Text>
           </GlassCard>
 
           <GlassCard className="p-4">
-            <Text className="text-base font-semibold text-zu-navy">Estado de la zona</Text>
+            <Text className="text-base font-semibold text-zu-navy">
+              Estado de la zona
+            </Text>
             <Text className="mt-1 text-sm text-zu-slate">
-              Solo las zonas operativas reciben reservas nuevas. Las reservas en curso no cambian.
+              Solo las zonas operativas reciben reservas nuevas. Las reservas en
+              curso no cambian.
             </Text>
             <View className="mt-4 flex-row flex-wrap gap-2">
               {ESTADOS_ZONA.map((estado) => {
@@ -77,18 +110,23 @@ const AdminZonaDetalleScreen = function() {
                   <Pressable
                     key={estado}
                     accessibilityRole="radio"
-                    accessibilityState={{ checked: active, disabled: cambiandoEstado }}
+                    accessibilityState={{
+                      checked: active,
+                      disabled: cambiandoEstado,
+                    }}
                     disabled={cambiandoEstado}
                     onPress={() => void cambiarEstado(estado)}
                     className={`rounded-xl border px-3 py-2.5 ${
                       active
-                        ? 'border-zu-navy bg-zu-navy/10'
-                        : 'border-zu-border bg-zu-white'
-                    } disabled:opacity-50`}>
+                        ? "border-zu-navy bg-zu-navy/10"
+                        : "border-zu-border bg-zu-white"
+                    } disabled:opacity-50`}
+                  >
                     <Text
                       className={`text-sm font-semibold ${
-                        active ? 'text-zu-navy' : 'text-zu-slate'
-                      }`}>
+                        active ? "text-zu-navy" : "text-zu-slate"
+                      }`}
+                    >
                       {estadoLabel[estado]}
                     </Text>
                   </Pressable>
@@ -108,8 +146,8 @@ const AdminZonaDetalleScreen = function() {
             autoCapitalize="sentences"
             className="min-h-35 py-3"
             rules={{
-              required: 'Las indicaciones son obligatorias',
-              minLength: { value: 8, message: 'Escribe al menos 8 caracteres' },
+              required: "Las indicaciones son obligatorias",
+              minLength: { value: 8, message: "Escribe al menos 8 caracteres" },
             }}
           />
           <Field
@@ -120,11 +158,12 @@ const AdminZonaDetalleScreen = function() {
             keyboardType="decimal-pad"
             autoCorrect={false}
             rules={{
-              required: 'La latitud es obligatoria',
+              required: "La latitud es obligatoria",
               validate: (value) => {
                 const numero = aNumero(value);
-                if (!Number.isFinite(numero)) return 'Latitud inválida';
-                if (numero < -90 || numero > 90) return 'Debe estar entre -90 y 90';
+                if (!Number.isFinite(numero)) return "Latitud inválida";
+                if (numero < -90 || numero > 90)
+                  return "Debe estar entre -90 y 90";
                 return true;
               },
             }}
@@ -137,11 +176,12 @@ const AdminZonaDetalleScreen = function() {
             keyboardType="decimal-pad"
             autoCorrect={false}
             rules={{
-              required: 'La longitud es obligatoria',
+              required: "La longitud es obligatoria",
               validate: (value) => {
                 const numero = aNumero(value);
-                if (!Number.isFinite(numero)) return 'Longitud inválida';
-                if (numero < -180 || numero > 180) return 'Debe estar entre -180 y 180';
+                if (!Number.isFinite(numero)) return "Longitud inválida";
+                if (numero < -180 || numero > 180)
+                  return "Debe estar entre -180 y 180";
                 return true;
               },
             }}
@@ -154,37 +194,39 @@ const AdminZonaDetalleScreen = function() {
             keyboardType="number-pad"
             maxLength={6}
             rules={{
-              required: 'La capacidad total es obligatoria',
+              required: "La capacidad total es obligatoria",
               validate: (value) => {
                 const numero = aEntero(value);
-                if (!Number.isInteger(numero)) return 'Debe ser un número entero';
-                if (numero < 1) return 'Debe ser al menos 1';
+                if (!Number.isInteger(numero))
+                  return "Debe ser un número entero";
+                if (numero < 1) return "Debe ser al menos 1";
                 return true;
               },
             }}
           />
           <Text className="-mt-2 ml-1 text-xs leading-4 text-zu-slate">
-            Los cupos disponibles los calcula el servidor: capacidad total menos las reservas en
-            curso. No puede quedar por debajo de las reservas en curso.
+            Los cupos disponibles los calcula el servidor: capacidad total menos
+            las reservas en curso. No puede quedar por debajo de las reservas en
+            curso.
           </Text>
 
           <Button
-            text={formState.isSubmitting ? 'Guardando…' : 'Guardar cambios'}
+            text={formState.isSubmitting ? "Guardando…" : "Guardar cambios"}
             onPress={handleSubmit(guardar)}
             disabled={formState.isSubmitting || deleting}
             className="mt-2 bg-zu-navy"
           />
 
           <Button
-            text={deleting ? 'Eliminando…' : 'Eliminar zona'}
+            text={deleting ? "Eliminando…" : "Eliminar zona"}
             onPress={() => void eliminar()}
             disabled={formState.isSubmitting || deleting}
             destructive
           />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default AdminZonaDetalleScreen;

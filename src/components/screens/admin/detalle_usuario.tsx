@@ -1,73 +1,100 @@
-import { MapPin } from 'lucide-react-native';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { MapPin } from "lucide-react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
-import { useDetalle_usuario } from '@/src/hooks/admin/useDetalle_usuario';
-import { ESTADOS_USUARIO, TIPOS_USUARIO, type EstadoUsuario, type TipoUsuario } from '../../../types';
-import DashboardNavTile from '../../DashboardNavTile';
-import { GlassCard } from '../../GlassCard';
+import { useDetalle_usuario } from "@/src/hooks/admin/useDetalle_usuario";
+import {
+  ESTADOS_USUARIO,
+  TIPOS_USUARIO,
+  type EstadoUsuario,
+  type TipoUsuario,
+} from "../../../types";
+import DashboardNavTile from "../../DashboardNavTile";
+import { GlassCard } from "../../GlassCard";
 
 const estadoLabel: Record<EstadoUsuario, string> = {
-  activo: 'Activo',
-  no_verificado: 'No verificado',
-  inactivo: 'Inactivo',
-  eliminado: 'Eliminado',
+  activo: "Activo",
+  no_verificado: "No verificado",
+  inactivo: "Inactivo",
+  eliminado: "Eliminado",
 };
 
 const tiposEditables = TIPOS_USUARIO;
 
 const tipoLabel: Record<TipoUsuario, string> = {
-  conductor: 'Conductor',
-  controlador: 'Controlador',
-  admin: 'Admin',
+  conductor: "Conductor",
+  controlador: "Controlador",
+  admin: "Admin",
 };
 
 function formatFecha(iso: string): string {
   const fecha = new Date(iso);
-  return Number.isNaN(fecha.getTime()) ? iso : fecha.toLocaleString('es-CO');
+  return Number.isNaN(fecha.getTime()) ? iso : fecha.toLocaleString("es-CO");
 }
 
 function resumenZonasAsignadas(total: number | null): string {
-  if (total === null) return 'Asigna o quita las zonas que atiende';
-  if (total === 0) return 'Sin zonas asignadas: no verá ninguna reserva';
-  return `${total} ${total === 1 ? 'zona asignada' : 'zonas asignadas'} · asignar o quitar`;
+  if (total === null) return "Asigna o quita las zonas que atiende";
+  if (total === 0) return "Sin zonas asignadas: no verá ninguna reserva";
+  return `${total} ${total === 1 ? "zona asignada" : "zonas asignadas"} · asignar o quitar`;
 }
 
-const AdminUsuarioDetalleScreen = function() {
-
-  const { usuario, loading, saving, error, actualizar, cambiarEstado, zonasAsignadas, abrirZonasAsignadas } = useDetalle_usuario();
+const AdminUsuarioDetalleScreen = function () {
+  const {
+    usuario,
+    loading,
+    saving,
+    error,
+    actualizar,
+    cambiarEstado,
+    zonasAsignadas,
+    abrirZonasAsignadas,
+  } = useDetalle_usuario();
 
   if (loading) {
     return (
-      <SafeAreaView
+      <FondoPantalla
         style={{
           flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#EEF8FC',
+          alignItems: "center",
+          justifyContent: "center",
         }}
-        edges={['bottom']}>
+        edges={["bottom"]}
+      >
         <ActivityIndicator size="large" color="#1E3A5F" />
-      </SafeAreaView>
+      </FondoPantalla>
     );
   }
 
   if (!usuario) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: '#EEF8FC', paddingHorizontal: 20, paddingTop: 20 }}
-        edges={['bottom']}>
-        <Text className="text-base text-red-700">{error ?? 'No se encontró el usuario.'}</Text>
-      </SafeAreaView>
+      <FondoPantalla
+        style={{
+          flex: 1,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+        }}
+        edges={["bottom"]}
+      >
+        <Text className="text-base text-red-700">
+          {error ?? "No se encontró el usuario."}
+        </Text>
+      </FondoPantalla>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-5 pb-8 pt-3"
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         <GlassCard className="p-5">
           <Text className="text-xs font-semibold uppercase tracking-[2px] text-zu-navy/45">
             Identificación
@@ -107,9 +134,15 @@ const AdminUsuarioDetalleScreen = function() {
         </GlassCard>
 
         <GlassCard className="mt-5 p-4">
-          <Text className="text-base font-semibold text-zu-navy">Tipo de usuario</Text>
+          <Text className="text-base font-semibold text-zu-navy">
+            Tipo de usuario
+          </Text>
           <Text className="mt-1 text-sm text-zu-slate">
-            Tipo actual: {usuario.tipo_usuario ? tipoLabel[usuario.tipo_usuario] : 'Sin asignar'}.
+            Tipo actual:{" "}
+            {usuario.tipo_usuario
+              ? tipoLabel[usuario.tipo_usuario]
+              : "Sin asignar"}
+            .
           </Text>
 
           <View className="mt-4 flex-row gap-2">
@@ -122,13 +155,15 @@ const AdminUsuarioDetalleScreen = function() {
                   onPress={() => void actualizar({ tipo_usuario: tipo })}
                   className={`flex-1 rounded-xl border px-2 py-3 ${
                     active
-                      ? 'border-violet-700 bg-violet-100'
-                      : 'border-zu-border bg-zu-white'
-                  } disabled:opacity-50`}>
+                      ? "border-violet-700 bg-violet-100"
+                      : "border-zu-border bg-zu-white"
+                  } disabled:opacity-50`}
+                >
                   <Text
                     className={`text-center text-xs font-semibold ${
-                      active ? 'text-violet-800' : 'text-zu-slate'
-                    }`}>
+                      active ? "text-violet-800" : "text-zu-slate"
+                    }`}
+                  >
                     {tipoLabel[tipo]}
                   </Text>
                 </Pressable>
@@ -137,7 +172,7 @@ const AdminUsuarioDetalleScreen = function() {
           </View>
         </GlassCard>
 
-        {usuario.tipo_usuario === 'controlador' ? (
+        {usuario.tipo_usuario === "controlador" ? (
           <View className="mt-5">
             <DashboardNavTile
               icon={MapPin}
@@ -149,7 +184,9 @@ const AdminUsuarioDetalleScreen = function() {
         ) : null}
 
         <GlassCard className="mt-5 p-4">
-          <Text className="text-base font-semibold text-zu-navy">Estado de la cuenta</Text>
+          <Text className="text-base font-semibold text-zu-navy">
+            Estado de la cuenta
+          </Text>
           <Text className="mt-1 text-sm text-zu-slate">
             Define si el usuario puede acceder al sistema.
           </Text>
@@ -163,13 +200,15 @@ const AdminUsuarioDetalleScreen = function() {
                   onPress={() => void cambiarEstado(estado)}
                   className={`rounded-xl border px-3 py-2.5 ${
                     active
-                      ? 'border-zu-navy bg-zu-navy/10'
-                      : 'border-zu-border bg-zu-white'
-                  } disabled:opacity-50`}>
+                      ? "border-zu-navy bg-zu-navy/10"
+                      : "border-zu-border bg-zu-white"
+                  } disabled:opacity-50`}
+                >
                   <Text
                     className={`text-sm font-semibold ${
-                      active ? 'text-zu-navy' : 'text-zu-slate'
-                    }`}>
+                      active ? "text-zu-navy" : "text-zu-slate"
+                    }`}
+                  >
                     {estadoLabel[estado]}
                   </Text>
                 </Pressable>
@@ -178,8 +217,8 @@ const AdminUsuarioDetalleScreen = function() {
           </View>
         </GlassCard>
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default AdminUsuarioDetalleScreen;

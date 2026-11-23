@@ -1,26 +1,28 @@
-import { KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
 
-import Button from '../../Button';
-import Field from '../../Field';
-import { useNuevo_zona } from '@/src/hooks/admin/useNuevo_zona';
+import { useNuevo_zona } from "@/src/hooks/admin/useNuevo_zona";
+import Button from "../../Button";
+import Field from "../../Field";
 
 const NuevaZonaScreen = () => {
-  
-  const { control, handleSubmit, formState, guardar, aNumero, aEntero } = useNuevo_zona();
+  const { control, handleSubmit, formState, guardar, aNumero, aEntero } =
+    useNuevo_zona();
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <ScrollView
           className="flex-1"
           contentContainerClassName="gap-4 px-5 pb-8 pt-4"
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
           <Text className="mb-1 text-sm leading-5 text-zu-slate">
-            Dirección, barrio y cómo llegar. La primera línea se usa como título en el
-            listado.
+            Dirección, barrio y cómo llegar. La primera línea se usa como título
+            en el listado.
           </Text>
 
           <Field
@@ -34,8 +36,8 @@ const NuevaZonaScreen = () => {
             autoCapitalize="sentences"
             className="min-h-35 py-3"
             rules={{
-              required: 'Las indicaciones son obligatorias',
-              minLength: { value: 8, message: 'Escribe al menos 8 caracteres' },
+              required: "Las indicaciones son obligatorias",
+              minLength: { value: 8, message: "Escribe al menos 8 caracteres" },
             }}
           />
           <Field
@@ -46,11 +48,12 @@ const NuevaZonaScreen = () => {
             keyboardType="decimal-pad"
             autoCorrect={false}
             rules={{
-              required: 'La latitud es obligatoria',
+              required: "La latitud es obligatoria",
               validate: (value) => {
                 const numero = aNumero(value);
-                if (!Number.isFinite(numero)) return 'Latitud inválida';
-                if (numero < -90 || numero > 90) return 'Debe estar entre -90 y 90';
+                if (!Number.isFinite(numero)) return "Latitud inválida";
+                if (numero < -90 || numero > 90)
+                  return "Debe estar entre -90 y 90";
                 return true;
               },
             }}
@@ -63,11 +66,12 @@ const NuevaZonaScreen = () => {
             keyboardType="decimal-pad"
             autoCorrect={false}
             rules={{
-              required: 'La longitud es obligatoria',
+              required: "La longitud es obligatoria",
               validate: (value) => {
                 const numero = aNumero(value);
-                if (!Number.isFinite(numero)) return 'Longitud inválida';
-                if (numero < -180 || numero > 180) return 'Debe estar entre -180 y 180';
+                if (!Number.isFinite(numero)) return "Longitud inválida";
+                if (numero < -180 || numero > 180)
+                  return "Debe estar entre -180 y 180";
                 return true;
               },
             }}
@@ -80,30 +84,31 @@ const NuevaZonaScreen = () => {
             keyboardType="number-pad"
             maxLength={6}
             rules={{
-              required: 'La capacidad total es obligatoria',
+              required: "La capacidad total es obligatoria",
               validate: (value) => {
                 const numero = aEntero(value);
-                if (!Number.isInteger(numero)) return 'Debe ser un número entero';
-                if (numero < 1) return 'Debe ser al menos 1';
+                if (!Number.isInteger(numero))
+                  return "Debe ser un número entero";
+                if (numero < 1) return "Debe ser al menos 1";
                 return true;
               },
             }}
           />
           <Text className="-mt-2 ml-1 text-xs leading-4 text-zu-slate">
-            Los cupos disponibles los calcula el servidor: capacidad total menos las reservas en
-            curso.
+            Los cupos disponibles los calcula el servidor: capacidad total menos
+            las reservas en curso.
           </Text>
 
           <Button
-            text={formState.isSubmitting ? 'Guardando…' : 'Crear zona'}
+            text={formState.isSubmitting ? "Guardando…" : "Crear zona"}
             onPress={handleSubmit(guardar)}
             disabled={formState.isSubmitting}
             className="mt-2 bg-zu-navy"
           />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
-export default NuevaZonaScreen
+export default NuevaZonaScreen;

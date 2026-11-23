@@ -1,29 +1,32 @@
-import { router } from 'expo-router';
-import { ClipboardCheck } from 'lucide-react-native';
-import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { router } from "expo-router";
+import { ClipboardCheck } from "lucide-react-native";
+import { ScrollView, Text, View } from "react-native";
 
-import { useControladorIndex } from '@/src/hooks/controlador/useControladorIndex';
-import Button from '../../Button';
-import DashboardNavTile from '../../DashboardNavTile';
-import DashboardStat from '../../DashboardStat';
+import { useControladorIndex } from "@/src/hooks/controlador/useControladorIndex";
+import Button from "../../Button";
+import DashboardNavTile from "../../DashboardNavTile";
+import DashboardStat from "../../DashboardStat";
 
-const ControladorPanelScreen = function() {
+const ControladorPanelScreen = function () {
   const { user, resumen, porRevisar, signOut } = useControladorIndex();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-5 pb-8 pt-4"
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         <Text className="text-xs font-semibold uppercase tracking-[3px] text-zu-slogan">
           ZoneUp
         </Text>
-        <Text className="mt-2 text-3xl font-bold text-zu-navy">Hola, {user?.name}</Text>
+        <Text className="mt-2 text-3xl font-bold text-zu-navy">
+          Hola, {user?.name}
+        </Text>
         <Text className="mt-2 text-base leading-6 text-zu-slate">
-          Atiende las solicitudes de reserva de tus zonas azules asignadas y confirma la llegada de
-          los vehículos.
+          Atiende las solicitudes de reserva de tus zonas azules asignadas y
+          confirma la llegada de los vehículos.
         </Text>
 
         <View className="mt-6 flex-row gap-3">
@@ -33,11 +36,14 @@ const ControladorPanelScreen = function() {
             valueClassName="text-amber-700"
           />
           <DashboardStat
-            value={resumen?.activa ?? '…'}
+            value={resumen?.activa ?? "…"}
             label="Aceptadas"
             valueClassName="text-emerald-700"
           />
-          <DashboardStat value={resumen?.total ?? '…'} label="Total de reservas" />
+          <DashboardStat
+            value={resumen?.total ?? "…"}
+            label="Total de reservas"
+          />
         </View>
 
         <Text className="mb-3 mt-6 text-xs font-semibold uppercase tracking-[2px] text-zu-navy/50">
@@ -48,11 +54,11 @@ const ControladorPanelScreen = function() {
           icon={ClipboardCheck}
           title="Gestión de reservas"
           subtitle={
-            typeof porRevisar === 'number' && porRevisar > 0
+            typeof porRevisar === "number" && porRevisar > 0
               ? `${porRevisar} por revisar · aceptar, rechazar y verificar placas`
-              : 'Aceptar, rechazar y verificar placas'
+              : "Aceptar, rechazar y verificar placas"
           }
-          onPress={() => router.push('/controlador/(reservas)/reservas')}
+          onPress={() => router.push("/controlador/(reservas)/reservas")}
         />
 
         <Button
@@ -62,8 +68,8 @@ const ControladorPanelScreen = function() {
           className="mt-8"
         />
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default ControladorPanelScreen;

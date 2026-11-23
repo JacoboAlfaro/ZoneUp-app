@@ -1,5 +1,6 @@
-import { router } from 'expo-router';
-import { Plus, RefreshCw, Search, Users } from 'lucide-react-native';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { router } from "expo-router";
+import { Plus, RefreshCw, Search, Users } from "lucide-react-native";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,18 +8,17 @@ import {
   ScrollView,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
 
-import { useUsuarios } from '@/src/hooks/admin/useUsuarios';
-import Button from '../../Button';
-import CampoBusqueda from '../../CampoBusqueda';
-import CargarMas from '../../CargarMas';
-import DashboardStat from '../../DashboardStat';
-import { GlassCard } from '../../GlassCard';
-import SelectFiltro from '../../SelectFiltro';
+import { useUsuarios } from "@/src/hooks/admin/useUsuarios";
+import Button from "../../Button";
+import CampoBusqueda from "../../CampoBusqueda";
+import CargarMas from "../../CargarMas";
+import DashboardStat from "../../DashboardStat";
+import { GlassCard } from "../../GlassCard";
+import SelectFiltro from "../../SelectFiltro";
 
-const AdminUsuariosScreen = function() {
+const AdminUsuariosScreen = function () {
   const {
     estadoLabel,
     tipoLabel,
@@ -45,7 +45,7 @@ const AdminUsuariosScreen = function() {
   } = useUsuarios();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-5 pb-8 pt-3"
@@ -57,7 +57,8 @@ const AdminUsuariosScreen = function() {
             onRefresh={refrescar}
             tintColor="#1E3A5F"
           />
-        }>
+        }
+      >
         <Text className="text-base leading-6 text-zu-slate">
           Consulta los usuarios registrados y administra sus cuentas.
         </Text>
@@ -65,14 +66,17 @@ const AdminUsuariosScreen = function() {
         <Button
           text="Agregar usuario"
           icon={Plus}
-          onPress={() => router.push('/admin/nuevo-usuario')}
+          onPress={() => router.push("/admin/nuevo-usuario")}
           className="mt-5 rounded-2xl bg-zu-navy"
         />
 
         <View className="mt-5 flex-row gap-3">
-          <DashboardStat value={resumen?.total ?? '…'} label="Total registrados" />
           <DashboardStat
-            value={resumen?.activos ?? '…'}
+            value={resumen?.total ?? "…"}
+            label="Total registrados"
+          />
+          <DashboardStat
+            value={resumen?.activos ?? "…"}
             label="Usuarios activos"
             valueClassName="text-emerald-700"
           />
@@ -111,14 +115,19 @@ const AdminUsuariosScreen = function() {
             <Text className="text-center text-red-700">{error}</Text>
             <Pressable
               onPress={() => void recargar()}
-              className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2">
+              className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2"
+            >
               <RefreshCw size={18} color="#1E3A5F" />
               <Text className="font-semibold text-zu-navy">Reintentar</Text>
             </Pressable>
           </View>
         ) : null}
 
-        {!loading && !error && usuarios.length === 0 && !termino && filtroEstado === 'todos' ? (
+        {!loading &&
+        !error &&
+        usuarios.length === 0 &&
+        !termino &&
+        filtroEstado === "todos" ? (
           <GlassCard className="mt-4 items-center p-8">
             <Users size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
@@ -127,13 +136,16 @@ const AdminUsuariosScreen = function() {
           </GlassCard>
         ) : null}
 
-        {!loading && !error && usuarios.length === 0 && (termino || filtroEstado !== 'todos') ? (
+        {!loading &&
+        !error &&
+        usuarios.length === 0 &&
+        (termino || filtroEstado !== "todos") ? (
           <GlassCard className="mt-4 items-center p-8">
             <Search size={34} color="#6B8698" />
             <Text className="mt-3 text-center text-zu-slate">
               {termino
                 ? `No encontramos usuarios que coincidan con “${termino}”.`
-                : 'No hay usuarios con este estado.'}
+                : "No hay usuarios con este estado."}
             </Text>
           </GlassCard>
         ) : null}
@@ -145,29 +157,40 @@ const AdminUsuariosScreen = function() {
                 accessibilityLabel={`Ver usuario ${usuario.name}`}
                 onPress={() =>
                   router.push({
-                    pathname: '/admin/usuario/[email]',
+                    pathname: "/admin/usuario/[email]",
                     params: { email: usuario.email },
                   })
                 }
-                className="mt-3 p-4">
+                className="mt-3 p-4"
+              >
                 <View className="flex-row items-start justify-between gap-3">
                   <View className="flex-1">
-                    <Text className="text-lg font-bold text-zu-navy">{usuario.name}</Text>
+                    <Text className="text-lg font-bold text-zu-navy">
+                      {usuario.name}
+                    </Text>
                     <Text className="mt-1 text-sm text-zu-slate">
                       CC {usuario.documento_identidad}
                     </Text>
-                    <Text className="mt-1 text-sm text-zu-slate">{usuario.email}</Text>
+                    <Text className="mt-1 text-sm text-zu-slate">
+                      {usuario.email}
+                    </Text>
                   </View>
 
                   <View className="items-end gap-2">
-                    <View className={`rounded-full px-2.5 py-1 ${estadoClasses(usuario.estado)}`}>
-                      <Text className={`text-xs font-semibold ${estadoClasses(usuario.estado)}`}>
+                    <View
+                      className={`rounded-full px-2.5 py-1 ${estadoClasses(usuario.estado)}`}
+                    >
+                      <Text
+                        className={`text-xs font-semibold ${estadoClasses(usuario.estado)}`}
+                      >
                         {estadoLabel[usuario.estado]}
                       </Text>
                     </View>
                     <View className="rounded-full bg-violet-100 px-2.5 py-1">
                       <Text className="text-[10px] font-bold uppercase text-violet-800">
-                        {usuario.tipo_usuario ? tipoLabel[usuario.tipo_usuario] : 'Sin tipo'}
+                        {usuario.tipo_usuario
+                          ? tipoLabel[usuario.tipo_usuario]
+                          : "Sin tipo"}
                       </Text>
                     </View>
                   </View>
@@ -186,8 +209,8 @@ const AdminUsuariosScreen = function() {
           />
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default AdminUsuariosScreen;

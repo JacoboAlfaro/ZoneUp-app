@@ -1,4 +1,5 @@
-import { Check, MapPin, Plus, RefreshCw, Search } from 'lucide-react-native';
+import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
+import { Check, MapPin, Plus, RefreshCw, Search } from "lucide-react-native";
 import {
   ActivityIndicator,
   Pressable,
@@ -6,17 +7,16 @@ import {
   ScrollView,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
 
-import { useAsignarZonas } from '@/src/hooks/admin/useAsignarZonas';
-import { detalleZona, tituloZona } from '../../../formato';
-import CampoBusqueda from '../../CampoBusqueda';
-import CargarMas from '../../CargarMas';
-import DashboardStat from '../../DashboardStat';
-import { GlassCard } from '../../GlassCard';
+import { useAsignarZonas } from "@/src/hooks/admin/useAsignarZonas";
+import { detalleZona, tituloZona } from "../../../formato";
+import CampoBusqueda from "../../CampoBusqueda";
+import CargarMas from "../../CargarMas";
+import DashboardStat from "../../DashboardStat";
+import { GlassCard } from "../../GlassCard";
 
-const AdminAsignarZonasScreen = function() {
+const AdminAsignarZonasScreen = function () {
   const {
     items: zonas,
     total,
@@ -37,7 +37,7 @@ const AdminAsignarZonasScreen = function() {
   } = useAsignarZonas();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF8FC' }} edges={['bottom']}>
+    <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-5 pb-8 pt-3"
@@ -49,14 +49,15 @@ const AdminAsignarZonasScreen = function() {
             onRefresh={() => void recargar(true)}
             tintColor="#1E3A5F"
           />
-        }>
+        }
+      >
         <Text className="text-base leading-6 text-zu-slate">
-          Toca una zona para asignarla o quitarla. El controlador solo ve y gestiona las reservas
-          de sus zonas asignadas.
+          Toca una zona para asignarla o quitarla. El controlador solo ve y
+          gestiona las reservas de sus zonas asignadas.
         </Text>
 
         <View className="mt-5 flex-row gap-3">
-          <DashboardStat value={asignadas ?? '…'} label="Zonas asignadas" />
+          <DashboardStat value={asignadas ?? "…"} label="Zonas asignadas" />
         </View>
 
         <CampoBusqueda
@@ -85,7 +86,8 @@ const AdminAsignarZonasScreen = function() {
             <Text className="text-center text-red-700">{error}</Text>
             <Pressable
               onPress={() => void recargar()}
-              className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2">
+              className="mt-4 flex-row items-center gap-2 rounded-xl px-4 py-2"
+            >
               <RefreshCw size={18} color="#1E3A5F" />
               <Text className="font-semibold text-zu-navy">Reintentar</Text>
             </Pressable>
@@ -118,24 +120,32 @@ const AdminAsignarZonasScreen = function() {
               return (
                 <GlassCard
                   key={zona.id}
-                  accessibilityLabel={`${zona.asignada ? 'Quitar' : 'Asignar'} ${titulo}`}
+                  accessibilityLabel={`${zona.asignada ? "Quitar" : "Asignar"} ${titulo}`}
                   disabled={procesando !== null}
                   onPress={() => void alternar(zona)}
-                  className="mt-3 p-4">
+                  className="mt-3 p-4"
+                >
                   <View className="flex-row items-center justify-between gap-3">
                     <View className="flex-1 pr-2">
-                      <Text className="text-lg font-bold text-zu-navy">{titulo}</Text>
+                      <Text className="text-lg font-bold text-zu-navy">
+                        {titulo}
+                      </Text>
                       {extra ? (
-                        <Text className="mt-1 text-sm leading-5 text-zu-slate">{extra}</Text>
+                        <Text className="mt-1 text-sm leading-5 text-zu-slate">
+                          {extra}
+                        </Text>
                       ) : null}
-                      <Text className="mt-1 text-sm text-zu-slate">Zona #{zona.id}</Text>
+                      <Text className="mt-1 text-sm text-zu-slate">
+                        Zona #{zona.id}
+                      </Text>
                     </View>
                     <View
                       className={`flex-row items-center gap-1.5 rounded-full border px-3 py-2 ${
                         zona.asignada
-                          ? 'border-zu-navy bg-zu-navy/10'
-                          : 'border-zu-border bg-zu-white'
-                      }`}>
+                          ? "border-zu-navy bg-zu-navy/10"
+                          : "border-zu-border bg-zu-white"
+                      }`}
+                    >
                       {zona.asignada ? (
                         <Check size={16} color="#1E3A5F" />
                       ) : (
@@ -143,13 +153,14 @@ const AdminAsignarZonasScreen = function() {
                       )}
                       <Text
                         className={`text-xs font-semibold ${
-                          zona.asignada ? 'text-zu-navy' : 'text-zu-slate'
-                        }`}>
+                          zona.asignada ? "text-zu-navy" : "text-zu-slate"
+                        }`}
+                      >
                         {procesando === zona.id
-                          ? 'Guardando…'
+                          ? "Guardando…"
                           : zona.asignada
-                            ? 'Asignada'
-                            : 'Asignar'}
+                            ? "Asignada"
+                            : "Asignar"}
                       </Text>
                     </View>
                   </View>
@@ -167,8 +178,8 @@ const AdminAsignarZonasScreen = function() {
           />
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </FondoPantalla>
   );
-}
+};
 
 export default AdminAsignarZonasScreen;
