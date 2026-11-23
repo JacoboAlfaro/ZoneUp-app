@@ -56,7 +56,7 @@ export function ZonaMapPanel({
           onPress={onCerrar}
           accessibilityRole="button"
           accessibilityLabel="Cerrar"
-          className="h-9 w-9 items-center justify-center rounded-full bg-zu-sky-fade/80"
+          className="h-12 w-12 items-center justify-center rounded-full bg-zu-sky-fade/80"
         >
           <X size={18} color={color.navy} />
         </Pressable>

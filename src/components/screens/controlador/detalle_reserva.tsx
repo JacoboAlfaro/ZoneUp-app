@@ -134,7 +134,7 @@ const ControladorReservaDetalleScreen = function () {
         </GlassCard>
 
         {reserva.estado === "activa" && !llegada && !vencida ? (
-          <View className="rounded-2xl border border-zu-white/70 bg-zu-card-cyan p-5 shadow-sm">
+          <GlassCard className="p-5">
             <View className="flex-row items-center">
               <View className="h-11 w-11 items-center justify-center rounded-full bg-zu-sky-mid/45">
                 <ShieldCheck size={22} color="#1E3A5F" />
@@ -162,7 +162,7 @@ const ControladorReservaDetalleScreen = function () {
               secondary
               className="mt-3 bg-zu-white"
             />
-          </View>
+          </GlassCard>
         ) : null}
 
         {vencida ? (
@@ -182,7 +182,7 @@ const ControladorReservaDetalleScreen = function () {
         ) : null}
 
         {reserva.estado === "activa" && llegada && reserva.fecha_real_inicio ? (
-          <View className="rounded-2xl border border-zu-white/70 bg-zu-card-cyan p-5 shadow-sm">
+          <GlassCard className="p-5">
             <View className="flex-row items-center">
               <View className="h-11 w-11 items-center justify-center rounded-full bg-zu-sky-mid/45">
                 <Car size={22} color="#1E3A5F" />
@@ -199,7 +199,7 @@ const ControladorReservaDetalleScreen = function () {
                 Su tiempo ya terminó; la reserva se completará automáticamente.
               </Text>
             ) : null}
-          </View>
+          </GlassCard>
         ) : null}
 
         <GlassCard className="p-5">
