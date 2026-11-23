@@ -1,12 +1,6 @@
 import { useRegister } from "@/src/hooks/auth/useRegister";
 import { Link } from "expo-router";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 import Button from "../../Button";
 import Field from "../../Field";
 import { GlassCard } from "../../GlassCard";
@@ -17,7 +11,9 @@ const RegisterScreen = () => {
     <FondoGlass>
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        // "padding" en las dos plataformas: en Android (edge-to-edge) la ventana
+        // no se encoge con el teclado, así que hay que dejarle el espacio aquí.
+        behavior="padding"
       >
         <ScrollView
           className="flex-1"
