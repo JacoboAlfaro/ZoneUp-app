@@ -21,7 +21,7 @@ import {
   type TextInputProps,
 } from "react-native";
 
-import { glass } from "@/src/theme";
+import { color, glass, withAlpha } from "@/src/theme";
 import { VidrioRespaldo } from "./glass/VidrioRespaldo";
 
 // Hereda todas las props de TextInput (keyboardType, secureTextEntry...) y
@@ -49,7 +49,8 @@ function clasesDeInput(className?: string) {
 function bordeEstado(error: boolean, focused: boolean) {
   if (error) return "border-red-400";
   if (focused) return "border-zu-sky-top";
-  return "border-zu-border";
+  // Android: borde más marcado para que el campo no se pierda en la tarjeta.
+  return "border-zu-navy/20";
 }
 
 export default function Field<T extends FieldValues>({
@@ -160,7 +161,9 @@ export default function Field<T extends FieldValues>({
                 className={`relative overflow-hidden rounded-2xl border ${bordeEstado(!!error, focused)}`}
               >
                 <VidrioRespaldo
-                  tint={focused ? glass.sky : glass.white}
+                  // Tinte celeste: si fuera blanco, el campo quedaría del mismo
+                  // tono que la tarjeta de vidrio blanca que lo contiene.
+                  tint={focused ? glass.sky : withAlpha(color.skyBottom, 0.55)}
                   radius={RADIO}
                   intensity={30}
                 >
