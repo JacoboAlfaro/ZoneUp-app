@@ -25,10 +25,13 @@ export function LiquidChip({
 
   const interior = (
     <View className="flex-row items-center px-2 py-1">
-      <View className="h-10 w-10 items-center justify-center rounded-full bg-zu-white/20">
+      <View className="h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zu-white/20">
         {Icon ? <Icon size={20} color={color.white} /> : null}
       </View>
-      <Text className="ml-2 mr-3 text-base font-semibold text-zu-white">
+      <Text
+        numberOfLines={1}
+        ellipsizeMode="tail"
+        className="ml-2 mr-3 shrink text-base font-semibold text-zu-white">
         {text}
       </Text>
     </View>
@@ -39,14 +42,14 @@ export function LiquidChip({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={text}
-      className="active:scale-95"
+      className="min-w-0 active:scale-95"
     >
       {liquid ? (
         <GlassView
           isInteractive
           glassEffectStyle="clear"
           tintColor={glass.navy}
-          style={{ borderRadius: 999 }}
+          style={{ borderRadius: 999, overflow: 'hidden' }}
         >
           {interior}
         </GlassView>
@@ -54,7 +57,7 @@ export function LiquidChip({
         // Android: cápsula de vidrio oscuro. Sobre el mapa no hay desenfoque
         // (Google Maps no se puede capturar), así que el efecto lo dan el
         // tinte, el reflejo y el borde luminoso.
-        <VidrioRespaldo tint={glass.navy} radius={999} oscuro>
+        <VidrioRespaldo tint={glass.navy} radius={999} oscuro style={{ overflow: 'hidden' }}>
           {interior}
         </VidrioRespaldo>
       )}

@@ -6,10 +6,24 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LiquidChip } from "../../LiquidChip";
 import { ParkingMap } from "../../ParkingMap";
 import { ZonaMapPanel } from "../../ZoneMapPanel";
+import { ReservaTiempoChip } from "../../ReservaTiempoChip";
+import { ReservaActivaPanel } from "../../ReservaActivaPanel";
 
 const ConductorIndexScreen = function () {
-  const { user, abrirDrawer, zonas, zonaSeleccionada, seleccionarZona, cerrarZona } =
-    useConductorIndex();
+  const {
+    user,
+    abrirDrawer,
+    zonas,
+    zonaSeleccionada,
+    seleccionarZona,
+    cerrarZona,
+    reservaActiva,
+    panelReservaAbierto,
+    abrirPanelReserva,
+    cerrarPanelReserva,
+    refrescarReservaActiva,
+    alTerminarTiempo,
+  } = useConductorIndex();
   const insets = useSafeAreaInsets();
 
   return (
@@ -18,29 +32,60 @@ const ConductorIndexScreen = function () {
         zonas={zonas}
         zonaSeleccionadaId={zonaSeleccionada?.id}
         onPressZona={seleccionarZona}
-        onPressMapa={cerrarZona}
+        onPressMapa={() => {
+          cerrarZona();
+          cerrarPanelReserva();
+        }}
       />
       <View
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: insets.top + 8,
           left: 16,
+          right: 16,
           zIndex: 20,
           elevation: 20,
-        }}>
-        <LiquidChip
-          text={`Hola, ${user?.name ?? ''}`}
-          icon={User}
-          onPress={abrirDrawer}
-        />
+          gap: 8,
+        }}
+      >
+        <View style={{ alignSelf: "flex-start", maxWidth: "100%" }}>
+          <LiquidChip
+            text={`Hola, ${user?.name ?? ""}`}
+            icon={User}
+            onPress={abrirDrawer}
+          />
+        </View>
+        {reservaActiva ? (
+          <View style={{ alignSelf: "flex-start" }}>
+            <ReservaTiempoChip
+              reserva={reservaActiva.reserva}
+              onPress={abrirPanelReserva}
+              onFin={alTerminarTiempo}
+            />
+          </View>
+        ) : null}
       </View>
-      {zonaSeleccionada ? (
+      {panelReservaAbierto && reservaActiva ? (
+        <ReservaActivaPanel
+          fila={reservaActiva}
+          onCerrar={cerrarPanelReserva}
+          onCambio={refrescarReservaActiva}
+          onVerDetalle={() => {
+            cerrarPanelReserva();
+            router.push({
+              pathname: "/conductor/(panel)/(reservas)/reserva/[id]",
+              params: { id: String(reservaActiva.reserva.id) },
+            });
+          }}
+        />
+      ) : null}
+      {zonaSeleccionada && !panelReservaAbierto ? (
         <ZonaMapPanel
           zona={zonaSeleccionada}
           onCerrar={cerrarZona}
           onReservar={() =>
             router.push({
-              pathname: '/conductor/(panel)/(reservas)/nueva-reserva',
+              pathname: "/conductor/(panel)/(reservas)/nueva-reserva",
               params: { idZona: String(zonaSeleccionada.id) },
             })
           }
