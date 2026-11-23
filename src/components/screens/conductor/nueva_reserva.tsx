@@ -6,11 +6,10 @@ import { Controller } from "react-hook-form";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
-  View,
+  View
 } from "react-native";
 
 import { useNuevaReserva } from "@/src/hooks/reservas/useNuevaReserva";
@@ -128,10 +127,7 @@ const NuevaReservaScreen = function () {
 
   return (
     <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      <KeyboardAvoidingView className="flex-1" behavior="padding">
         <ScrollView
           className="flex-1"
           contentContainerClassName="gap-4 px-5 pb-8 pt-4"

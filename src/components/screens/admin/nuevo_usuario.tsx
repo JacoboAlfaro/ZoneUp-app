@@ -1,5 +1,5 @@
 import { FondoPantalla } from "@/src/components/glass/FondoPantalla";
-import { KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
+import { KeyboardAvoidingView, ScrollView, Text } from "react-native";
 
 import { useNuevo_usuario } from "@/src/hooks/admin/useNuevo_usuario";
 import Button from "../../Button";
@@ -19,10 +19,7 @@ const NuevoUsuarioScreen = function () {
 
   return (
     <FondoPantalla style={{ flex: 1 }} edges={["bottom"]}>
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      <KeyboardAvoidingView className="flex-1" behavior="padding">
         <ScrollView
           className="flex-1"
           contentContainerClassName="gap-4 px-5 pb-8 pt-4"
