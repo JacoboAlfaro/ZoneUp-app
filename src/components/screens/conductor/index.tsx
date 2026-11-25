@@ -23,6 +23,9 @@ const ConductorIndexScreen = function () {
     cerrarPanelReserva,
     refrescarReservaActiva,
     alTerminarTiempo,
+    ubicacionConcedida,
+    miUbicacion,
+    ubicacionListo,
   } = useConductorIndex();
   const insets = useSafeAreaInsets();
 
@@ -36,6 +39,9 @@ const ConductorIndexScreen = function () {
           cerrarZona();
           cerrarPanelReserva();
         }}
+        mostrarUbicacion={ubicacionConcedida}
+        miUbicacion={miUbicacion}
+        ubicacionListo={ubicacionListo}
       />
       <View
         style={{

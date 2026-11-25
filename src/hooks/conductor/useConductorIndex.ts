@@ -11,6 +11,8 @@ import type { ReservaConZona, ZonaAzul } from '@/src/types';
 import { useFocusEffect, useNavigation } from 'expo-router';
 import { useCallback, useState } from 'react';
 
+import { useUbicacion } from './useUbicacion';
+
 function esReservaViva(fila: ReservaConZona, ahora: Date): boolean {
   return estaEnCamino(fila.reserva, ahora) || estaParqueada(fila.reserva, ahora);
 }
@@ -30,6 +32,7 @@ export function useConductorIndex() {
   const { user } = useSession();
   // El index está DENTRO del Stack; openDrawer vive en el layout padre.
   const navigation = useNavigation('/conductor');
+  const ubicacion = useUbicacion();
   const [zonas, setZonas] = useState<ZonaAzul[]>([]);
   const [zonaSeleccionada, setZonaSeleccionada] = useState<ZonaAzul | null>(null);
   const [reservaActiva, setReservaActiva] = useState<ReservaConZona | null>(null);
@@ -115,5 +118,8 @@ export function useConductorIndex() {
     cerrarPanelReserva,
     refrescarReservaActiva: () => void cargarReservaActiva(),
     alTerminarTiempo,
+    ubicacionConcedida: ubicacion.concedido,
+    miUbicacion: ubicacion.coordenada,
+    ubicacionListo: ubicacion.listo,
   };
 }
