@@ -6,6 +6,7 @@ import {
   formatPesos,
   tituloZona,
 } from "@/src/formato";
+import { abrirComoLlegar } from "@/src/maps/abrirComoLlegar";
 import { color, glass } from "@/src/theme";
 import type { ZonaAzul } from "@/src/types";
 import {
@@ -16,7 +17,9 @@ import {
 import { X } from "lucide-react-native";
 import { Platform, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAlerta } from "./alerta/AlertaProvider";
 import Button from "./Button";
+import { BotonComoLlegar } from "./BotonComoLlegar";
 import { VidrioRespaldo } from "./glass/VidrioRespaldo";
 
 const RADIO = 28;
@@ -31,6 +34,7 @@ export function ZonaMapPanel({
   onReservar: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  const alerta = useAlerta();
   const titulo = tituloZona(zona.indicaciones, zona.id);
   const extra = detalleZona(zona.indicaciones);
   const cupos = Math.max(0, zona.capacidad);
@@ -40,6 +44,16 @@ export function ZonaMapPanel({
     Platform.OS === "ios" &&
     isLiquidGlassAvailable() &&
     isGlassEffectAPIAvailable();
+
+  const comoLlegar = () => {
+    void abrirComoLlegar(zona.latitud, zona.longitud, titulo).catch((cause) => {
+      void alerta.mostrar({
+        tipo: "error",
+        titulo: "No se pudo abrir el mapa",
+        mensaje: (cause as Error).message,
+      });
+    });
+  };
 
   const contenido = (
     <View className="px-5 pb-5 pt-3">
@@ -52,14 +66,17 @@ export function ZonaMapPanel({
           </Text>
           <Text className="mt-1 text-2xl font-bold text-zu-navy">{titulo}</Text>
         </View>
-        <Pressable
-          onPress={onCerrar}
-          accessibilityRole="button"
-          accessibilityLabel="Cerrar"
-          className="h-9 w-9 items-center justify-center rounded-full bg-zu-sky-fade/80"
-        >
-          <X size={18} color={color.navy} />
-        </Pressable>
+        <View className="flex-row items-start gap-2">
+          <BotonComoLlegar onPress={comoLlegar} />
+          <Pressable
+            onPress={onCerrar}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+            className="h-9 w-9 items-center justify-center rounded-full bg-zu-sky-fade/80"
+          >
+            <X size={18} color={color.navy} />
+          </Pressable>
+        </View>
       </View>
 
       {extra ? (

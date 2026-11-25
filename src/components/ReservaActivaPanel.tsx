@@ -21,23 +21,28 @@ import {
   formatPesos,
   tituloZona,
 } from '@/src/formato';
+import { abrirComoLlegar } from '@/src/maps/abrirComoLlegar';
 import { color, glass } from '@/src/theme';
 import type { ReservaConZona } from '@/src/types';
 import { useAlerta } from './alerta/AlertaProvider';
 import Button from './Button';
+import { BotonComoLlegar } from './BotonComoLlegar';
 import { VidrioRespaldo } from './glass/VidrioRespaldo';
-import EstadoReservaBadge from './reservas/EstadoReservaBadge';
 import { deadlineReserva } from './ReservaTiempoChip';
+import EstadoReservaBadge from './reservas/EstadoReservaBadge';
 
 const RADIO = 28;
 
 export function ReservaActivaPanel({
   fila,
+  destino,
   onCerrar,
   onCambio,
   onVerDetalle,
 }: {
   fila: ReservaConZona;
+  /** Coordenadas de la zona (el listado de reserva no las trae). */
+  destino?: { latitud: number; longitud: number } | null;
   onCerrar: () => void;
   onCambio: () => void;
   onVerDetalle: () => void;
@@ -70,6 +75,24 @@ export function ReservaActivaPanel({
     : enCamino
       ? 'Tiempo para llegar'
       : 'Tiempo restante';
+
+  const comoLlegar = () => {
+    if (!destino) {
+      void alerta.mostrar({
+        tipo: 'advertencia',
+        titulo: 'Sin ubicación',
+        mensaje: 'No encontramos las coordenadas de esta zona en el mapa.',
+      });
+      return;
+    }
+    void abrirComoLlegar(destino.latitud, destino.longitud, titulo).catch((cause) => {
+      void alerta.mostrar({
+        tipo: 'error',
+        titulo: 'No se pudo abrir el mapa',
+        mensaje: (cause as Error).message,
+      });
+    });
+  };
 
   const cerrarReserva = async () => {
     if (cerrando) return;
@@ -131,13 +154,16 @@ export function ReservaActivaPanel({
             </Text>
           </View>
         </View>
-        <Pressable
-          onPress={onCerrar}
-          accessibilityRole="button"
-          accessibilityLabel="Cerrar"
-          className="h-9 w-9 items-center justify-center rounded-full bg-zu-sky-fade/80">
-          <X size={18} color={color.navy} />
-        </Pressable>
+        <View className="flex-row items-start gap-2">
+          <BotonComoLlegar onPress={comoLlegar} />
+          <Pressable
+            onPress={onCerrar}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+            className="h-9 w-9 items-center justify-center rounded-full bg-zu-sky-fade/80">
+            <X size={18} color={color.navy} />
+          </Pressable>
+        </View>
       </View>
 
       <View className="mt-4 flex-row items-end justify-between">
@@ -152,6 +178,13 @@ export function ReservaActivaPanel({
         <Text className="text-sm font-semibold text-zu-navy">{formatPesos(reserva.precio)}</Text>
       </View>
 
+      <Button
+        text="Ver detalle"
+        onPress={onVerDetalle}
+        secondary
+        className="mt-5"
+      />
+
       {enCamino || parqueada ? (
         <Button
           text={
@@ -164,16 +197,9 @@ export function ReservaActivaPanel({
           onPress={() => void cerrarReserva()}
           disabled={cerrando}
           destructive
-          className="mt-5"
+          className="mt-3"
         />
       ) : null}
-
-      <Button
-        text="Ver detalle"
-        onPress={onVerDetalle}
-        secondary
-        className="mt-3"
-      />
     </View>
   );
 

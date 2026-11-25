@@ -5,9 +5,9 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LiquidChip } from "../../LiquidChip";
 import { ParkingMap } from "../../ParkingMap";
-import { ZonaMapPanel } from "../../ZoneMapPanel";
-import { ReservaTiempoChip } from "../../ReservaTiempoChip";
 import { ReservaActivaPanel } from "../../ReservaActivaPanel";
+import { ReservaTiempoChip } from "../../ReservaTiempoChip";
+import { ZonaMapPanel } from "../../ZoneMapPanel";
 
 const ConductorIndexScreen = function () {
   const {
@@ -68,6 +68,10 @@ const ConductorIndexScreen = function () {
       {panelReservaAbierto && reservaActiva ? (
         <ReservaActivaPanel
           fila={reservaActiva}
+          destino={
+            zonas.find((zona) => zona.id === reservaActiva.reserva.id_zona) ??
+            null
+          }
           onCerrar={cerrarPanelReserva}
           onCambio={refrescarReservaActiva}
           onVerDetalle={() => {
