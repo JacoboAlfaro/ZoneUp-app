@@ -40,6 +40,12 @@
       "expo-status-bar",
       "expo-web-browser",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "ZoneUp usa tu ubicación para mostrarte en el mapa y orientarte hacia las zonas azules."
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/images/notification-icon.png",
